@@ -266,11 +266,12 @@ parts = [
   ["dowel",     "Alignment dowel",    "PLA",              [0,0,-30], "#555555", str("pieces=",nStrip), "print=x90"],
   attach_parts_row(attach_type, len(a_x), [0,0,-55])
 ];
+// only check parts this variant has (no step rail or divider without steps, no right half when unsplit)
 checks = concat([
-  ["slider","rail_u","clear"], ["slider","rail_s","clear"],
-  ["slider","stop_end",">=",0], ["slider","stop_div",">=",0],
-  ["stop_end","rail_u","touch"], ["stop_div","rail_s","touch"]],
-  has_att ? [["attach","board_l","clear"], ["attach","board_r","clear"]] : []
+  ["slider","rail_u","clear"], ["slider","stop_end",">=",0], ["stop_end","rail_u","touch"]],
+  has_steps ? [["slider","rail_s","clear"], ["slider","stop_div",">=",0], ["stop_div","rail_s","touch"]] : [],
+  has_att ? [["attach","board_l","clear"]] : [],
+  has_att && do_split ? [["attach","board_r","clear"]] : []
 );
 report = [
   ["board length", bx1 - bx0], ["board height", by1 - by0 + 2*edge_amp],
