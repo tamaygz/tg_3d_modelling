@@ -1,0 +1,34 @@
+diff --git a/openscad/scripts/asm.py b/openscad/scripts/asm.py
+--- a/openscad/scripts/asm.py
++++ b/openscad/scripts/asm.py
+@@ -23,7 +23,7 @@ its CSG tree), prints one line per part that changed, then runs the asked checks
+ Table rows: ["id","Label","note",[ex,ey,ez],"#colour","group=G","print=x180","plate=P","mat=PETG"]
+ (only id is required).
+ """
+-import argparse, base64, hashlib, itertools, json, math, os, re, struct, subprocess, sys, zipfile
++import argparse, base64, hashlib, itertools, json, math, os, re, shutil, struct, subprocess, sys, zipfile
+ from concurrent.futures import ThreadPoolExecutor
+ 
+ sys.dont_write_bytecode = True
+@@ -101,7 +101,8 @@ TIMEOUT = int(os.environ.get("OSCAD_TIMEOUT", "900"))
+ 
+ def run_scad(args, native=False):
+     try:
+-        return subprocess.run(["bash", OSCAD] + args, capture_output=True, text=True, env=scad_env(native), timeout=TIMEOUT)
++        command = [shutil.which("openscad.com") or "openscad.com"] if os.name == "nt" else ["bash", OSCAD]
++        return subprocess.run(command + args, capture_output=True, text=True, env=scad_env(native), timeout=TIMEOUT)
+     except subprocess.TimeoutExpired:
+         return subprocess.CompletedProcess(args, 124, "", "ERROR: OpenSCAD took longer than %d s and was stopped (set OSCAD_TIMEOUT to allow more)" % TIMEOUT)
+ 
+@@ -111,7 +112,8 @@ _ENG = {}
+ 
+ def engine():
+     if "id" not in _ENG:
+-        r = subprocess.run(["bash", OSCAD, "--which"], capture_output=True, text=True, env=scad_env())
+-        _ENG["id"] = r.stdout.strip() or "none"
++        command = [shutil.which("openscad.com") or "openscad.com", "--version"] if os.name == "nt" else ["bash", OSCAD, "--which"]
++        r = subprocess.run(command, capture_output=True, text=True, env=scad_env())
++        _ENG["id"] = ("native " + (r.stdout or r.stderr).strip()) if os.name == "nt" and r.returncode == 0 else r.stdout.strip() or "none"
+         _ENG["native"] = bool(re.search(r"native|PNG previews: /", _ENG["id"]))
+     return _ENG["id"]
+ 
