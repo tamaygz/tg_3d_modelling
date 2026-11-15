@@ -2,3 +2,6 @@
 *_section_*.png
 *_iso.png
 *_top.png
+
+# asm.py cache files inside the parts folders
+*_parts/.*.json
