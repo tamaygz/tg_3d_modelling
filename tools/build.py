@@ -24,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import bundle_with_lib, make_configurator
 
 ROOT = Path(__file__).resolve().parent.parent
-BAD = re.compile(r"ERROR|CHECK FAIL|PIECES|NOT WATERTIGHT|NON-MANIFOLD|EMPTY or failed")
+BAD = re.compile(r"ERROR|CHECK FAIL|CHECK \?|PIECES|NOT WATERTIGHT|NON-MANIFOLD|EMPTY or failed|print: .* (?:resting on nothing|collide when each)")
 MAX_OVERLAP = 0.05      # mm; press fits and touching faces show up as ~0.00-0.01
 
 
@@ -39,8 +39,13 @@ def asm_py():
 
 def run_asm(scad: Path, *flags):
     env = dict(os.environ, OSCAD_ENGINE="native")       # native OpenSCAD finds the bundled fonts
-    r = subprocess.run([sys.executable, str(asm_py()), scad.name, *flags], cwd=scad.parent, env=env, capture_output=True, text=True)
-    return r.stdout + r.stderr
+    r = subprocess.run([sys.executable, str(asm_py()), scad.name, *flags], cwd=scad.parent, env=env, capture_output=True, text=True, check=False)
+    out = r.stdout + r.stderr
+    expected = {1: r"(?m)^\S+: (?:EMPTY or failed|NOT WATERTIGHT|NON-MANIFOLD)",
+                2: r"(?m)^(?:OVERLAP |\S+: PIECES |CHECK (?:FAIL|\?)|print: )"}
+    if r.returncode and (r.stderr.strip() or not re.search(expected.get(r.returncode, r"(?!)"), r.stdout)):
+        return f"ERROR: asm.py exited with status {r.returncode}\n{out}"
+    return out
 
 
 def problems(out, allow_empty=()):

@@ -40,9 +40,22 @@ and bundled fonts. Projects only lay these out; anything reusable goes into the 
 | `python3 tools/svg_to_scad.py art.svg out.scad --prefix XX` | convert SVG artwork into exact OpenSCAD polygons |
 | `python3 tools/font_metrics.py` | regenerate the font width tables after adding a font to `lib/fonts/` |
 | `python3 tools/artfit.py overlay exported.svg reference.png out.png` | compare a model's 2D output with reference artwork |
-| `bash setup_env.sh` | install OpenSCAD and fonts on a fresh machine |
+| `bash setup_env.sh` | install the native Linux build toolchain and helper |
+| `./setup_env.ps1` | install the Windows build helper and Python environment |
 
 `build.py` uses the OpenSCAD skill's `asm.py` (found under `~/.claude/skills`, or set `OSCAD_SCRIPTS`).
+The setup scripts install helper v2.4.0 and an isolated Python environment. The Linux script uses `apt-get`
+and requires permission to install packages. On Windows, install Git, Python and OpenSCAD first, then run:
+
+```powershell
+./setup_env.ps1
+$env:PATH = 'C:\Program Files\OpenSCAD;C:\Program Files\Git\usr\bin;' + $env:PATH
+$env:OSCAD_SCRIPTS = "$HOME\.claude\skills\openscad-skill\openscad\scripts"
+& "$env:LOCALAPPDATA\tg_3d_modelling\build-venv\Scripts\python.exe" tools/build.py scoreboard --test
+```
+
+Adjust the paths if OpenSCAD or Git is installed elsewhere. On Linux, run builds with
+`~/.local/share/tg_3d_modelling/build-venv/bin/python` after setup.
 
 ## Adding a project
 
