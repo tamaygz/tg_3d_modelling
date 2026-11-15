@@ -1,6 +1,7 @@
 // Bola Vuit logo: 8-ball, laurel wreath, ribbon banner and lettering
 // exact = the original artwork's elements, 1:1 (lib/emblems/bolavuit.scad);
 // rebuilt = the same design from the generic, adjustable generators in lib/emblem.scad.
+include <../../lib/core.scad>
 use <../../lib/emblem.scad>
 use <../../lib/emblems/bolavuit.scad>
 use <../../lib/fonts.scad>
@@ -56,13 +57,12 @@ k = logo_width / bv_art_w();                  // px -> mm (artwork width = logo_
 STROKE = BVR_BANNER[7];                       // banner outline width (px)
 
 parts = [
-  ["base", "Base",    "PLA black", [0,0,-10], "#151515"],
-  ["art",  "Artwork", "PLA white", [0,0,10],  "#f2f2f2", str("pieces=", source == "exact" ? 29 : 32)]
+  ["base", "Base",    "PLA black", [0,0,-10], COL_BLACK],
+  ["art",  "Artwork", "PLA white", [0,0,10],  COL_WHITE, str("pieces=", source == "exact" ? 29 : 32)]
 ];
 report = [ ["artwork width", logo_width], ["artboard", PXW*k], ["thinnest line (mm)", STROKE*k] ];
 if (STROKE*k < 0.8) echo(str("WARNING: at ", logo_width, " mm the banner outlines are ", STROKE*k, " mm wide; use at least ", ceil(0.8/STROKE*bv_art_w()), " mm for a 0.4 mm nozzle"));
 
-module pick(n){ if (part=="all" || part==n) children(); }
 
 // ---------- rebuilt artwork (px, y up) ----------
 module band_area() { translate([BVR_CENTER_X, 0]) ribbon_banner_inside_2d(BVR_BANNER); }
@@ -79,8 +79,7 @@ module wreath_px() {
 module banner_px() { translate([BVR_CENTER_X, 0]) ribbon_banner_2d(BVR_BANNER, banner_style, banner_bow, banner_ears); }
 module text_px() {
   if (banner_text == "BOLA VUIT")
-    for (l=BVR_LETTERS) multmatrix([[l[1][0][0], l[1][0][1], 0, l[1][0][2]], [l[1][1][0], l[1][1][1], 0, l[1][1][2]], [0,0,1,0], [0,0,0,1]])
-      text(l[0], size=100, font=BVR_FONT, halign="left", valign="baseline");
+    for (l=BVR_LETTERS) affine2d(l[1]) text(l[0], size=100, font=BVR_FONT, halign="left", valign="baseline");
   else let(R = 4400) translate([BVR_CENTER_X, 395 - R]) arc_text_2d(banner_text, r=R + 50, size=150, font=font_for(font_style),
                                                                     width=text_width, tracking=0.03);
 }

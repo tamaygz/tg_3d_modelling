@@ -1,5 +1,5 @@
 // Printed number scales: plates with numbers, separators and a border, as inlay, raised or engraved.
-// Use:  use <../../lib/scale.scad>   (also `use <../../lib/fonts.scad>` for font_for())
+// Use:  use <../../lib/scale.scad>   (also `use <../../lib/fonts.scad>` for font_for(); border_2d() is in core.scad)
 // Conventions: a scale runs along +X at the label positions `xs`, centred on y=0. Plates sit on z=0.
 
 PLATE_STYLES     = ["inlay", "raised", "engraved"];
@@ -17,10 +17,7 @@ module number_row_2d(labels, xs, size=5.2, font="Liberation Serif", sep="dot", s
 }
 
 // rounded plate outline from x0 to x1, height h
-module plate_2d(x0, x1, h=10, r=1) { offset(r=r) offset(delta=-r) translate([x0, -h/2]) square([x1 - x0, h]); }
-
-// border line inside a plate outline (children)
-module border_2d(inset=0.9, w=0.5) { difference() { offset(delta=-inset) children(); offset(delta=-inset-w) children(); } }
+module scale_plate_2d(x0, x1, h=10, r=1) { offset(r=r) offset(delta=-r) translate([x0, -h/2]) square([x1 - x0, h]); }
 
 // plate body: children(0) = plate outline, children(1) = artwork (numbers, border)
 //   inlay    -> plate with the artwork recessed `depth` (fill it with plate_art)

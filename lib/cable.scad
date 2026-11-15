@@ -1,15 +1,11 @@
 // Cable mounting and routing: clips, flat-cable hooks, zip-tie mounts, duct with snap lid, grommets,
 // and cutters that route cables through a host.
 // Use:  use <../../lib/cable.scad>
+use <core.scad>
 // Conventions: mounting parts sit on z=0 (glue face or screw face) with the cable running along +X.
 // Cutters are subtracted from a host whose face is z=0 and whose body is z>0 (like attach_socket()).
 
 CABLE_MOUNTS = ["adhesive", "screw"];   // adhesive pad (glue / tape) or a countersunk M3 screw tab
-
-module _screw_tab(y, base_t) {          // countersunk M3 hole at (0, y)
-    translate([0, y, -1]) cylinder(d=3.4, h=base_t + 2, $fn=24);
-    translate([0, y, base_t - 1.55]) cylinder(d1=3.4, d2=6.6, h=1.56, $fn=32);
-}
 
 // round cable (diameter d) snapped into a C-clamp
 module cable_clip(d=5, mount="adhesive", len=10, wall=1.6, base_t=2) {
@@ -22,7 +18,7 @@ module cable_clip(d=5, mount="adhesive", len=10, wall=1.6, base_t=2) {
         }
         translate([-len, 0, zc]) rotate([0,90,0]) cylinder(d=d + 0.3, h=2*len, $fn=48);
         translate([-len, -0.375*d, zc + d*0.3]) cube([2*len, 0.75*d, d]);          // snap-in mouth (75% of d)
-        if (mount == "screw") _screw_tab(R + 4.5, base_t);
+        if (mount == "screw") translate([0, R + 4.5, 0]) csk_hole(base_t);
     }
 }
 // flat cable or LED-strip lead (width w, thickness t): slide it in under the lip from the open side
@@ -35,7 +31,7 @@ module flat_cable_clip(w=8, t=2.5, mount="adhesive", len=10, base_t=2) {
             translate([-len/2, w*0.35, lip_z]) cube([len, w*0.65 + 2.4, 1.4]);          // lip
             translate([-len/2, w*0.35, lip_z - 0.5]) cube([len, 0.8, 0.51]);           // catch at the lip tip
         }
-        if (mount == "screw") _screw_tab(w + 2.4 + 4.5, base_t);
+        if (mount == "screw") translate([0, w + 2.4 + 4.5, 0]) csk_hole(base_t);
     }
 }
 // zip-tie anchor: the tie (width tie_w) threads through the tunnel along Y
@@ -47,7 +43,7 @@ module tie_mount(tie_w=4.8, mount="adhesive", base_t=2) {
             translate([-(tw/2 + 2.5), -8, 0]) cube([tw + 5, 16, base_t + th + 1.6]);
         }
         translate([-tw/2, -9, base_t]) cube([tw, 18, th]);
-        if (mount == "screw") for (x=[-10, 10]) translate([x, 0, 0]) rotate([0,0,90]) _screw_tab(0, base_t);
+        if (mount == "screw") for (x=[-10, 10]) translate([x, 0, 0]) rotate([0,0,90]) csk_hole(base_t);
     }
 }
 // cable duct (raceway): inner w x h (h >= 6), snap lid; screw holes every `pitch` when mount == "screw".
@@ -62,7 +58,7 @@ module cable_duct(len=100, w=12, h=8, wall=1.4, base_t=1.6, mount="adhesive", pi
                 polygon([[W/2 - 0.01, z0 - 4.0], [W/2 + 0.45, z0 - 4.0], [W/2 + 0.45, z0 - 3.7], [W/2 - 0.01, z0 - 2.8]]);   // bead with lead-in
         }
         translate([-1, -w/2, base_t]) cube([len + 2, w, h + 1]);
-        if (mount == "screw") for (x=[pitch/2 : pitch : len]) translate([x, 0, 0]) _screw_tab(0, base_t);
+        if (mount == "screw") for (x=[pitch/2 : pitch : len]) translate([x, 0, 0]) csk_hole(base_t);
     }
 }
 module cable_duct_lid(len=100, w=12, h=8, wall=1.4, base_t=1.6, t=1.2, c=0.2) {

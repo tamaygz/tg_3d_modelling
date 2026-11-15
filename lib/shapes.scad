@@ -1,6 +1,8 @@
-// Board / plaque shapes: 2D outlines, routed-edge slabs, decorative grooves, keyhole hangers.
-// Use:  use <../../lib/shapes.scad>
+// Board / plaque shapes: 2D outlines, routed-edge slabs, decorative grooves.
+// Use:  use <../../lib/shapes.scad>   (mounting: see attach.scad)
+use <core.scad>
 // Conventions: 2D outlines are centred on the origin; slabs sit on z=0 (back face) and rise to z=t.
+function has_edge_wave(shape) = shape == "arched" || shape == "wave" || shape == "scalloped";   // these add `amp` above and below
 
 PLAQUE_SHAPES  = ["rect", "rounded", "chamfered", "notched", "arched", "wave", "scalloped"];
 EDGE_PROFILES  = ["flat", "roundover", "chamfer", "cove", "ogee"];
@@ -55,17 +57,7 @@ module outline_groove(t, inset=5.5, w=0.8, depth=0.8, style="single", gap=1.6) {
     if (style != "none")
         for (i=[0:(style == "double" ? 1 : 0)]) let(d = inset + i*(w + gap))
             translate([0, 0, t - depth]) linear_extrude(depth + 1)
-                difference() { offset(delta=-d) children(); offset(delta=-d-w) children(); }
-}
-
-// ---------- hanging ----------
-// keyhole slot cut into the back face (z=0); the screw head drops in at the origin and slides +y by `travel`
-module keyhole_slot(head_d=9, neck_d=4.5, travel=10, neck_t=2.5, depth=6) {
-    translate([0,0,-0.1]) {
-        cylinder(d=head_d, h=depth + 0.1);
-        hull() { cylinder(d=neck_d, h=neck_t + 0.1); translate([0,travel,0]) cylinder(d=neck_d, h=neck_t + 0.1); }
-    }
-    translate([0,0,neck_t]) hull() { cylinder(d=head_d, h=depth - neck_t); translate([0,travel,0]) cylinder(d=head_d, h=depth - neck_t); }
+                border_2d(d, w) children();
 }
 
 // slab with routed profiles on BOTH edges: top (as profiled_slab) and bottom (mirrored), e.g. a table top with a

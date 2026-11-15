@@ -1,5 +1,6 @@
 // LED strip system: tracks (channels), snap-in diffusers, joiner keys, end caps, corners, host recesses.
 // Use:  use <../../lib/led.scad>
+use <core.scad>
 //
 // Everything is built from ONE cross-section, so tracks, corners, diffusers and keys always match.
 //   spec = led_spec(strip, style)      strip = [width, thickness] (led_strip_dims("10mm") etc.)
@@ -102,8 +103,7 @@ module led_track(len, spec, mount="glue", pitch=100, wire_exit=false) {
     difference() {
         led_straight(len) led_track_2d(spec);
         if (mount == "screw") for (x=[LED_KEY_L/2 + 6 : pitch : len - LED_KEY_L/2 - 6]) translate([x, 0, 0]) {
-            translate([0,0,-1]) cylinder(d=3.4, h=LED_FLOOR + 2, $fn=24);
-            translate([0,0,LED_FLOOR - 1.55]) cylinder(d1=3.4, d2=6.6, h=1.56, $fn=32);
+            csk_hole(LED_FLOOR);
         }
         if (wire_exit) translate([6, -led_W(spec)/2 - 1, LED_FLOOR]) cube([4, led_W(spec)/2 + 1, 3]);
     }

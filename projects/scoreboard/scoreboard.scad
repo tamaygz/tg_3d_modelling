@@ -1,6 +1,7 @@
 // Parametric sliding-pin scoreboard (pool / snooker style)
 // Board + number plates + per-player rails, sliders (marker pins) and stopper pegs.
 // Shapes, rails, pegs and number scales come from the shared library in ../../lib.
+include <../../lib/core.scad>
 include <../../lib/fits.scad>
 use <../../lib/fonts.scad>
 use <../../lib/shapes.scad>
@@ -225,40 +226,31 @@ shaft_d = fit_mid("p6", peg_d);                       // peg shaft
 dw_hole = fit_mid("H7", dowel_d);                     // dowel hole
 dw_d    = fit_mid("k6", dowel_d);                     // dowel shaft (H7/k6)
 dz      = 5;                                          // dowel centre height
-ATTACH_NOTCH_ = attach_socket_len(attach_size) - attach_dims(attach_size)[1];  // pry notch below the plate
 has_att = attach_type != "none";                      // any sockets at all
-a_w     = attach_socket_w(attach_size);               // socket width
-a_len   = attach_socket_len(attach_size);             // socket length
-a_y     = (by0 + by1)/2 + ATTACH_NOTCH_/2;            // plate centre y (socket + pry notch centred on the board)
-a_sp0   = attach_count > 1 ? 0.6*(bx1 - bx0)/(attach_count - 1) : 0;   // even spread
-a_sp    = attach_type == "skadis" ? max(40, round(a_sp0/40)*40) : a_sp0; // Skådis: stay on the 40 mm grid
-a_x0    = [for (i=[0:1:attach_count-1]) (bx0 + bx1)/2 + (i - (attach_count - 1)/2)*a_sp];
-a_keep  = split_board ? a_w/2 + dowel_l/2 + 2 : 0;    // keep sockets clear of the split dowels
-a_shift = [for (x=a_x0) if (abs(x - x_split) < a_keep) (x >= x_split ? 1 : -1)*(a_keep - abs(x - x_split))];
-a_x     = [for (x=a_x0) x + (len(a_shift) > 0 ? a_shift[0] : 0)];   // socket x positions
-a_reach = a_y - (by0 - edge_amp);                     // stand: plate centre to the board's lowest edge
-a_roof  = (by1 + edge_amp) - a_y + roof_gap;          // roof: plate centre up to the ceiling
-assert(!has_att || a_len <= by1 - by0 - 3, str("attach_size ", attach_size, " needs ", a_len, " mm of board height; this board has ", by1 - by0, " mm. Choose a smaller size."));
-function sumv(v, i=0) = i >= len(v) ? 0 : v[i] + sumv(v, i+1);
+a_y     = attach_y((by0 + by1)/2);                    // plate centre y (socket + pry notch centred on the board)
+a_keep  = split_board ? attach_socket_w(attach_size)/2 + dowel_l/2 + 2 : 0;   // keep sockets clear of the split dowels
+a_x     = attach_xs(attach_count, bx1 - bx0, attach_type, (bx0 + bx1)/2, [x_split, a_keep]);   // socket x positions
+a_opts  = attach_opts(screw_d, screw_head_d, magnet, hook_gap, stand_angle, stand_depth, roof_gap, roof_angle);
+assert(!has_att || attach_fits(attach_size, by1 - by0), attach_fit_msg(attach_size, by1 - by0));
 function art_pieces(labels) = len(labels) == 0 ? 0 :   // separate solids in one plate's artwork
-  sumv([for (v=labels) len(str(v))]) + (s_sep == "none" ? 0 : len(labels) - 1) + (plate_border ? 1 : 0);
+  sum([for (v=labels) len(str(v))]) + (s_sep == "none" ? 0 : len(labels) - 1) + (plate_border ? 1 : 0);
 n_txt_u = nStrip * art_pieces(ulabels);               // artwork pieces, main plates
 n_txt_s = nStrip * art_pieces(slabels);               // artwork pieces, step plates
 
 parts = [
-  ["board_l",   "Board left",         "PLA wood / brown", [0,0,-30], "#7a2e1c"],
-  ["board_r",   "Board right",        "PLA wood / brown", [30,0,-30], "#7a2e1c"],
-  ["plate_u",   "Number plate main",  "PLA silk gold",    [0,0,20],  "#cdb87a", str("pieces=",nStrip), "plate=plates_u", "mat=PLA gold"],
-  ["text_u",    "Numbers main",       "PLA black",        [0,0,26],  "#1a1a1a", str("pieces=",n_txt_u), "plate=plates_u", "mat=PLA black"],
-  ["plate_s",   "Number plate steps", "PLA silk gold",    [0,0,20],  "#cdb87a", str("pieces=",nStrip), "plate=plates_s", "mat=PLA gold"],
-  ["text_s",    "Numbers steps",      "PLA black",        [0,0,26],  "#1a1a1a", str("pieces=",n_txt_s), "plate=plates_s", "mat=PLA black"],
-  ["rail_u",    "Rail main range",    "PLA silk gold",    [0,0,12],  "#c9a13b", str("pieces=",players), "print=x180"],
-  ["rail_s",    "Rail steps",         "PLA silk gold",    [0,0,12],  "#c9a13b", str("pieces=",players), "print=x180"],
-  ["slider",    "Marker slider",      "PLA silk gold",    [0,0,32],  "#e0b84a", str("pieces=",(has_steps ? 2 : 1)*players), "print=x180"],
-  ["stop_end",  "End stopper",        "PLA silver",       [0,0,45],  "#b8b8b8", str("pieces=",2*players), "print=x180"],
-  ["stop_div",  "Column divider",     "PLA silver",       [0,0,45],  "#b8b8b8", str("pieces=",players), "print=x180"],
+  ["board_l",   "Board left",         "PLA wood / brown", [0,0,-30], COL_WOOD],
+  ["board_r",   "Board right",        "PLA wood / brown", [30,0,-30], COL_WOOD],
+  ["plate_u",   "Number plate main",  "PLA silk gold",    [0,0,20],  COL_PLATE, str("pieces=",nStrip), "plate=plates_u", "mat=PLA gold"],
+  ["text_u",    "Numbers main",       "PLA black",        [0,0,26],  COL_INK, str("pieces=",n_txt_u), "plate=plates_u", "mat=PLA black"],
+  ["plate_s",   "Number plate steps", "PLA silk gold",    [0,0,20],  COL_PLATE, str("pieces=",nStrip), "plate=plates_s", "mat=PLA gold"],
+  ["text_s",    "Numbers steps",      "PLA black",        [0,0,26],  COL_INK, str("pieces=",n_txt_s), "plate=plates_s", "mat=PLA black"],
+  ["rail_u",    "Rail main range",    "PLA silk gold",    [0,0,12],  COL_BRASS, str("pieces=",players), "print=x180"],
+  ["rail_s",    "Rail steps",         "PLA silk gold",    [0,0,12],  COL_BRASS, str("pieces=",players), "print=x180"],
+  ["slider",    "Marker slider",      "PLA silk gold",    [0,0,32],  COL_GOLD, str("pieces=",(has_steps ? 2 : 1)*players), "print=x180"],
+  ["stop_end",  "End stopper",        "PLA silver",       [0,0,45],  COL_SILVER, str("pieces=",2*players), "print=x180"],
+  ["stop_div",  "Column divider",     "PLA silver",       [0,0,45],  COL_SILVER, str("pieces=",players), "print=x180"],
   ["dowel",     "Alignment dowel",    "PLA",              [0,0,-30], "#555555", str("pieces=",nStrip), "print=x90"],
-  ["attach",    "Attachment plate",   "PLA",              [0,0,-55], "#4d6170", str("pieces=",attach_count), (attach_type == "skadis" || attach_type == "hook" || attach_type == "roof") ? "print=auto" : "print=x180"]
+  attach_parts_row(attach_type, attach_count, [0,0,-55])
 ];
 checks = concat([
   ["slider","rail_u","clear"], ["slider","rail_s","clear"],
@@ -273,7 +265,6 @@ report = [
   ["slider top above board", s_top]
 ];
 
-module pick(n){ if (part=="all" || part==n) children(); }
 
 // ---------------- board ----------------
 module outline() {
@@ -286,12 +277,12 @@ module board() {
     profiled_slab(board_t, s_edge, edge_r) outline();
     outline_groove(board_t, groove_in, groove_w, groove_w, s_groove) outline();
     for (y=strip_y) translate([0,y,board_t - label_t]) linear_extrude(label_t + 1) {
-      offset(delta=label_clr) plate_2d(pl_u[0], pl_u[1], label_h);
-      if (has_steps) offset(delta=label_clr) plate_2d(pl_s[0], pl_s[1], label_h);
+      offset(delta=label_clr) scale_plate_2d(pl_u[0], pl_u[1], label_h);
+      if (has_steps) offset(delta=label_clr) scale_plate_2d(pl_s[0], pl_s[1], label_h);
     }
     for (y=track_y, x=peg_x()) translate([x,y,board_t - peg_depth]) cylinder(d=hole_b, h=peg_depth + 1, $fn=32);
     if (split_board) for (y=strip_y) translate([x_split,y,dz]) rotate([0,90,0]) cylinder(d=dw_hole, h=dowel_l + 1, center=true, $fn=32);
-    if (has_att) for (x=a_x) translate([x, a_y, 0]) attach_socket(attach_size);
+    attach_sockets(attach_type, attach_size, a_x, a_y);
   }
 }
 module board_half(right) {
@@ -304,7 +295,7 @@ module board_half(right) {
 }
 
 // ---------------- number plates ----------------
-module plate_outline(sp) { plate_2d(sp[0], sp[1], label_h); }
+module plate_outline(sp) { scale_plate_2d(sp[0], sp[1], label_h); }
 module plate_artwork(sp, labels, xs_) {
   number_row_2d(labels, xs_, text_size, s_font, s_sep, dot_d);
   if (plate_border) border_2d(border_in, border_w) plate_outline(sp);
@@ -338,7 +329,5 @@ for (p=[0:players-1]) {
     if (has_steps) translate([tx(p, xs[min(sc[1], nS-1)]), 0, 0]) marker();
   }
 }
-if (has_att) for (x=a_x) translate([x, a_y, 0])
-  pick("attach") attach_plate(attach_type, attach_size, screw_d, screw_head_d, magnet, 0.15, hook_gap, a_reach, stand_angle, stand_depth,
-                              roof_reach=a_roof, roof_angle=roof_angle);
+pick("attach") attach_plates(attach_type, attach_size, a_x, a_y, a_opts, by0 - edge_amp, by1 + edge_amp);
 pick("dowel") if (split_board) for (y=strip_y) translate([x_split, y, dz]) rotate([0,90,0]) cylinder(d=dw_d, h=dowel_l - 1, center=true, $fn=32);

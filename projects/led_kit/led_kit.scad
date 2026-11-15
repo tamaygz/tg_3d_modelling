@@ -1,5 +1,6 @@
 // LED strip tracks, diffusers, corners and cable parts
 // A configurable kit built from lib/led.scad and lib/cable.scad: pick your strip, print what you need.
+include <../../lib/core.scad>
 use <../../lib/led.scad>
 use <../../lib/cable.scad>
 
@@ -60,18 +61,18 @@ ext = 12;                                     // straight ends on the corner pie
 cy = -45;                                     // cable parts row
 
 parts = [
-  ["track",       "Track",            "PLA / PETG",        [0,0,-20], "#3d4a54"],
-  ["diffuser",    "Diffuser",         "clear PETG",        [0,0,25],  "#e9eef0", diffuser == "dome" ? "print=auto" : "print=x180"],
-  ["end_cap",     "End cap",          "PLA",               [-15,0,0], "#3d4a54", "print=auto"],
-  ["key",         "Joiner key",       "PLA",               [0,0,-35], "#c9a13b"],
-  ["corner",      "Corner",           "PLA / PETG",        [25,0,0],  "#3d4a54", "print=auto"],
-  ["corner_diff", "Corner diffuser",  "clear PETG",        [25,0,25], "#e9eef0", "print=auto"],
-  ["clip",        "Cable clip",       "PLA",               [0,-10,0], "#9aa4ad"],
-  ["flat_clip",   "Flat cable clip",  "PLA",               [0,-10,0], "#9aa4ad", "print=auto"],
-  ["tie_mount",   "Zip-tie mount",    "PLA",               [0,-10,0], "#9aa4ad"],
-  ["duct",        "Cable duct",       "PLA",               [0,-10,0], "#9aa4ad"],
+  ["track",       "Track",            "PLA / PETG",        [0,0,-20], COL_GREY_DARK],
+  ["diffuser",    "Diffuser",         "clear PETG",        [0,0,25],  COL_CLEAR, diffuser == "dome" ? "print=auto" : "print=x180"],
+  ["end_cap",     "End cap",          "PLA",               [-15,0,0], COL_GREY_DARK, "print=auto"],
+  ["key",         "Joiner key",       "PLA",               [0,0,-35], COL_BRASS],
+  ["corner",      "Corner",           "PLA / PETG",        [25,0,0],  COL_GREY_DARK, "print=auto"],
+  ["corner_diff", "Corner diffuser",  "clear PETG",        [25,0,25], COL_CLEAR, "print=auto"],
+  ["clip",        "Cable clip",       "PLA",               [0,-10,0], COL_GREY],
+  ["flat_clip",   "Flat cable clip",  "PLA",               [0,-10,0], COL_GREY, "print=auto"],
+  ["tie_mount",   "Zip-tie mount",    "PLA",               [0,-10,0], COL_GREY],
+  ["duct",        "Cable duct",       "PLA",               [0,-10,0], COL_GREY],
   ["duct_lid",    "Duct lid",         "PLA",               [0,-10,20],"#c5ccd1", "print=x180"],
-  ["grommet",     "Grommet",          "TPU / PLA",         [0,-10,0], "#9aa4ad"],
+  ["grommet",     "Grommet",          "TPU / PLA",         [0,-10,0], COL_GREY],
   ["hw_strip",    "LED strip (reference)", "bought",       [0,0,10],  "#fff3b0"]
 ];
 checks = concat(
@@ -82,7 +83,6 @@ checks = concat(
 );
 report = [ ["track width", W], ["track height", H], ["strip", strip[0]], ["seat", SP[0]] ];
 
-module pick(n){ if (part=="all" || part==n) children(); }
 module duct_at() { translate([110, cy, 0]) children(); }
 
 if (probe == 1) intersection() { led_track(40, SP); translate([0,0,1.4]) led_diffuser(40, SP, "flat"); }

@@ -2,6 +2,7 @@
 // A multi-colour relief: every colour is its own part (one 3MF). Official geometry (WPBSA): playing area
 // 3569 x 1778 mm, baulk line 737 mm from the baulk cushion, D radius 292 mm, blue on the centre spot, pink midway
 // between centre spot and top cushion, black 324 mm from the top cushion, reds packed behind the pink.
+include <../../lib/core.scad>
 use <../../lib/shapes.scad>
 use <../../lib/attach.scad>
 use <../../lib/fonts.scad>
@@ -120,7 +121,7 @@ BALLS = [
   ["black",  7, "#151515", [P(REAL_L - 324, 0)]],
   ["white",  0, "#f5f2ea", show_cue ? [P(BAULK - 0.55*DR, -0.45*DR)] : []]
 ];
-LABEL_COL = points_color == "black" ? "#151515" : points_color == "gold" ? "#d9b98a" : "#ffffff";
+LABEL_COL = points_color == "black" ? COL_BLACK : points_color == "gold" ? COL_TAN : "#ffffff";
 TW = Lc + 2*(cushion_w + rail_w); TH = Wc + 2*(cushion_w + rail_w);   // table outline size
 z0 = show_plate ? plate_t : 0;                  // table body bottom
 zb = z0 + max(table_base_t, (!show_plate && attach_type != "none") ? attach_depth() + 1.5 : 0);   // cloth bottom
@@ -142,33 +143,34 @@ function lbl_off(d) = points_pos == "left" ? [-(d/2 + 1.2), 0] : points_pos == "
 function lbl_align() = points_pos == "left" ? "right" : points_pos == "right" ? "left" : "center";
 n_lbl = show_points ? 6 + (points_reds ? 1 : 0) + (show_cue && points_cue ? 1 : 0) : 0;   // labels on the table
 has_att = attach_type != "none";
-A_W = attach_socket_w(attach_size); A_L = attach_socket_len(attach_size);
-A_Y = show_plate ? PC[1] : 0;
-H_TOP = show_plate ? PC[1] + PH/2 + ((plate_shape == "arched" || plate_shape == "wave" || plate_shape == "scalloped") ? plate_wave : 0) : TH/2;   // guide's top edge (y)
-H_BOT = show_plate ? PC[1] - PH/2 - ((plate_shape == "arched" || plate_shape == "wave" || plate_shape == "scalloped") ? plate_wave : 0) : -TH/2;  // bottom edge
-A_X = [for (i=[0:1:attach_count-1]) (i - (attach_count - 1)/2)*(attach_count > 1 ? 0.6*TW/(attach_count - 1) : 0)];
-assert(!has_att || A_L <= (show_plate ? PH : TH) - 4, str("attach_size ", attach_size, " is too tall for this guide; choose a smaller size"));
+HOST_H = show_plate ? PH : TH;                  // height available for sockets
+wave   = show_plate && has_edge_wave(plate_shape) ? plate_wave : 0;
+H_TOP  = show_plate ? PC[1] + PH/2 + wave : TH/2;      // guide's top edge (y)
+H_BOT  = show_plate ? PC[1] - PH/2 - wave : -TH/2;     // bottom edge
+A_Y = attach_y(show_plate ? PC[1] : 0);
+A_X = attach_xs(attach_count, TW, attach_type);
+A_OPTS = attach_opts(stand_angle=stand_angle, roof_gap=roof_gap, roof_angle=roof_angle);
+assert(!has_att || attach_fits(attach_size, HOST_H, 4), attach_fit_msg(attach_size, HOST_H));
 
 parts = concat([
-  ["plate",    "Surround plate", "PLA",           [0,0,-25], "#3a2418", "plate=guide", "mat=PLA dark wood"],
-  ["wood",     "Table rails",    "PLA",           [0,0,-12], "#6b2f1a", "plate=guide", "mat=PLA brown"],
+  ["plate",    "Surround plate", "PLA",           [0,0,-25], COL_WOOD_DARK, "plate=guide", "mat=PLA dark wood"],
+  ["wood",     "Table rails",    "PLA",           [0,0,-12], COL_RAIL_WOOD, "plate=guide", "mat=PLA brown"],
   ["cloth",    "Cloth",          "PLA",           [0,0,-4],  "#1f8a2e", "plate=guide", "mat=PLA green"],
   ["cushions", "Cushions",       "PLA",           [0,0,4],   "#2fae45", "pieces=6", "plate=guide", "mat=PLA light green"],
   ["pockets",  "Pockets",        "PLA",           [0,0,-8],  "#111111", "pieces=6", "plate=guide", "mat=PLA black"],
-  ["rims",     "Pocket rims",    "PLA",           [0,0,8],   "#d9b98a", "pieces=6", "plate=guide", "mat=PLA tan"],
-  ["markings", "Baulk line and D", "PLA",         [0,0,6],   "#f2f2f2", "plate=guide", "mat=PLA white"]],
+  ["rims",     "Pocket rims",    "PLA",           [0,0,8],   COL_TAN, "pieces=6", "plate=guide", "mat=PLA tan"],
+  ["markings", "Baulk line and D", "PLA",         [0,0,6],   COL_WHITE, "plate=guide", "mat=PLA white"]],
   [for (b=BALLS) [str("ball_", b[0]), str(b[0], " ball", b[0] == "red" ? "s" : ""), "PLA", [0,0,14], b[2],
                   str("pieces=", len(b[3]) + (legend && b[0] != "white" ? 1 : 0)
                        + (points_color == "ball colour" ? (b[0] == "red" ? (points_reds ? 1 : 0) + (legend ? 1 : 0)
                           : b[0] == "white" ? (show_cue && points_cue ? 1 : 0) : 1 + (legend ? 1 : 0)) : 0)),
                   "plate=guide", str("mat=PLA ", b[0])]],
   [["labels",   "Point numbers",  "PLA",           [0,0,20],  LABEL_COL, str("pieces=", n_lbl + (legend ? 7 : 0)), "plate=guide", "mat=PLA label"],
-   ["title",    "Title",          "PLA",           [0,0,20],  "#d9b98a", str("pieces=", len([for (c=title) if (c != " ") c])), "plate=guide", "mat=PLA tan"],
-   ["attach",   "Attachment plate", "PLA",         [0,0,-45], "#4d6170", str("pieces=", attach_count), (attach_type == "skadis" || attach_type == "hook" || attach_type == "roof") ? "print=auto" : "print=x180"]]
+   ["title",    "Title",          "PLA",           [0,0,20],  COL_TAN, str("pieces=", len([for (c=title) if (c != " ") c])), "plate=guide", "mat=PLA tan"],
+   attach_parts_row(attach_type, attach_count, [0,0,-45])]
 );
 report = [ ["guide width", show_plate ? PW : TW], ["guide height", show_plate ? PH : TH], ["ball diameter", bd], ["total height", zr] ];
 
-module pick(n){ if (part=="all" || part==n) children(); }
 
 // ---------- 2D shapes (table centre at the origin) ----------
 module table_2d()   { offset(r=table_corner_r) offset(delta=-table_corner_r) square([TW, TH], center=true); }
@@ -204,7 +206,6 @@ module legend_labels_2d(idx=undef) {            // numbers in the legend row on 
 }
 
 // ---------- solids ----------
-module slab(z1, z2) { translate([0, 0, z1]) linear_extrude(z2 - z1) children(); }
 module ball(at) {
   translate([at[0], at[1], zc])
     if (ball_style == "hemisphere") intersection() { sphere(d=bd, $fn=36); translate([-bd, -bd, 0]) cube(2*bd); }
@@ -214,7 +215,7 @@ module ball(at) {
 module legend_ball(at) { translate([0, 0, (show_plate ? plate_t : 0) - zc]) ball(at); }    // legend balls sit on the plate
 module inlay_labels() { if (points_style == "inlay") slab(zc - 0.6, zc + 1) labels_2d(); }
 
-module sockets() { if (has_att) for (x=A_X) translate([x, A_Y, 0]) attach_socket(attach_size); }
+module sockets() { attach_sockets(attach_type, attach_size, A_X, A_Y); }
 
 if (show_plate) pick("plate") difference() {
   union() {
@@ -262,5 +263,4 @@ if (points_color != "ball colour") pick("labels") {
 }
 if (ttl && show_plate) pick("title") slab(plate_t, plate_t + 0.8)
   translate([0, TH/2 + plate_margin/2 + TITLE_H/2]) text(title, size=title_size, font=font_for("serif bold"), halign="center", valign="center", spacing=1.15);
-if (has_att) for (x=A_X) translate([x, A_Y, 0]) pick("attach") attach_plate(attach_type, attach_size, stand_reach=A_Y - H_BOT, stand_angle=stand_angle,
-                                                                        roof_reach=H_TOP - A_Y + roof_gap, roof_angle=roof_angle);
+pick("attach") attach_plates(attach_type, attach_size, A_X, A_Y, A_OPTS, H_BOT, H_TOP);

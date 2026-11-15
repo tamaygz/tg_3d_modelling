@@ -1,5 +1,6 @@
 // Attachment plates: test coupon + one plate + lock key
 // Print the coupon and a plate first to check the snap fit, then use the same plate on any project.
+include <../../lib/core.scad>
 use <../../lib/attach.scad>
 
 part = "all";                    // which part to export ("all" = assembly)
@@ -42,15 +43,17 @@ ct = attach_depth() + 3;                         // coupon thickness
 cy = -3/2;                                       // coupon centre y (the socket has a pry notch below)
 
 parts = [
-  ["coupon", "Test coupon",  "PLA", [0,0,25],  "#7a2e1c", "print=x180"],
-  ["plate",  "Attachment plate", "PLA", [0,0,-25], "#4d6170", (attach_type == "skadis" || attach_type == "hook" || attach_type == "roof") ? "print=auto" : "print=x180"],
+  ["coupon", "Test coupon",  "PLA", [0,0,25],  COL_WOOD, "print=x180"],
+  ["plate",  "Attachment plate", "PLA", [0,0,-25], COL_FIXTURE, (attach_type == "skadis" || attach_type == "hook" || attach_type == "roof") ? "print=auto" : "print=x180"],
 ];
 checks = [ ["plate","coupon","clear"] ];
 report = [ ["plate w", D[0]], ["plate l", D[1]], ["socket length", attach_socket_len(attach_size)] ];
 
-module pick(n){ if (part=="all" || part==n) children(); }
-module plate() { attach_plate(attach_type, attach_size, screw_d, head_d, magnet, 0.15, hook_gap, stand_reach, stand_angle, stand_depth,
-                               roof_reach=roof_reach, roof_angle=roof_angle, roof_depth=roof_depth); }
+module plate() {
+  attach_plate(attach_type, attach_size, screw_d=screw_d, head_d=head_d, magnet=magnet, hook_gap=hook_gap,
+               stand_reach=stand_reach, stand_angle=stand_angle, stand_depth=stand_depth,
+               roof_reach=roof_reach, roof_angle=roof_angle, roof_depth=roof_depth);
+}
 module coupon() { difference() { translate([-cw/2, cy - cl/2, 0]) cube([cw, cl, ct]); attach_socket(attach_size); } }
 
 if (probe == 0) {

@@ -100,6 +100,39 @@ module attach_plate(type="wall", size="M", screw_d=4.5, head_d=8.5, magnet=[10, 
     }
 }
 
+// ---------- host helpers (use these in a project instead of placing sockets by hand) ----------
+// per-type options as one list, so hosts can pass them on: build it with attach_opts(...)
+function attach_opts(screw_d=4.5, head_d=8.5, magnet=[10, 3], hook_gap=6, stand_angle=15, stand_depth=40,
+                     roof_gap=10, roof_angle=90, roof_depth=40) =
+    [screw_d, head_d, magnet, hook_gap, stand_angle, stand_depth, roof_gap, roof_angle, roof_depth];
+// x positions for `count` sockets spread over 60% of `span` around `centre`. Skådis plates stay on the 40 mm grid.
+// avoid = [x, half width]: shift the whole row so no socket centre lies within that zone (dowels, screws ...).
+function attach_xs(count, span, type="wall", centre=0, avoid=undef) = let(
+    sp0 = count > 1 ? 0.6*span/(count - 1) : 0,
+    sp  = type == "skadis" ? max(40, round(sp0/40)*40) : sp0,
+    x0  = [for (i=[0:1:count-1]) centre + (i - (count - 1)/2)*sp],
+    sh  = is_undef(avoid) ? [] : [for (x=x0) if (abs(x - avoid[0]) < avoid[1]) (x >= avoid[0] ? 1 : -1)*(avoid[1] - abs(x - avoid[0]))])
+    [for (x=x0) x + (len(sh) > 0 ? sh[0] : 0)];
+// plate centre y that centres socket + pry notch on a host whose middle is y_mid
+function attach_y(y_mid) = y_mid + ATTACH_NOTCH/2;
+// does a socket of this size fit a host `height` tall?  (use in an assert with attach_fit_msg)
+function attach_fits(size, height, margin=3) = attach_socket_len(size) <= height - margin;
+function attach_fit_msg(size, height) = str("attach_size ", size, " needs ", attach_socket_len(size), " mm of height; this host has ", height, " mm. Choose a smaller size.");
+// row for the project's `parts` table
+function attach_print_tag(type) = (type == "skadis" || type == "hook" || type == "roof") ? "print=auto" : "print=x180";
+function attach_parts_row(type, count, pull=[0, 0, -50], colour="#4d6170") =
+    ["attach", "Attachment plate", "PLA", pull, colour, str("pieces=", count), attach_print_tag(type)];
+// cutter: all sockets of a host (subtract from the host; back face z=0)
+module attach_sockets(type, size, xs, y) { if (type != "none") for (x=xs) translate([x, y, 0]) attach_socket(size); }
+// all plates of a host, seated. y_bottom / y_top = the host's lowest / highest edge (for stand and roof plates)
+module attach_plates(type, size, xs, y, opts=undef, y_bottom=undef, y_top=undef) {
+    o = is_undef(opts) ? attach_opts() : opts;
+    if (type != "none") for (x=xs) translate([x, y, 0])
+        attach_plate(type, size, screw_d=o[0], head_d=o[1], magnet=o[2], hook_gap=o[3],
+                     stand_reach=is_undef(y_bottom) ? 40 : y - y_bottom, stand_angle=o[4], stand_depth=o[5],
+                     roof_reach=is_undef(y_top) ? 60 : y_top - y + o[6], roof_angle=o[7], roof_depth=o[8]);
+}
+
 // ---------- plate features ----------
 // ceiling bracket: a stem rises behind the host from the plate to a ceiling flange (4 countersunk screws, room
 // side). The stem joins only the plate's middle, with 0.6 mm clearance over the snap arms so they can flex.
