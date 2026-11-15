@@ -1,6 +1,4 @@
-# asm.py per-part cache and scratch renders
-*_parts/
+# scratch renders made while checking a model
 *_section_*.png
 *_iso.png
 *_top.png
-*.zip

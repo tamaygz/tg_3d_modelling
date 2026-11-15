@@ -3,6 +3,13 @@
 Open `scoreboard.scad` in OpenSCAD (keep `fits.scad` and `LiberationSerif-Regular.ttf` beside it).
 Set `part = "board_l"` (or any id below) and press F6 → Export STL to export a single part.
 
+## Files
+- `scoreboard.scad`: the model (needs `fits.scad` and `LiberationSerif-Regular.ttf` beside it)
+- `scoreboard_print/`: print-ready STL/3MF files, oriented for printing
+- `scoreboard_parts/`: each part as an STL in its assembled position
+- `scoreboard_7113f59.zip`: complete bundle (model, print files, viewer), revision 7113f59
+- `scoreboard.html`: interactive 3D viewer
+
 ## Main parameters
 | Parameter | Default | Meaning |
 |---|---|---|

@@ -1,7 +1,9 @@
 # 3DModelling – working notes for Claude
 
 Home for all 3D-modelling tasks (repo `tamaygz/tg_3d_modelling`, cloud environment "3DModelling"). Each model lives in `projects/<name>/` with its `.scad`, a README,
-a `<name>_log.md` design log, and its print outputs. Shared helpers are in `lib/`.
+a `<name>_log.md` design log, its print outputs (`<name>_print/`), the per-part STLs as modelled
+(`<name>_parts/`) and the latest `--bundle` zip. Commit all of these; the user wants them in the repo.
+When a new bundle is made, delete the old zip. Shared helpers are in `lib/`.
 
 ## Toolchain
 - **OpenSCAD**, driven by the `openscad` skill (render.sh / asm.py). Run its `setup.sh` once per fresh container,
