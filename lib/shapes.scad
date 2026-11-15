@@ -67,3 +67,12 @@ module keyhole_slot(head_d=9, neck_d=4.5, travel=10, neck_t=2.5, depth=6) {
     }
     translate([0,0,neck_t]) hull() { cylinder(d=head_d, h=depth - neck_t); translate([0,travel,0]) cylinder(d=head_d, h=depth - neck_t); }
 }
+
+// slab with routed profiles on BOTH edges: top (as profiled_slab) and bottom (mirrored), e.g. a table top with a
+// rounded underside. Profiles from EDGE_PROFILES; r_bottom + r_top must not exceed t.
+module profiled_slab2(t, top="roundover", r_top=2, bottom="flat", r_bottom=2, steps=8) {
+    intersection() {
+        profiled_slab(t, top, r_top, steps) children();
+        translate([0, 0, t]) mirror([0, 0, 1]) profiled_slab(t, bottom, r_bottom, steps) children();
+    }
+}

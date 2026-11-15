@@ -111,6 +111,37 @@ def parse_params(text):
     return params
 
 
+def eval_parts(scad: Path):
+    """Ask OpenSCAD for the evaluated `parts` table (works when the table is built with expressions)."""
+    import json as _json, subprocess, tempfile
+    tmp = scad.with_name("_parts_probe.scad")
+    tmp.write_text(f'include <{scad.name}>\necho(PARTS_JSON=parts);\n')
+    try:
+        out = subprocess.run(["openscad", "-o", str(tmp.with_suffix(".echo")), "-D", 'part="__none__"', str(tmp)],
+                             capture_output=True, text=True, timeout=300)
+        txt = out.stdout + out.stderr
+        echo = tmp.with_suffix(".echo")
+        if echo.exists():
+            txt += echo.read_text(); echo.unlink()
+        m = re.search(r"PARTS_JSON = (\[.*\])\s*$", txt, re.M)
+        if not m:
+            return None
+        rows = _json.loads(m.group(1).replace("undef", "null"))
+    except Exception:
+        return None
+    finally:
+        tmp.unlink(missing_ok=True)
+    parts, pal = [], ["#9aa4ad", "#c9a13b", "#7a2e1c", "#3f6f8f", "#555555"]
+    for r in rows:
+        if not r or not isinstance(r[0], str) or r[0].startswith("hw_"):
+            continue
+        vec = r[3] if len(r) > 3 and isinstance(r[3], list) else [0, 0, 0]
+        col = r[4] if len(r) > 4 and isinstance(r[4], str) and r[4].startswith("#") else pal[len(parts) % len(pal)]
+        parts.append({"id": r[0], "label": r[1] if len(r) > 1 and r[1] else r[0], "color": col,
+                      "explode": [float(v) for v in vec]})
+    return parts
+
+
 def parse_parts(text):
     m = re.search(r"^parts\s*=\s*\[(.*?)^\];", text, re.M | re.S)
     if not m:
@@ -142,7 +173,7 @@ def main():
         "title": title,
         "files": collect_files(scad, root),
         "params": parse_params(text),
-        "parts": parse_parts(text),
+        "parts": eval_parts(scad) or parse_parts(text),
     }
     html = TEMPLATE.replace("__MODEL_JSON__", json.dumps(model).replace("</", "<\\/")) \
                    .replace("__OPENSCAD_JS__", OPENSCAD_JS).replace("__THREE__", THREE) \

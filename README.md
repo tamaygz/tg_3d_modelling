@@ -6,6 +6,7 @@ Parametric 3D models (OpenSCAD) for 3D printing. Each model has its own folder u
 | Project | Description |
 |---|---|
 | [scoreboard](projects/scoreboard) | Wall scoreboard with sliding marker pins: configurable players, score range, steps, styles and mounting |
+| [snooker_guide](projects/snooker_guide) | Wall plaque showing the snooker table setup, ball positions and points, in multi-colour relief |
 | [led_kit](projects/led_kit) | LED strip tracks, diffusers, joiners, end caps, corners, and cable clips, ducts and grommets |
 | [bolavuit_logo](projects/bolavuit_logo) | Bola Vuit logo as a 2-colour plaque: exact from the original SVG, or rebuilt from adjustable elements |
 | [attachments](projects/attachments) | Universal mounting plates (wall, keyhole, Skådis, hook, magnet, stand, glue, ceiling) and a test coupon |

@@ -47,6 +47,8 @@ When a new bundle is made, delete the old zip. Shared building blocks are in `li
   `// [a, b, c]` (dropdown) or `// [min:step:max]`, and `/* [Hidden] */` before derived values.
 - Offer style choices as string parameters with option lists, plus a `style_preset` that overrides
   them (see the scoreboard's PRESETS table).
+- The generator evaluates the `parts` table with OpenSCAD, so tables built with `concat`/loops work. Build ids with `str()` (OpenSCAD has no string `+`).
+- To test parameter variants, rewrite the parameter line itself (a second assignment earlier in the file is ignored: last one wins).
 - **Re-run it after every .scad change**, because the page embeds a copy of the model. Commit the HTML too.
 - Fonts work in the browser engine once the .ttf is in `/fonts` with a `fonts.conf`; the page does this.
 
@@ -70,6 +72,7 @@ When a new bundle is made, delete the old zip. Shared building blocks are in `li
 | Project | Status | Notes |
 |---|---|---|
 | `projects/scoreboard` | v3: styles, presets and attachment plates, not printed yet | sliding-pin scoreboard (0–19 + 20…100 steps), see its log |
+| `projects/snooker_guide` | v1, not printed yet | multi-colour relief plaque of the snooker setup with points; plate + attachment options |
 | `projects/led_kit` | v1, not printed yet | LED tracks, diffusers, corners, cable parts; test and showcase for lib/led + lib/cable |
 | `projects/bolavuit_logo` | v1, not printed yet | Bola Vuit logo plaque: exact (from the SVG) or rebuilt from lib/emblem; 2-colour |
 | `projects/attachments` | v2 snap fit, not printed yet | test coupon + every attachment plate type; print this first to check the snap fit |
