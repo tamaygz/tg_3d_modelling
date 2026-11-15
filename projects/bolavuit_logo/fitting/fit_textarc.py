@@ -4,11 +4,11 @@ Run from results/:  python3 ../fit_textarc.py"""
 import _env, json, math, subprocess, re
 import numpy as np
 from scipy.optimize import least_squares
-FONT = "Source Serif 4:style=Bold"
+FONT = "Book Serif:style=Bold"
 EM, CAP = 1.35634, 0.9125                      # lib/fonts_metrics.scad (OpenSCAD units per size)
 ADV = {}                                       # advances in em (read back from the generated metrics)
 txt = (_env.REPO / "lib" / "fonts_metrics.scad").read_text()
-m = re.search(r'\["Source Serif 4:style=Bold", [\d.]+, [\d.]+, "((?:[^"\\]|\\.)*)", \[([^\]]*)\]\]', txt)
+m = re.search(r'\["Book Serif:style=Bold", [\d.]+, [\d.]+, "((?:[^"\\]|\\.)*)", \[([^\]]*)\]\]', txt)
 chars = m.group(1).replace('\\"', '"').replace('\\\\', '\\'); advs = [float(v) for v in m.group(2).split(",")]
 adv = lambda c: advs[chars.index(c)]
 L = json.load(open("letters_ss4_split.json"))                  # letter -> [[a,b,tx],[c,d,ty]] for text(size=100)

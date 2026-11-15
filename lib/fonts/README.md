@@ -10,7 +10,11 @@ redistribution with these models. Only add fonts with a licence that allows redi
 | `LiberationSans-Regular.ttf` | Digitized data copyright (c) 2010 Google Corporation. Copyright (c) 2012 Red Hat, Inc. | `sans` |
 | `LiberationSerif-Bold.ttf` | Digitized data copyright (c) 2010 Google Corporation. Copyright (c) 2012 Red Hat, Inc. | `serif bold`: titles |
 | `LiberationSerif-Regular.ttf` | Digitized data copyright (c) 2010 Google Corporation. Copyright (c) 2012 Red Hat, Inc. | `serif`: scoreboard numbers |
-| `SourceSerif4-Bold.ttf` | © 2014 - 2021 Adobe Systems Incorporated (http://www.adobe.com/), with Reserved Font Name ‘Source’. | `book serif bold`: Bola Vuit lettering (closest open match) |
+| `BookSerif-Bold.ttf` (family "Book Serif") | © 2014 - 2021 Adobe Systems Incorporated (http://www.adobe.com/), with Reserved Font Name ‘Source’. Modified version of Source Serif 4 Bold: subset to Latin-1 and hinted with ttfautohint, so renamed as the OFL requires. | `book serif bold`: Bola Vuit lettering (closest open match) |
+
+Prepare a new font with `python3 tools/prepare_font.py SRC.ttf lib/fonts/OUT.ttf` (Latin subset + hinting). Unhinted
+TrueType fonts crash the browser OpenSCAD on any text (its FreeType auto-hinter is broken); a modified OFL font with a
+Reserved Font Name needs `--family` with a new name.
 
 Register a new font in `../fonts.scad` (a `use <fonts/...>` line and an entry in `font_for()`), so it works on every
 machine and in the browser configurator.

@@ -19,7 +19,7 @@ FONTS = [
     ("Liberation Serif:style=Bold",   "LiberationSerif-Bold.ttf"),
     ("Liberation Sans",               "LiberationSans-Regular.ttf"),
     ("Liberation Sans:style=Bold",    "LiberationSans-Bold.ttf"),
-    ("Source Serif 4:style=Bold",     "SourceSerif4-Bold.ttf"),
+    ("Book Serif:style=Bold",     "BookSerif-Bold.ttf"),
     ("Lato:style=Bold",               "Lato-Bold.ttf"),
 ]
 CHARS = "".join(chr(c) for c in range(32, 127))

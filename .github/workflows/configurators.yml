@@ -52,6 +52,8 @@ jobs:
       - name: Generate the configurator site
         # pinned to a commit of v2 (same generator the pages were tested with)
         uses: yawkat/web-openscad-editor@323ca329f12ea210428ed6407f57f870fba548b7
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: "1"     # runners may lack FUSE for the OpenSCAD AppImage
         with:
           config: build/pages-src/editor.toml
           output: build/site

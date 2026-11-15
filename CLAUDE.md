@@ -7,8 +7,8 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 - **One command:** after any change to a model or the library run `python3 tools/build.py <project> --test`
   (`all` after a lib change). It rebuilds parts, print files, bundle (with lib files) and configurator, removes
   old bundles, and checks every variant in `tests.txt`. Don't run those steps by hand.
-- **Commit everything build.py writes** (parts, print files, zip, viewer, configurator): the user wants them in
-  the repo. **Commit and push after each finished step**, not only at the end.
+- **Commit what build.py writes** (print files, viewer, configurator) except what `.gitignore` excludes
+  (`*_parts/`, bundle zips: the user stopped tracking those). **Commit and push after each finished step**, not only at the end.
 - **Library first.** Projects lay out library parts; they don't copy code. New reusable things go into `lib/`
   with a header (use line, frame convention), an option list for styles, and an entry in `lib/README.md`.
   Layers: `core.scad` → element files → data (`emblems/`, `fonts/`) → projects.
@@ -27,7 +27,9 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   when recreating a given logo. To make generic elements match artwork, fit their parameters against the exact
   polygons (template: `projects/bolavuit_logo/fitting/`).
 - **Fonts:** only redistributable fonts in `lib/fonts/` (see its README); register them in `lib/fonts.scad` and
-  re-run `tools/font_metrics.py`. Text that must fit a space uses `text_len()` / `arc_text_2d(max_len=...)`, never
+  re-run `tools/font_metrics.py`. Prepare new fonts with `tools/prepare_font.py` (subset + ttfautohint): unhinted
+  TrueType fonts crash the browser OpenSCAD on any text ("RuntimeError: null function"). A modified OFL font with a
+  Reserved Font Name gets a new family name (Source Serif 4 Bold → "Book Serif"). Text that must fit a space uses `text_len()` / `arc_text_2d(max_len=...)`, never
   guessed letter widths.
 - **Layout tests:** when something must stay on a plate or inside a frame, add `| inside CONTAINER: parts` lines
   to `tests.txt`, including the variants with each optional band switched off.
@@ -53,6 +55,11 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   real OpenSCAD in the browser, so it must be rebuilt after every change. Page template:
   `tools/configurator_template.html`.
 - It reads parameters from the Customizer block and the evaluated `parts` table (generated tables work).
+- Web site + release: the manual workflow `.github/workflows/configurators.yml` stages projects with
+  `tools/make_pages.py`, builds pages with yawkat/web-openscad-editor (pinned commit, OpenSCAD snapshot 2026.01.19),
+  deploys to GitHub Pages and creates a release (`tools/release_notes.py`). That generator only bundles files from
+  bare `include <...>` / `use <...>` lines: no trailing comment on those lines (make_pages.py refuses them).
+  pick() colours parts from the `parts` table, which gives the web preview its colours.
 
 ## User preferences
 - Parametric models, every user-facing setting at the top; separate printable parts instead of one fused model.
