@@ -91,7 +91,6 @@ module peg_head(d=6.5, h=2.5, style="screw") {
         translate([0,0,h - 0.6]) cube([d, 0.7, 1.4], center=true);
     }
 }
-function peg_head_top(d=6.5, h=2.5, style="screw") = style == "ball" ? h + d*0.55 : h;
 
 // single stopper: head on z=0, shaft down to z=-shaft_l
 module stop_peg(d=6.5, h=2.5, style="screw", shaft_d=3, shaft_l=10) {

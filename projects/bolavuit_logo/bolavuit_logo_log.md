@@ -22,6 +22,10 @@
 - Lessons: Pillow's text bbox is not the ink box; give Nelder-Mead real step sizes for parameters starting at 0;
   guard scripts with __main__ (an import re-ran a 30 min fit twice).
 
+## v2.1 (2026-11-15) – housekeeping
+- Rebuilt output byte-identical after the library cleanup (banner now `banner_spec()`-capable, shared leaf code).
+- fitting/: superseded scripts and results removed, paths made portable, helpers moved to tools/artfit.py.
+
 ## Prints and feedback
 - (none yet)
 

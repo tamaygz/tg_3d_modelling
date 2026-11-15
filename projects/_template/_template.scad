@@ -35,7 +35,7 @@ attach_count = 2; // [1:1:4]
 $fn = 48;
 // derived values, one comment each
 text_size = min(height*0.35, width/max(1, len(title))*1.1);   // title cap height
-a_x = attach_xs(attach_count, width, attach_type);            // socket x positions
+a_x = attach_xs(attach_count, width, attach_type, size=attach_size);   // socket x positions (fewer if they don't fit)
 a_y = attach_y(0);                                            // plate centre y
 assert(attach_type == "none" || attach_fits(attach_size, height, thickness=thickness), attach_fit_msg(attach_size, height, thickness));
 
@@ -43,7 +43,7 @@ assert(attach_type == "none" || attach_fits(attach_size, height, thickness=thick
 parts = [
   ["plaque", "Plaque", "PLA", [0,0,-10], COL_WOOD],
   ["title",  "Title",  "PLA", [0,0,10],  COL_TAN, str("pieces=", len([for (c=title) if (c != " ") c])), "plate=plaque", "mat=PLA tan"],
-  attach_parts_row(attach_type, attach_count)
+  attach_parts_row(attach_type, len(a_x))
 ];
 checks = attach_type == "none" ? [] : [["attach", "plaque", "clear"]];
 report = [["width", width], ["height", height], ["text size", text_size]];

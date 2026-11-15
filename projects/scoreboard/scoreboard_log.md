@@ -40,6 +40,12 @@
 - New attachment type `roof` (ceiling bracket); the stem reach is computed from the board's top edge + `roof_gap`;
   `roof_angle` tilts the board. Checked at 90° and 75°.
 
+## v3.3 (2026-11-15) – housekeeping
+- Uses lib/core.scad and the attachment host helpers; geometry of the default build unchanged (same volumes).
+- Fix found by the new tests: on very short boards the sockets overlapped each other and the split dowel.
+  Sockets that don't fit are dropped, and boards under 120 mm are no longer split.
+- 20 variants in tests.txt, all passing.
+
 ## Prints and feedback
 - (none yet)
 

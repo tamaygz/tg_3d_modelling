@@ -73,10 +73,11 @@ notch below it and lever it out. Keep plate features out of the end strips (`att
 In a project, place sockets with the host helpers (see `projects/_template/_template.scad`):
 
 ```scad
-a_x = attach_xs(attach_count, width, attach_type);      // x positions; avoid=[x, half_width] keeps clear of a zone
+a_x = attach_xs(attach_count, width, attach_type, size=attach_size);   // x positions (fewer if they don't fit); avoid=[x, half_width] keeps clear of a zone
 a_y = attach_y(0);                                      // plate centre for a host centred on y = 0
 assert(attach_type == "none" || attach_fits(attach_size, height, thickness=t), attach_fit_msg(attach_size, height, t));
 difference() { host(); attach_sockets(attach_type, attach_size, a_x, a_y); }
+// in the parts table: attach_parts_row(attach_type, len(a_x))
 pick("attach") attach_plates(attach_type, attach_size, a_x, a_y, attach_opts(roof_gap=10), y_bottom, y_top);
 ```
 

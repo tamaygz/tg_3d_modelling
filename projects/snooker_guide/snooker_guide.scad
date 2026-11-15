@@ -148,9 +148,10 @@ wave   = show_plate && has_edge_wave(plate_shape) ? plate_wave : 0;
 H_TOP  = show_plate ? PC[1] + PH/2 + wave : TH/2;      // guide's top edge (y)
 H_BOT  = show_plate ? PC[1] - PH/2 - wave : -TH/2;     // bottom edge
 A_Y = attach_y(show_plate ? PC[1] : 0);
-A_X = attach_xs(attach_count, TW, attach_type);
+A_X = attach_xs(attach_count, TW, attach_type, size=attach_size);   // fewer if they don't fit
 A_OPTS = attach_opts(stand_angle=stand_angle, roof_gap=roof_gap, roof_angle=roof_angle);
-assert(!has_att || attach_fits(attach_size, HOST_H, 4), attach_fit_msg(attach_size, HOST_H));
+HOST_T = show_plate ? plate_t : zb;             // material behind the sockets
+assert(!has_att || attach_fits(attach_size, HOST_H, 4, HOST_T), attach_fit_msg(attach_size, HOST_H, HOST_T));
 
 parts = concat([
   ["plate",    "Surround plate", "PLA",           [0,0,-25], COL_WOOD_DARK, "plate=guide", "mat=PLA dark wood"],
@@ -167,7 +168,7 @@ parts = concat([
                   "plate=guide", str("mat=PLA ", b[0])]],
   [["labels",   "Point numbers",  "PLA",           [0,0,20],  LABEL_COL, str("pieces=", n_lbl + (legend ? 7 : 0)), "plate=guide", "mat=PLA label"],
    ["title",    "Title",          "PLA",           [0,0,20],  COL_TAN, str("pieces=", len([for (c=title) if (c != " ") c])), "plate=guide", "mat=PLA tan"],
-   attach_parts_row(attach_type, attach_count, [0,0,-45])]
+   attach_parts_row(attach_type, len(A_X), [0,0,-45])]
 );
 report = [ ["guide width", show_plate ? PW : TW], ["guide height", show_plate ? PH : TH], ["ball diameter", bd], ["total height", zr] ];
 

@@ -9,6 +9,9 @@
 - Fixes during design: the duct lid's legs were too short (15% bend; now 5 mm long, about 1.4%); the dome diffuser
   needed ledges to join its legs; the end-cap hole was tangent to the top face.
 
+## v1.1 (2026-11-15) – housekeeping
+- Screw holes use the shared `csk_hole()`; geometry unchanged. 6 variants in tests.txt, all passing.
+
 ## Prints and feedback
 - (none yet)
 

@@ -18,3 +18,4 @@ attach_type = "magnet"; attach_count = 4
 attach_type = "stand"
 attach_type = "flat"; attach_size = "S"; attach_count = 1
 attach_type = "roof"; roof_angle = 75
+base_min = 0; base_max = 3; steps = []; attach_count = 4

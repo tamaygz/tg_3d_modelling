@@ -105,12 +105,16 @@ module attach_plate(type="wall", size="M", screw_d=4.5, head_d=8.5, magnet=[10, 
 function attach_opts(screw_d=4.5, head_d=8.5, magnet=[10, 3], hook_gap=6, stand_angle=15, stand_depth=40,
                      roof_gap=10, roof_angle=90, roof_depth=40) =
     [screw_d, head_d, magnet, hook_gap, stand_angle, stand_depth, roof_gap, roof_angle, roof_depth];
-// x positions for `count` sockets spread over 60% of `span` around `centre`. Skådis plates stay on the 40 mm grid.
-// avoid = [x, half width]: shift the whole row so no socket centre lies within that zone (dowels, screws ...).
-function attach_xs(count, span, type="wall", centre=0, avoid=undef) = let(
-    sp0 = count > 1 ? 0.6*span/(count - 1) : 0,
-    sp  = type == "skadis" ? max(40, round(sp0/40)*40) : sp0,
-    x0  = [for (i=[0:1:count-1]) centre + (i - (count - 1)/2)*sp],
+// x positions for up to `count` sockets spread over 60% of `span` around `centre`. Skådis plates stay on the 40 mm
+// grid. With `size` given, sockets keep 6 mm between them and the count drops to what fits the span, so use
+// len(attach_xs(...)) as the real count. avoid = [x, half width]: shift the row so no socket centre lies in that zone.
+function attach_xs(count, span, type="wall", centre=0, avoid=undef, size=undef) = let(
+    pitch = is_undef(size) ? 0 : attach_socket_w(size) + 6,
+    n   = is_undef(size) ? count : max(1, min(count, floor((span - 6)/pitch))),
+    sp0 = n > 1 ? max(pitch, 0.6*span/(n - 1)) : 0,
+    sp1 = type == "skadis" ? max(40, round(sp0/40)*40) : sp0,
+    sp  = n > 1 && !is_undef(size) ? min(sp1, (span - pitch)/(n - 1)) : sp1,
+    x0  = [for (i=[0:1:n-1]) centre + (i - (n - 1)/2)*sp],
     sh  = is_undef(avoid) ? [] : [for (x=x0) if (abs(x - avoid[0]) < avoid[1]) (x >= avoid[0] ? 1 : -1)*(avoid[1] - abs(x - avoid[0]))])
     [for (x=x0) x + (len(sh) > 0 ? sh[0] : 0)];
 // plate centre y that centres socket + pry notch on a host whose middle is y_mid

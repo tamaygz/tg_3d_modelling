@@ -11,6 +11,10 @@
 - Tool: the configurator generator now evaluates the `parts` table with OpenSCAD, so generated tables work.
 - Checked 11 parameter combinations: no clashes, piece counts correct.
 
+## v1.1 (2026-11-15) – housekeeping
+- Uses lib/core.scad and the attachment host helpers; sockets are now centred including the pry notch (1.5 mm
+  shift), like the scoreboard. Asserts that the plate is thick enough for sockets. 11 variants in tests.txt.
+
 ## Prints and feedback
 - (none yet)
 

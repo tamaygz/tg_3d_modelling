@@ -21,6 +21,10 @@
   the snap arms, checked) to a 5 mm ceiling flange with 4 countersunk screws (room side) and two gussets.
   `roof_angle` 45–135° sets the angle between host and ceiling; checked at 70/90/110° for S and L.
 
+## v3.1 (2026-11-15) – housekeeping
+- lib/attach.scad gained host helpers (attach_xs with fit-to-span, attach_y, attach_fits incl. thickness,
+  attach_sockets, attach_plates, attach_opts, attach_parts_row). 16 variants in tests.txt, all passing.
+
 ## Prints and feedback
 - (none yet)
 
