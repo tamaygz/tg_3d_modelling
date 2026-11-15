@@ -175,6 +175,8 @@ translate([0, 0, 40]) pattern_panel("through_cut", roof, [70, 50], t=2, border=3
   [rib width, smallest opening].
 - Lattices are cut from one plate, so they are always one network and join the frame of any outline. Openings cut
   off by the edge that would be narrower than `min_opening` stay closed instead of leaving slivers.
+- Keep a `border` (frame) on open lattices and through-cuts. With `border=0` the rib ends at the edge are free and a
+  small fragment can come loose: use it only where the host itself closes the edge.
 - `pattern_is_connected(p)` is false for Truchet arcs and for ripples without `spokes`: those would fall apart
   when cut through, so `through_cut` and `open_lattice` refuse them. Wave ribs only meet at the frame: keep a `border`.
 - Weaves stand on z = 0 and need no supports. `lift` must stay at or below 85% of the strand thickness

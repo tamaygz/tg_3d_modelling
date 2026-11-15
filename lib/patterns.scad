@@ -234,10 +234,7 @@ module pattern_relief(p, size, h=0.8, cell, strut, angle, seed, opts, pad=0, pro
     else _pattern_relief(s, size, h, pad, profile, steps) square(size, center=true);
 }
 module _pattern_relief(s, size, h, pad=0, profile="flat", steps=3) {
-    translate([0, 0, -PAT_EPS]) {
-        linear_extrude(2*PAT_EPS) _pattern_2d(s, size) offset(delta=-pad) children();      // root, sunk into the host
-        translate([0, 0, PAT_EPS]) _pattern_3d(s, size, h, profile, steps) offset(delta=-pad) children();
-    }
+    translate([0, 0, -PAT_EPS]) _pattern_3d(s, size, h + PAT_EPS, profile, steps) offset(delta=-pad) children();
 }
 
 // cutter to subtract from a host whose surface is z = 0 (body below): engraves the pattern ("lines") or cuts
@@ -267,18 +264,14 @@ module _pattern_lining(s, size, t, mode, depth, inset, border, edge, profile) {
     assert(mode != "recessed" || depth < t, str("lining: recess depth ", depth, " must be less than the lining thickness ", t));
     ch = edge == "chamfer" ? t/2 : 0;                    // chamfer height = how far the top steps in
     cut_d = mode == "through_cut" ? t : mode == "recessed" ? depth : 0;
-    translate([0, 0, -PAT_EPS]) {
-        // body below the cut
-        if (t - cut_d > 0) linear_extrude(t - cut_d + PAT_EPS) offset(delta=-inset) _pat_outline(size) children();
-        // the cut layer(s): skin minus cells (through) or minus lines (recessed); the top part steps in for a chamfer
-        if (cut_d > 0) for (part = ch > 0 && ch < cut_d ? [[t - cut_d, t - ch, 0], [t - ch - PAT_EPS, t, ch]] : [[t - cut_d, t, ch > 0 ? ch : 0]])
-            translate([0, 0, part[0]]) linear_extrude(part[1] - part[0] + PAT_EPS) difference() {
-                offset(delta=-inset - part[2]) _pat_outline(size) children();
-                _pattern_cutout_2d(s, size, inset + border, mode == "through_cut" ? "cells" : "lines") children();
-            }
-        else if (ch > 0) translate([0, 0, t - ch]) linear_extrude(ch + PAT_EPS) offset(delta=-inset - ch) _pat_outline(size) children();
-    }
-    if (mode == "raised") translate([0, 0, t - (ch > 0 ? PAT_EPS : 0)]) _pattern_relief(s, size, depth, inset + border, profile) children();
+    zc = t - cut_d; zh = t - ch;                         // where the cut and the chamfer start
+    zs = [0, min(zc, zh), max(zc, zh), t];               // layers: plain / cut and / or stepped in
+    translate([0, 0, -PAT_EPS]) for (i=[0:2]) if (zs[i+1] - zs[i] > 0.001)
+        translate([0, 0, zs[i]]) linear_extrude(zs[i+1] - zs[i] + PAT_EPS) difference() {
+            offset(delta=-inset - (ch > 0 && zs[i] >= zh - 0.001 ? ch : 0)) _pat_outline(size) children();
+            if (cut_d > 0 && zs[i] >= zc - 0.001) _pattern_cutout_2d(s, size, inset + border, mode == "through_cut" ? "cells" : "lines") children();
+        }
+    if (mode == "raised") translate([0, 0, t]) _pattern_relief(s, size, depth, inset + border, profile) children();
 }
 
 // a complete flat panel from an outline: slab z = 0..t, decorated face on top.

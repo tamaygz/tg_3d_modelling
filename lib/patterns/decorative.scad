@@ -5,6 +5,7 @@
 use <tiling.scad>
 
 TRUCHET_VARIATIONS = ["random", "alternate", "rows", "uniform"];
+FISH_STEP_GAP = 0.03;          // mm the upper shingle steps are pulled in (keeps touching rims apart)
 
 // ---------- fish scales ----------
 // cell = [scale width, scale height]. Scales hang tip-down in rows; each row covers the top of the row below
@@ -44,7 +45,9 @@ module fish_scales_2d(size, cell=[12, 12], strut=0.8, overlap=0.4, curvature=0.7
 module fish_scales_level_2d(size, k, steps=3, cell=[12, 12], overlap=0.4, curvature=0.7, stagger=0.5) {
     ny = pat_n(size[1], fish_row_pitch(cell, overlap), 2);
     d = fish_row_pitch(cell, overlap)*(steps - k + 1)/steps;      // the rim left at this level is this deep
-    for (j=[-ny:ny]) difference() {
+    // the upper levels are pulled in by a hair: rims of neighbouring scales would otherwise touch in single
+    // points, which is not a printable (manifold) solid
+    offset(delta=k > 1 ? -FISH_STEP_GAP : 0) for (j=[-ny:ny]) difference() {
         fish_visible_2d(size, j, cell, overlap, curvature, stagger);
         if (k > 1) fish_row_2d(size, j, cell, overlap, curvature, stagger, 0, d);
     }

@@ -35,7 +35,7 @@ view = "sample"; pattern = "flowing_waves"; mode = "overlay"; lining_mode = "rec
 
 # --- limits: thin ribs, dense cells, odd sizes ---
 view = "sample"; pattern = "hex_honeycomb"; cell = 4; strut = 0.8; sample_w = 33; sample_h = 71; border = 1
-view = "sample"; pattern = "voronoi"; density = 2; strut = 0.8; sample_shape = "rect"; border = 0
+view = "sample"; pattern = "voronoi"; density = 2; strut = 0.8; sample_shape = "rect"; border = 1
 view = "sample"; pattern = "square_grid"; density = 0.5; offset_x = 5; offset_y = 3.5; angle = -20
 
 # --- one pattern in every mode ---

@@ -1,0 +1,15 @@
+model pattern_gallery.scad
+rev 319ede1
+made 2026-11-15 20:57
+Basket_weave.stl
+Concentric_ripples.stl
+Diamond_lattice.stl
+Fish_scales.stl
+Flowing_waves.stl
+Girih_star_cross.stl
+Hex_honeycomb.stl
+Square_grid.stl
+Tri-weave.stl
+Triangular_lattice.stl
+Truchet_arcs.stl
+Voronoi.stl

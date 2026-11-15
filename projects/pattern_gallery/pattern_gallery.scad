@@ -116,7 +116,7 @@ tile_gap = 6; // [2:1:20]
 wall_pattern = "hex_honeycomb"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
 wall_mode = "through_cut"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
 // the front wall can differ from the other three
-front_pattern = "same"; // [same, hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
+front_pattern = "flowing_waves"; // [same, hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
 front_mode = "raised"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
 floor_pattern = "concentric_ripples"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
 floor_mode = "raised"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
@@ -207,7 +207,8 @@ function sample_size() = [sample_w, sample_h] + (has_edge_wave(sample_shape) ? [
 
 // ---------- solids ----------
 // one pattern in one mode on the sample outline
-module sample_panel(m, lm=lining_mode) {
+module sample_panel(m, lm0=lining_mode) {
+    lm = pattern_is_connected(user_spec(m)) || lm0 != "through_cut" ? lm0 : "raised";      // loose patterns cannot be a perforated lining
     pattern_panel(m, user_spec(m), sample_size(), t=thickness, depth=m == "overlay" && lm == "recessed" ? min(relief, lining_t/2) : relief,
                   border=border, pad=m == "overlay" ? lining_inset : pad, profile=relief_profile,
                   lining_t=lining_t, lining_mode=lm, lining_edge=lining_edge) sample_2d();
