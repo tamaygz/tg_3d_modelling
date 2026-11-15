@@ -1,4 +1,8 @@
 # parameter variants checked by: python3 tools/build.py scoreboard --test
+| inside board_l: title
+title = ""
+title = "CHAMPIONSHIP SCORES"; base_max = 3; steps = []; title_size = 14 | ignore PIECES | inside board_l: title
+title = "POOL SCORES"; split_board = false | ignore PIECES | inside board_l: title
 style_preset = "classic"
 style_preset = "modern"
 style_preset = "victorian"
