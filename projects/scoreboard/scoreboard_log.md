@@ -32,6 +32,10 @@
   An assert explains when a plate size is too tall for the board.
 - Checked: every type, S/M/L, 1–4 plates; plates have 0.2 mm clearance in their sockets.
 
+## v3.1 (2026-11-15)
+- Attachment plates now snap straight in (lib change); the lock key and `lock_key` parameter are gone.
+  Sockets are shorter (plate + 3 mm notch), so size L fits a 2-player board.
+
 ## Prints and feedback
 - (none yet)
 

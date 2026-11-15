@@ -1,6 +1,6 @@
 model scoreboard.scad
-rev 4997276
-made 2026-11-15 05:51
+rev 5016537
+made 2026-11-15 05:59
 Alignment_dowel.stl
 Attachment_plate.stl
 Board_left.stl
@@ -8,7 +8,6 @@ Board_right.stl
 Column_divider.stl
 End_stopper.stl
 Marker_slider.stl
-Plate_lock_key.stl
 Rail_main_range.stl
 Rail_steps.stl
 plates_s.3mf

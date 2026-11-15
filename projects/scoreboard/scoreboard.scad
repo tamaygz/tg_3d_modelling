@@ -89,14 +89,12 @@ dowel_d = 5;
 dowel_l = 20;
 
 /* [Attachment] */
-// how the board mounts: plates slide into sockets in its back (none = plain back)
+// how the board mounts: plates snap into sockets in its back (none = plain back)
 attach_type = "keyhole"; // [none, wall, keyhole, skadis, hook, magnet, stand, flat]
 // plate size: S 30x30, M 45x40, L 60x50 mm
 attach_size = "M"; // [S, M, L]
 // number of sockets / plates across the back
 attach_count = 2; // [1:1:4]
-// print a key per plate that locks it in its socket
-lock_key = true;
 // wall: wood screw hole diameter
 screw_d = 4.5;
 // wall: countersunk screw head diameter
@@ -223,11 +221,11 @@ shaft_d = fit_mid("p6", peg_d);                       // peg shaft
 dw_hole = fit_mid("H7", dowel_d);                     // dowel hole
 dw_d    = fit_mid("k6", dowel_d);                     // dowel shaft (H7/k6)
 dz      = 5;                                          // dowel centre height
+ATTACH_NOTCH_ = attach_socket_len(attach_size) - attach_dims(attach_size)[1];  // pry notch below the plate
 has_att = attach_type != "none";                      // any sockets at all
-a_slide = attach_slide(attach_size);                  // plate slide to lock
 a_w     = attach_socket_w(attach_size);               // socket width
 a_len   = attach_socket_len(attach_size);             // socket length
-a_y     = (by0 + by1)/2 + a_slide/2;                  // plate centre y (socket centred on the board)
+a_y     = (by0 + by1)/2 + ATTACH_NOTCH_/2;            // plate centre y (socket + pry notch centred on the board)
 a_sp0   = attach_count > 1 ? 0.6*(bx1 - bx0)/(attach_count - 1) : 0;   // even spread
 a_sp    = attach_type == "skadis" ? max(40, round(a_sp0/40)*40) : a_sp0; // Skådis: stay on the 40 mm grid
 a_x0    = [for (i=[0:1:attach_count-1]) (bx0 + bx1)/2 + (i - (attach_count - 1)/2)*a_sp];
@@ -255,8 +253,7 @@ parts = [
   ["stop_end",  "End stopper",        "PLA silver",       [0,0,45],  "#b8b8b8", str("pieces=",2*players), "print=x180"],
   ["stop_div",  "Column divider",     "PLA silver",       [0,0,45],  "#b8b8b8", str("pieces=",players), "print=x180"],
   ["dowel",     "Alignment dowel",    "PLA",              [0,0,-30], "#555555", str("pieces=",nStrip), "print=x90"],
-  ["attach",    "Attachment plate",   "PLA",              [0,0,-55], "#4d6170", str("pieces=",attach_count), (attach_type == "skadis" || attach_type == "hook") ? "print=auto" : "print=x180"],
-  ["attach_key","Plate lock key",     "PLA",              [0,-25,-45], "#9aa4ad", str("pieces=",attach_count)]
+  ["attach",    "Attachment plate",   "PLA",              [0,0,-55], "#4d6170", str("pieces=",attach_count), (attach_type == "skadis" || attach_type == "hook") ? "print=auto" : "print=x180"]
 ];
 checks = concat([
   ["slider","rail_u","clear"], ["slider","rail_s","clear"],
@@ -336,8 +333,6 @@ for (p=[0:players-1]) {
     if (has_steps) translate([tx(p, xs[min(sc[1], nS-1)]), 0, 0]) marker();
   }
 }
-if (has_att) for (x=a_x) translate([x, a_y, 0]) {
+if (has_att) for (x=a_x) translate([x, a_y, 0])
   pick("attach") attach_plate(attach_type, attach_size, screw_d, screw_head_d, magnet, 0.15, hook_gap, a_reach, stand_angle, stand_depth);
-  if (lock_key) pick("attach_key") attach_key(attach_size);
-}
 pick("dowel") if (split_board) for (y=strip_y) translate([x_split, y, dz]) rotate([0,90,0]) cylinder(d=dw_d, h=dowel_l - 1, center=true, $fn=32);

@@ -1,50 +1,64 @@
 // Universal attachment plates: one socket in a host's back, many interchangeable plates.
 // Use:  use <../../lib/attach.scad>
 //
-// How it works: the host has a shallow socket with undercut sides in its back face. A plate drops in
-// with its side tabs through the socket's windows, then slides +Y by attach_slide() so the tabs lock
-// under the lip (a bayonet slide). Hanging or standing loads push the plate further into the lock;
-// the optional key fills the gap left behind so it cannot slide back out.
+// How it works: push the plate straight into the socket and it snaps in. Each end of the plate (top and
+// bottom) has two flexible arms with a bump on a 45° lead-in. The bumps bend the arms inward through the
+// socket mouth and click into grooves in the socket's end walls. The plate's solid corners carry the load,
+// not the arms, so hanging or standing cannot unsnap it. To remove it, lever it out with a flat
+// screwdriver in the notch below the plate.
 //
-// Conventions (host frame): the host's back face is z=0 and its body is z>0. The plate is drawn in its
-// LOCKED position, centred on the origin; it fills z=0..ATTACH_T and its features point to -z (the wall).
-// +Y is up when the host hangs. The socket reaches from y=-l/2-slide to y=+l/2.
+// Conventions (host frame): the host's back face is z=0 and its body is z>0. The plate is drawn seated,
+// centred on the origin; it fills z=0..ATTACH_T and its features point to -z (the wall). +Y is up when the
+// host hangs. The socket reaches from y=-l/2-ATTACH_NOTCH (pry notch) to y=+l/2.
 
 ATTACH_TYPES = ["none", "wall", "keyhole", "skadis", "hook", "magnet", "stand", "flat"];
 ATTACH_SIZES = ["S", "M", "L"];
-ATTACH_T   = 4.5;   // socket depth = plate core thickness
-ATTACH_LIP = 2;     // lip thickness at the socket mouth
-ATTACH_TAB = 2.5;   // tab reach under the lip, per side
-ATTACH_N   = 2;     // tabs per side
-ATTACH_CLR = 0.2;   // plate-to-socket clearance per face
+ATTACH_T     = 4.5;   // socket depth = plate core thickness
+ATTACH_CLR   = 0.2;   // plate-to-socket clearance per face
+ATTACH_NOTCH = 3;     // pry notch below the plate
+SNAP_LIP     = 1.5;   // socket mouth wall above the groove
+SNAP_B       = 0.8;   // bump height (arm deflection on the way in = SNAP_B - ATTACH_CLR)
+SNAP_ARM     = 1.2;   // arm thickness
+SNAP_GAP     = 1.0;   // slot behind each arm
+SNAP_CORNER  = 4;     // solid corners at each end of the arms (they carry the load)
+SNAP_BUMP    = 6;     // bump length along each arm, at its free tip
 
 function attach_dims(size) = size == "S" ? [30, 30] : size == "L" ? [60, 50] : [45, 40];   // [w (x), l (y)]
-function attach_slide(size) = attach_dims(size)[1] / (2*ATTACH_N);                       // slide to lock
-function attach_socket_len(size) = attach_dims(size)[1] + attach_slide(size);             // socket length (y)
-function attach_socket_w(size) = attach_dims(size)[0] + 2*ATTACH_TAB;                      // socket width (x)
+function attach_socket_len(size) = attach_dims(size)[1] + ATTACH_NOTCH;                   // socket length (y)
+function attach_socket_w(size) = attach_dims(size)[0];                                     // socket width (x)
 function attach_depth() = ATTACH_T;
-// tab spans along y (locked position), as [y0, y1]
-function attach_tabs(size) = let(l = attach_dims(size)[1], a = attach_slide(size))
-    [for (k=[0:ATTACH_N-1]) [-l/2 + a + 2*a*k, -l/2 + 2*a + 2*a*k]];
+function attach_strip() = ATTACH_CLR + SNAP_ARM + SNAP_GAP;    // end strips taken by the snap arms (keep features out)
+// bump profile, (y outward, z): retention ramp, flat top, 45° lead-in towards +z (the way in)
+function snap_z0() = SNAP_LIP + 0.05 + 0.35*SNAP_B;   // ramp foot just inside the groove: no preload when seated
+function snap_z1() = snap_z0() + 0.35*SNAP_B + 0.4 + SNAP_B;
+function snap_groove() = [SNAP_LIP, snap_z1() + ATTACH_CLR];   // groove z range in the socket
 
 // ---------- host side ----------
 // cutter for the host: subtract it from the host body (back face z=0)
 module attach_socket(size="M") {
-    w = attach_dims(size)[0]; l = attach_dims(size)[1]; a = attach_slide(size);
-    translate([-w/2, -l/2 - a, -1]) cube([w, l + a, ATTACH_T + 1]);                               // mouth
-    translate([-w/2 - ATTACH_TAB, -l/2 - a, ATTACH_LIP]) cube([w + 2*ATTACH_TAB, l + a, ATTACH_T - ATTACH_LIP]);  // undercut
-    for (t=attach_tabs(size)) translate([-w/2 - ATTACH_TAB, t[0] - a, -1])                      // tab windows
-        cube([w + 2*ATTACH_TAB, t[1] - t[0], ATTACH_LIP + 1.01]);
+    w = attach_dims(size)[0]; l = attach_dims(size)[1]; g = snap_groove();
+    translate([-w/2, -l/2, -1]) cube([w, l, ATTACH_T + 1]);                                   // pocket
+    for (s=[-1,1]) translate([-w/2 + SNAP_CORNER - 0.5, s > 0 ? l/2 - 0.01 : -l/2 - SNAP_B - 0.01, g[0]])
+        cube([w - 2*SNAP_CORNER + 1, SNAP_B + 0.02, g[1] - g[0]]);                            // snap grooves
+    translate([-4, -l/2 - ATTACH_NOTCH, -1]) cube([8, ATTACH_NOTCH + 0.01, 2 + 1]);         // pry notch
 }
 
 // ---------- plates ----------
-// the interface every plate shares (core + tabs), locked position
+// the interface every plate shares: core with snap arms, seated position
 module attach_core(size="M") {
     w = attach_dims(size)[0]; l = attach_dims(size)[1]; c = ATTACH_CLR;
-    translate([-w/2 + c, -l/2 + c, 0]) cube([w - 2*c, l - 2*c, ATTACH_T - c]);
-    for (t=attach_tabs(size), s=[-1,1])
-        translate([s > 0 ? w/2 - c - 0.01 : -w/2 - ATTACH_TAB + c, t[0] + c, ATTACH_LIP + c])   // joins the core
-            cube([ATTACH_TAB + 0.01, t[1] - t[0] - 2*c, ATTACH_T - ATTACH_LIP - 2*c]);
+    ya = l/2 - c;                                    // arm outer face
+    xa = w/2 - SNAP_CORNER;                          // arms reach from the corners (x=±xa) to the centre
+    difference() {
+        translate([-w/2 + c, -l/2 + c, 0]) cube([w - 2*c, l - 2*c, ATTACH_T - c]);
+        for (s=[-1,1]) mirror([0, s > 0 ? 0 : 1, 0]) {
+            translate([-xa, ya - SNAP_ARM - SNAP_GAP, -1]) cube([2*xa, SNAP_GAP, ATTACH_T + 2]);   // slot behind the arms
+            translate([-SNAP_GAP/2, ya - SNAP_ARM - SNAP_GAP, -1]) cube([SNAP_GAP, SNAP_ARM + SNAP_GAP + 1, ATTACH_T + 2]);  // split at the tips
+        }
+    }
+    for (s=[-1,1], sx=[-1,1]) mirror([0, s > 0 ? 0 : 1, 0]) mirror([sx > 0 ? 0 : 1, 0, 0])
+        translate([SNAP_GAP/2 + 0.3, ya - 0.01, 0]) rotate([90,0,90]) linear_extrude(min(SNAP_BUMP, xa - SNAP_GAP/2 - 2))
+            polygon([[0, snap_z0() - 0.35*SNAP_B], [SNAP_B, snap_z0()], [SNAP_B, snap_z1() - SNAP_B], [0, snap_z1()]]);
 }
 
 // type: see ATTACH_TYPES.  Options:
@@ -61,8 +75,8 @@ module attach_plate(type="wall", size="M", screw_d=4.5, head_d=8.5, magnet=[10, 
         union() {
             attach_core(size);
             if (type == "skadis") for (x=skadis_x(w)) translate([x, 0, 0]) skadis_hook(skadis_t);
-            if (type == "hook") translate([0, l/2 - c, 0]) rail_hook(w - 2*c, hook_gap);
-            if (type == "stand") for (s=[-1,1]) translate([s*(w/2 - c - 1.6), 0, 0])
+            if (type == "hook") translate([0, l/2 - attach_strip(), 0]) rail_hook(w - 2*c, hook_gap);
+            if (type == "stand") for (s=[-1,1]) translate([s*(w/2 - c - 1.6), 0, 0])        // in the solid corners
                 stand_fin(l - 2*c, stand_reach, stand_angle, stand_depth);
         }
         if (type == "wall") for (y=[-l/4, l/4]) translate([0, y, 0]) {
@@ -81,19 +95,10 @@ module attach_plate(type="wall", size="M", screw_d=4.5, head_d=8.5, magnet=[10, 
     }
 }
 
-// key that fills the slide gap after the plate is locked (push it into the socket mouth)
-module attach_key(size="M") {
-    w = attach_dims(size)[0]; l = attach_dims(size)[1]; a = attach_slide(size); c = ATTACH_CLR;
-    difference() {
-        translate([-w/2 + c, -l/2 - a + c, 0]) cube([w - 2*c, a - 2*c, ATTACH_T - c]);
-        translate([0, -l/2 - a/2, -1]) cylinder(d=min(6, a - 3), h=1.6, $fn=32);   // pry dimple
-    }
-}
-
 // ---------- plate features ----------
 function skadis_x(w) = w >= 44 ? [-20, 20] : [0];          // hook columns 40 mm apart (same row)
-function magnet_xy(w, l, d) = let(dx = w/2 - d/2 - 3, dy = l/2 - d/2 - 3)
-    (w >= 2*d + 10 && l >= 2*d + 10) ? [[-dx,-dy],[dx,-dy],[-dx,dy],[dx,dy]] : [[-dx,0],[dx,0]];
+function magnet_xy(w, l, d) = let(dx = w/2 - d/2 - 3, dy = l/2 - attach_strip() - d/2 - 1.5)
+    (w >= 2*d + 10 && dy >= d/2 + 1) ? [[-dx,-dy],[dx,-dy],[-dx,dy],[dx,dy]] : [[-dx,0],[dx,0]];
 
 // IKEA Skådis hook: 4.6 wide tab through a 5 x 15 slot, latch drops behind the 5 mm board
 module skadis_hook(board_t=5) {
