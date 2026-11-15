@@ -8,7 +8,8 @@ Set `part = "board_l"` (or any id below) and press F6 → Export STL to export a
 - `scoreboard_print/`: print-ready STL/3MF files, oriented for printing
 - `scoreboard_parts/`: each part as an STL in its assembled position
 - `scoreboard_7113f59.zip`: complete bundle (model, print files, viewer), revision 7113f59
-- `scoreboard.html`: interactive 3D viewer
+- `scoreboard_configurator.html`: change the parameters in your browser, regenerate the 3D view and download STLs (internet needed for the OpenSCAD engine)
+- `scoreboard.html`: interactive 3D viewer of the default build
 
 ## Main parameters
 | Parameter | Default | Meaning |

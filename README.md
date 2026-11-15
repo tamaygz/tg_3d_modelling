@@ -7,4 +7,7 @@ Parametric 3D models (OpenSCAD) for 3D printing. Each model has its own folder u
 |---|---|
 | [scoreboard](projects/scoreboard) | Wall scoreboard with sliding marker pins: configurable players, score range and steps |
 
+Each project also has a `<name>_configurator.html`. Open it in a browser to change the parameters and download
+STLs, with no install needed. Build one with `python3 tools/make_configurator.py projects/<name>/<name>.scad`.
+
 Tooling: OpenSCAD (`setup_env.sh` installs it plus fonts). Notes for Claude live in `CLAUDE.md`.
