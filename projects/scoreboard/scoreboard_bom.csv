@@ -1,5 +1,6 @@
 kind,item,note,qty,material,id
 "made","Alignment dowel","PLA","1","","dowel"
+"made","Attachment plate","PLA","2","","attach"
 "made","Board left","PLA wood / brown","1","","board_l"
 "made","Board right","PLA wood / brown","1","","board_r"
 "made","Column divider","PLA silver","2","","stop_div"
@@ -9,5 +10,6 @@ kind,item,note,qty,material,id
 "made","Number plate steps","PLA silk gold","1","PLA gold","plate_s"
 "made","Numbers main","PLA black","50","PLA black","text_u"
 "made","Numbers steps","PLA black","18","PLA black","text_s"
+"made","Plate lock key","PLA","2","","attach_key"
 "made","Rail main range","PLA silk gold","2","","rail_u"
 "made","Rail steps","PLA silk gold","2","","rail_s"

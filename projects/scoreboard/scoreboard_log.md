@@ -24,6 +24,14 @@
 - Default (custom = classic) build is the same apart from slightly longer plate ends; checks pass
   for every preset (minimal has no separate number parts, by design).
 
+## v3 (2026-11-15)
+- Mounting moved to the shared attachment system: sockets in the back take any plate from `lib/attach.scad`
+  (wall, keyhole, skadis, hook, magnet, stand, flat). The built-in keyhole slots are gone (keyhole plate instead).
+- Parameters: attach_type (default keyhole), attach_size, attach_count, lock_key, and options per type.
+- Sockets are spread over the back, shifted clear of the split dowels; Skådis spacing snaps to 40 mm.
+  An assert explains when a plate size is too tall for the board.
+- Checked: every type, S/M/L, 1–4 plates; plates have 0.2 mm clearance in their sockets.
+
 ## Prints and feedback
 - (none yet)
 

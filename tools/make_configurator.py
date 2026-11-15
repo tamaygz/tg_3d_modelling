@@ -489,7 +489,7 @@ async function generate() {
   if (worker && pending.size) { worker.terminate(); worker = null; pending.clear() }
   $("gen").disabled = true;
   const defs = MODEL.params.map(p => `${p.name}=${rawValue(p)}`);
-  const logOut = [];
+  const logOut = [], seen = new Set();
   for (const p of MODEL.parts) setRow(p.id, "queued", "", "");
   const t0 = performance.now(); let done = 0, failed = 0, first = true;
   for (const p of MODEL.parts) {
@@ -501,7 +501,8 @@ async function generate() {
     if (my !== gen) return;
     done++;
     const msgs = r.log.filter(s => /WARNING|ERROR|ECHO|TRACE/.test(s) && !/localization/.test(s));
-    if (msgs.length) logOut.push(`[${p.label}]`, ...msgs);
+    const fresh = msgs.filter(s => !seen.has(s)); fresh.forEach(s => seen.add(s));   // same message from every part: show once
+    if (fresh.length) logOut.push(`[${p.label}]`, ...fresh);
     if (meshes[p.id]) { group.remove(meshes[p.id]); meshes[p.id].geometry.dispose(); delete meshes[p.id] }
     state[p.id] = { stl: null };
     const empty = !r.stl || r.stl.length <= 84;

@@ -13,6 +13,9 @@ When a new bundle is made, delete the old zip. Shared building blocks are in `li
 - **Reuse the lib first.** Before modelling a board, plaque, rail, slider, peg or number scale, use `lib/`.
   When a project grows something generic, move it into `lib/` with its style option list and keep
   `lib/README.md` current. Check every style option of a lib module (fit + clash) after changing it.
+- **Mounting:** give hanging or standing projects `attach_socket()`s in their back (from `lib/attach.scad`)
+  instead of their own hangers, with Attachment parameters (type, size, count, lock key) like the scoreboard.
+  Keep sockets clear of anything else in the back (dowels, screw holes) and assert they fit the host's height.
 - **Bundles:** after `asm.py --bundle`, run `python3 tools/bundle_with_lib.py projects/<name>/<name>_<rev>.zip`
   so the zip carries the lib files it needs.
 - `fits.scad` (ISO 286 fits): `fit_mid("H7", d)` for holes and `fit_mid("p6"|"k6"|"g6", d)` for shafts.
@@ -55,4 +58,5 @@ When a new bundle is made, delete the old zip. Shared building blocks are in `li
 ## Projects
 | Project | Status | Notes |
 |---|---|---|
-| `projects/scoreboard` | v2: styles and presets, not printed yet | sliding-pin scoreboard (0–19 + 20…100 steps), see its log |
+| `projects/scoreboard` | v3: styles, presets and attachment plates, not printed yet | sliding-pin scoreboard (0–19 + 20…100 steps), see its log |
+| `projects/attachments` | v1, not printed yet | test coupon + every attachment plate type; print this first to check the slide fit |

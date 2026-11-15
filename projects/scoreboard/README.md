@@ -8,7 +8,7 @@ Set `part = "board_l"` (or any id below) and press F6 → Export STL to export a
 - `scoreboard.scad`: the model (needs `../../lib`)
 - `scoreboard_print/`: print-ready STL/3MF files, oriented for printing
 - `scoreboard_parts/`: each part as an STL in its assembled position
-- `scoreboard_c77074a.zip`: complete bundle (model, lib, print files, viewer), revision c77074a
+- `scoreboard_4997276.zip`: complete bundle (model, lib, print files, viewer), revision 4997276
 - `scoreboard_configurator.html`: change the parameters in your browser, regenerate the 3D view and download STLs (internet needed for the OpenSCAD engine)
 - `scoreboard.html`: interactive 3D viewer of the default build
 
@@ -54,10 +54,26 @@ Pick a `style_preset`, or leave it on `custom` and set each style yourself:
 ![pub](styles/pub.png)
 ![minimal](styles/minimal.png)
 
+## Mounting (attachment plates)
+
+The board's back has sockets for the shared attachment plates (see [`lib/README.md`](../../lib/README.md)).
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `attach_type` | keyhole | none, wall, keyhole, skadis, hook, magnet, stand, flat |
+| `attach_size` | M | S 30×30, M 45×40, L 60×50 mm. The board must be tall enough (L needs 2 players' height) |
+| `attach_count` | 2 | 1–4 plates, spread over the back and kept clear of the split dowels. Skådis keeps them on the 40 mm grid |
+| `lock_key` | true | one key per plate |
+
+Fit a plate by pressing it into the socket's lower part, then pushing the board down (or the plate up) by
+about a quarter of its length until it stops. Push the key into the gap below it. For wall and keyhole plates,
+fix the plates to the wall first, then hang the board on them. The socket ceilings print as 40–65 mm bridges,
+so check your slicer's bridging settings.
+
 ## Parts (ids)
 `board_l`, `board_r`, `plate_u`/`text_u`, `plate_s`/`text_s` (number plate + black inlay, 2-colour 3MF),
 `rail_u`, `rail_s` (one of each per player), `slider` (2 per player: one for points, one for steps),
-`stop_end` (2 per player), `stop_div` (1 per player), `dowel`.
+`stop_end` (2 per player), `stop_div` (1 per player), `dowel`, `attach` and `attach_key` (one per socket).
 
 ## Assembly
 1. Glue the board halves together with the dowels. Press or glue the number plates into their pockets.
