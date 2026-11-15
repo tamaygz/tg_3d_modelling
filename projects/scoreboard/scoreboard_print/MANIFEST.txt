@@ -1,6 +1,6 @@
 model scoreboard.scad
-rev e21ab60
-made 2026-11-15 20:04
+rev 9e58373
+made 2026-11-15 20:44
 Alignment_dowel.stl
 Attachment_plate.stl
 Board_left.stl

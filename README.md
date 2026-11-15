@@ -19,8 +19,8 @@ Every project folder has the same contents:
 | `<name>.scad` | the model; all settings at the top, in OpenSCAD Customizer format |
 | `<name>_configurator.html` | open in a browser to change settings, see the model in 3D and download STLs (no install) |
 | `<name>_print/` | print-ready files, oriented for the bed (STL, multi-colour 3MF) |
-| `<name>_parts/` | each part as modelled, in its assembled position |
-| `<name>_<rev>.zip` | everything bundled, including the library files the model needs |
+| `<name>_parts/` | each part as modelled, in its assembled position (built locally, not committed) |
+| `<name>_<rev>.zip` | everything bundled, including the library files the model needs (built locally, not committed) |
 | `<name>.html` | 3D viewer of the default build |
 | `README.md`, `<name>_log.md` | how to use it; design log with decisions, print feedback and open questions |
 | `tests.txt` | parameter variants that are built and checked automatically |
@@ -38,6 +38,8 @@ and bundled fonts. Projects only lay these out; anything reusable goes into the 
 | `python3 tools/build.py <project> --test` | rebuild a project's outputs (parts, print files, bundle, configurator) and check every variant in its `tests.txt`; `all` does every project |
 | `python3 tools/make_configurator.py projects/<name>/<name>.scad` | only rebuild the browser configurator |
 | `python3 tools/svg_to_scad.py art.svg out.scad --prefix XX` | convert SVG artwork into exact OpenSCAD polygons |
+| `python3 tools/prepare_font.py SRC.ttf lib/fonts/OUT.ttf --family NAME` | subset and hint a font for `lib/fonts/` (unhinted fonts crash the browser OpenSCAD) |
+| `python3 tools/make_pages.py` | stage every project for the web configurator site (used by the workflow below) |
 | `python3 tools/font_metrics.py` | regenerate the font width tables after adding a font to `lib/fonts/` |
 | `python3 tools/artfit.py overlay exported.svg reference.png out.png` | compare a model's 2D output with reference artwork |
 | `bash setup_env.sh` | install the native Linux build toolchain and helper |
@@ -56,6 +58,19 @@ $env:OSCAD_SCRIPTS = "$HOME\.claude\skills\openscad-skill\openscad\scripts"
 
 Adjust the paths if OpenSCAD or Git is installed elsewhere. On Linux, run builds with
 `~/.local/share/tg_3d_modelling/build-venv/bin/python` after setup.
+
+## Web configurators and releases
+
+The manual workflow **Web configurators and release** (`.github/workflows/configurators.yml`; Actions → Run workflow)
+builds one browser configurator per project with [web-openscad-editor](https://github.com/yawkat/web-openscad-editor),
+publishes them on GitHub Pages (`https://<owner>.github.io/tg_3d_modelling/<project>`) and creates a release whose
+notes link every configurator and its sources, with an offline copy of the site attached. Each page contains the
+model, every library file it includes and the fonts; OpenSCAD runs in the browser. Pick a **part** to show and export
+a single printable piece. One-time setup: Settings → Pages → Source = **GitHub Actions**.
+
+To try the site locally: `python3 tools/make_pages.py`, then in a web-openscad-editor checkout
+`uv run python src/generate.py --config <repo>/build/pages-src/editor.toml --clean-urls --output site` and serve
+`site/` with `python3 -m http.server`.
 
 ## Adding a project
 

@@ -4,7 +4,7 @@ from PIL import Image, ImageFont
 from scipy.optimize import minimize
 import fontaffine as FA
 from artfit import iou
-FONT=str(_env.FONTS / 'SourceSerif4-Bold.ttf'); FN="Source Serif 4:style=Bold"
+FONT=str(_env.FONTS / 'BookSerif-Bold.ttf'); FN="Book Serif:style=Bold"
 font=ImageFont.truetype(FONT,200); S=FA.S
 SP=_env.TMP
 def scad_bbox(s):

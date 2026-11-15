@@ -4,11 +4,11 @@ from PIL import Image, ImageFont
 from scipy.optimize import minimize
 import fontaffine as FA
 from artfit import iou
-FONT=str(_env.FONTS / 'SourceSerif4-Bold.ttf')
+FONT=str(_env.FONTS / 'BookSerif-Bold.ttf')
 font=ImageFont.truetype(FONT,200); S=FA.S
 SP=_env.TMP
 def scad_bbox(s):
-    open(f'{SP}/g.scad','w').write(f'use <{FONT}>\nlinear_extrude(1) text("{s}", size=100, font="Source Serif 4:style=Bold", halign="left", valign="baseline");\n')
+    open(f'{SP}/g.scad','w').write(f'use <{FONT}>\nlinear_extrude(1) text("{s}", size=100, font="Book Serif:style=Bold", halign="left", valign="baseline");\n')
     subprocess.run(['openscad','-o',f'{SP}/g.stl',f'{SP}/g.scad'],capture_output=True)
     xs=[];ys=[]
     for line in open(f'{SP}/g.stl'):

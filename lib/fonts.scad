@@ -1,9 +1,9 @@
-// Bundled fonts (Liberation; Source Serif 4 Bold; Lato Bold; all SIL OFL). `use <../../lib/fonts.scad>` registers them for every OpenSCAD build.
+// Bundled fonts (Liberation; Book Serif Bold = Source Serif 4 Bold, hinted and renamed; Lato Bold; all SIL OFL). `use <../../lib/fonts.scad>` registers them for every OpenSCAD build.
 use <fonts/LiberationSerif-Regular.ttf>
 use <fonts/LiberationSerif-Bold.ttf>
 use <fonts/LiberationSans-Regular.ttf>
 use <fonts/LiberationSans-Bold.ttf>
-use <fonts/SourceSerif4-Bold.ttf>
+use <fonts/BookSerif-Bold.ttf>
 use <fonts/Lato-Bold.ttf>
 use <core.scad>
 
@@ -14,7 +14,7 @@ function font_for(style) =
     style == "serif bold" ? "Liberation Serif:style=Bold" :
     style == "sans"       ? "Liberation Sans" :
     style == "sans bold"  ? "Liberation Sans:style=Bold" :
-    style == "book serif bold" ? "Source Serif 4:style=Bold" :   // closest open match to the Bola Vuit lettering
+    style == "book serif bold" ? "Book Serif:style=Bold" :   // closest open match to the Bola Vuit lettering
     style == "round sans bold" ? "Lato:style=Bold" :            // closest open match to the Bola Vuit "8"
                             "Liberation Serif";
 
