@@ -16,6 +16,9 @@ When a new bundle is made, delete the old zip. Shared building blocks are in `li
 - **Mounting:** give hanging or standing projects `attach_socket()`s in their back (from `lib/attach.scad`)
   instead of their own hangers, with Attachment parameters (type, size, count) like the scoreboard. Plates snap in (user wants snap fits, not slides or keys).
   Keep sockets clear of anything else in the back (dowels, screw holes) and assert they fit the host's height.
+- **Lighting and wiring:** use `lib/led.scad` (tracks, diffusers, corners, recess cutter) and `lib/cable.scad`
+  (clips, ties, ducts, grommets, route grooves) rather than one-off parts. Snap fits must bend the flexing
+  part by 2% or less: check this with a probe (see projects/led_kit `probe`).
 - **Bundles:** after `asm.py --bundle`, run `python3 tools/bundle_with_lib.py projects/<name>/<name>_<rev>.zip`
   so the zip carries the lib files it needs.
 - `fits.scad` (ISO 286 fits): `fit_mid("H7", d)` for holes and `fit_mid("p6"|"k6"|"g6", d)` for shafts.
@@ -59,4 +62,5 @@ When a new bundle is made, delete the old zip. Shared building blocks are in `li
 | Project | Status | Notes |
 |---|---|---|
 | `projects/scoreboard` | v3: styles, presets and attachment plates, not printed yet | sliding-pin scoreboard (0–19 + 20…100 steps), see its log |
+| `projects/led_kit` | v1, not printed yet | LED tracks, diffusers, corners, cable parts; test and showcase for lib/led + lib/cable |
 | `projects/attachments` | v2 snap fit, not printed yet | test coupon + every attachment plate type; print this first to check the snap fit |

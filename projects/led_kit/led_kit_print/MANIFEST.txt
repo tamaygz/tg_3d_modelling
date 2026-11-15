@@ -1,0 +1,15 @@
+model led_kit.scad
+rev 09cd657
+made 2026-11-15 06:16
+Cable_clip.stl
+Cable_duct.stl
+Corner.stl
+Corner_diffuser.stl
+Diffuser.stl
+Duct_lid.stl
+End_cap.stl
+Flat_cable_clip.stl
+Grommet.stl
+Joiner_key.stl
+Track.stl
+Zip-tie_mount.stl

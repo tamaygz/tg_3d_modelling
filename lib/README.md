@@ -10,6 +10,8 @@ Reusable OpenSCAD building blocks. Projects live in `projects/<name>/`, so they 
 | `shapes.scad` | `use` | `plaque_2d(size, shape)` outlines: rect, rounded, chamfered, notched, arched, wave, scalloped. `profiled_slab(t, profile, r)` routed top edge: flat, roundover, chamfer, cove, ogee. `outline_groove()` single/double decorative groove. `keyhole_slot()` hanger. |
 | `rail.scad` | `use` | T-rail + sliding marker system: `t_rail()` (flat, rounded or beveled top), `rail_slider()` (block, rounded, arrow or knob body; triangle, needle or no pointer), `stop_peg()` / `twin_peg()` stoppers (screw, dome, flat, hex or ball head). One `rail = [flange_w, flange_t, web_w, web_h]` spec keeps them fitting. |
 | `attach.scad` | `use` | universal mounting: `attach_socket(size)` cutter for a host's back, `attach_plate(type, size)` in wall, keyhole, skadis, hook, magnet, stand or flat. Plates snap in. Sizes S 30×30, M 45×40, L 60×50 mm. |
+| `led.scad` | `use` | LED strip system from one cross-section: `led_track()` (glue or screw mount, side wire exit), `led_diffuser()` (flat or dome, snaps in), `led_key()` joiner, `led_end_cap()` with cable hole, `led_corner()` + `led_corner_diffuser()` (inward, outward, flat), `led_recess()` cutter to sink a track into a host |
+| `cable.scad` | `use` | `cable_clip()` (round, snap-in), `flat_cable_clip()`, `tie_mount()`, `cable_duct()` + `cable_duct_lid()` (snap), `cable_grommet()` (split); host cutters `cable_route(pts)`, `cable_notch()`, `cable_hole()`. Adhesive or M3-screw mounting |
 | `scale.scad` | `use` | number scales: `number_row_2d()` with dot, bar, diamond or no separators; `plate_2d()`, `border_2d()`; `plate_body()` + `plate_art()` for 2-colour inlay, raised or engraved numbers |
 
 Each style module also defines its option list (`PLAQUE_SHAPES`, `EDGE_PROFILES`, `MARKER_STYLES`…),
@@ -50,6 +52,34 @@ notch below it and lever it out. Keep plate features out of the end strips (`att
 Host rules: the socket needs `attach_socket_len(size)` of height (plate + 3 mm pry notch) and `ATTACH_T` (4.5 mm) of depth, plus a floor
 behind it. Its ceiling is printed as a bridge as wide as the socket (40–65 mm) when the host prints back-down;
 the plate has 0.2 mm headroom. Test the fit first with `projects/attachments` (coupon + plate + key).
+
+## LED strips
+
+`spec = led_spec(led_strip_dims("10mm"), "shallow")` sets the cross-section; pass it to every LED module.
+
+| Strip preset | Size used (w × t) |
+|---|---|
+| 5mm, 8mm | 5 × 2, 8 × 2 |
+| 10mm, 12mm | 10 × 2.5, 12 × 2.5 |
+| 8mm IP65, 10mm IP65 | 10 × 4.5, 12 × 4.8 (silicone coated) |
+| custom | your own [w, t] |
+
+These are typical values; strips vary by maker, so check the datasheet. The seat adds 0.3 mm play per side.
+"shallow" puts the diffuser 3.5 mm above the strip; "deep" puts it 8 mm above, for less visible LED dots.
+
+- **Joining:** a 20 mm key slides into the T-slot under both pieces.
+- **Corners:** inward (inside edge, opening faces the corner), outward (wraps over an outside edge), flat (turns
+  in the mounting plane: cut the strip and bridge it with an L-connector or wires there). Corners have 12 mm straight
+  ends so keys fit. Matching corner diffusers come from the same sweep.
+- **Diffusers:** print them in clear or natural PETG; the legs bend 0.25 mm as they click into the wall grooves.
+- **Embedding:** `led_recess()` cuts a slot so a track sits flush in a host, e.g. lighting behind a scoreboard's numbers.
+
+## Cables
+
+Mounting parts sit on z=0 with the cable along +X; `mount="screw"` adds a countersunk M3 tab. The duct lid's
+legs bend 0.25 mm over ramped beads. Host cutters work like `attach_socket()`: the host face is z=0 and its
+body is z>0. `cable_route([[x,y], ...], w, d)` cuts a groove along a polyline, for example in a board's back
+from an LED track to the edge.
 
 ## Fonts
 
