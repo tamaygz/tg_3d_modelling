@@ -1,0 +1,13 @@
+model scoreboard.scad
+rev 7113f59
+made 2026-11-15 04:53
+Alignment_dowel.stl
+Board_left.stl
+Board_right.stl
+Column_divider.stl
+End_stopper.stl
+Marker_slider.stl
+Rail_main_range.stl
+Rail_steps.stl
+plates_s.3mf
+plates_u.3mf
