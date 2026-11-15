@@ -12,3 +12,10 @@ __pycache__/
 # temporary files of tools/build.py --test and the configurator generator
 _test*
 _parts_probe.*
+
+# buildfiles
+projects/*/*_parts/*
+projects/**/*_parts/*
+projects/**/*_parts*
+projects/**/*.zip
+plan/*.md
