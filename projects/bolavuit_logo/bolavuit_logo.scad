@@ -5,7 +5,8 @@ include <../../lib/core.scad>
 use <../../lib/emblem.scad>
 use <../../lib/emblems/bolavuit.scad>
 use <../../lib/fonts.scad>
-include <../../lib/emblems/bolavuit_rebuilt.scad>   // fitted layout data for the rebuilt version
+// fitted layout data for the rebuilt version
+include <../../lib/emblems/bolavuit_rebuilt.scad>
 
 part = "all";                    // which part to export ("all" = assembly)
 

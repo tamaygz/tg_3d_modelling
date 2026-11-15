@@ -1,9 +1,12 @@
 // Project template: a plaque with a raised title and attachment sockets
 // Copy this folder to projects/<name>/, rename the files to <name>.*, and replace the model. See ../../README.md.
-include <../../lib/core.scad>      // pick(), slab(), palette ... (include: it reads `part`)
-use <../../lib/shapes.scad>        // plaque outlines, routed edges, grooves
-use <../../lib/attach.scad>        // snap-in mounting plates and their sockets
-use <../../lib/fonts.scad>         // bundled fonts: font_for("serif bold") ...
+// Library files. Keep include/use lines free of trailing comments (the web export tool only reads bare lines).
+// core: pick(), slab(), palette (include, because it reads `part` and `parts`); shapes: plaque outlines, routed
+// edges, grooves; attach: snap-in mounting plates and sockets; fonts: bundled fonts, font_for("serif bold")
+include <../../lib/core.scad>
+use <../../lib/shapes.scad>
+use <../../lib/attach.scad>
+use <../../lib/fonts.scad>
 
 part = "all";                    // which part to export ("all" = assembly); set by the build tools
 

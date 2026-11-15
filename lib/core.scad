@@ -4,7 +4,11 @@
 
 // ---------- project plumbing ----------
 // render children only for the selected part ("all" = whole assembly); every part of a project goes through this
-module pick(n) { if (part == "all" || part == n) children(); }
+// and shows the part in its colour from the `parts` table (previews only; exports are unaffected)
+function part_colour(n) = is_undef(parts) ? undef : let(r = [for (p=parts) if (p[0] == n && is_string(p[4]) && p[4][0] == "#") p[4]]) r[0];
+module pick(n) {
+    if (part == "all" || part == n) { c = part_colour(n); if (is_undef(c)) children(); else color(c) children(); }
+}
 
 // ---------- solids and transforms ----------
 // extrude 2D children between two heights
