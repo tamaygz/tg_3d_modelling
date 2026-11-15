@@ -28,4 +28,6 @@ The elements live in the shared library, so other projects can use them: [`lib/e
 (exact) and [`lib/emblem.scad`](../../lib/emblem.scad) (generic generators).
 
 Files: `bolavuit_logo.scad`, `reference/` (original SVG and PNG), `bolavuit_logo_print/` (base + artwork 3MF),
-`bolavuit_logo_configurator.html`, `bolavuit_logo_348f127.zip` (bundle with lib).
+`bolavuit_logo_configurator.html`, `bolavuit_logo_<rev>.zip` (bundle with lib).
+
+Rebuild and check with `python3 tools/build.py bolavuit_logo --test` (variants in `tests.txt`).

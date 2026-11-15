@@ -1,0 +1,7 @@
+# parameter variants checked by: python3 tools/build.py bolavuit_logo --test
+source = "rebuilt"
+source = "rebuilt"; leaf_layout = "generated"; banner_style = "filled" | ignore PIECES
+source = "rebuilt"; banner_text = "CLUB 147"; ball_number = 9 | ignore PIECES
+base_shape = "square"; art_style = "inlay"
+base_shape = "round"
+base_shape = "none"; show_wreath = false; show_text = false | ignore PIECES

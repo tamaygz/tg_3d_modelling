@@ -116,8 +116,13 @@ function attach_xs(count, span, type="wall", centre=0, avoid=undef) = let(
 // plate centre y that centres socket + pry notch on a host whose middle is y_mid
 function attach_y(y_mid) = y_mid + ATTACH_NOTCH/2;
 // does a socket of this size fit a host `height` tall?  (use in an assert with attach_fit_msg)
-function attach_fits(size, height, margin=3) = attach_socket_len(size) <= height - margin;
-function attach_fit_msg(size, height) = str("attach_size ", size, " needs ", attach_socket_len(size), " mm of height; this host has ", height, " mm. Choose a smaller size.");
+// thickness (optional) = host thickness behind the socket: needs the socket depth plus a 1 mm floor
+function attach_fits(size, height, margin=3, thickness=undef) =
+    attach_socket_len(size) <= height - margin && (is_undef(thickness) || thickness >= ATTACH_T + 1);
+function attach_fit_msg(size, height, thickness=undef) =
+    !is_undef(thickness) && thickness < ATTACH_T + 1
+        ? str("attachment sockets need a host at least ", ATTACH_T + 1, " mm thick; this one is ", thickness, " mm. Make it thicker or set attach_type to none.")
+        : str("attach_size ", size, " needs ", attach_socket_len(size), " mm of height; this host has ", height, " mm. Choose a smaller size.");
 // row for the project's `parts` table
 function attach_print_tag(type) = (type == "skadis" || type == "hook" || type == "roof") ? "print=auto" : "print=x180";
 function attach_parts_row(type, count, pull=[0, 0, -50], colour="#4d6170") =

@@ -5,20 +5,35 @@ Reusable OpenSCAD building blocks. Projects live in `projects/<name>/`, so they 
 
 | File | Use with | What it gives you |
 |---|---|---|
+| `core.scad` | `include` in projects, `use` in lib files | atoms everything else builds on: `pick()` part selector, `slab(z1, z2)`, `affine2d(m)`, `mirror_pair()`, `csk_hole()` countersunk screw hole, `stroke_2d()` / `border_2d()` outlines, `sum()`, `polar()`, `qbez()`, `circle3()`, and the `COL_*` colour palette for `parts` tables |
 | `fits.scad` | `include` | ISO 286 fits: `fit_mid("H7", d)` for holes, `fit_mid("p6"/"k6"/"g6", d)` for shafts |
-| `fonts.scad` | `use` | registers the bundled Liberation fonts; `font_for("serif" / "serif bold" / "sans" / "sans bold")` |
-| `shapes.scad` | `use` | `plaque_2d(size, shape)` outlines: rect, rounded, chamfered, notched, arched, wave, scalloped. `profiled_slab(t, profile, r)` routed top edge: flat, roundover, chamfer, cove, ogee. `profiled_slab2()` profiles on top and bottom edges. `outline_groove()` single/double decorative groove. `keyhole_slot()` hanger. |
+| `fonts.scad` | `use` | registers the bundled fonts (see `fonts/README.md`); `font_for("serif" / "serif bold" / "sans" / "sans bold" / "book serif bold" / "round sans bold")` |
+| `shapes.scad` | `use` | `plaque_2d(size, shape)` outlines: rect, rounded, chamfered, notched, arched, wave, scalloped. `profiled_slab(t, profile, r)` routed top edge: flat, roundover, chamfer, cove, ogee. `profiled_slab2()` profiles on top and bottom edges. `outline_groove()` single/double decorative groove. `has_edge_wave(shape)`. |
 | `rail.scad` | `use` | T-rail + sliding marker system: `t_rail()` (flat, rounded or beveled top), `rail_slider()` (block, rounded, arrow or knob body; triangle, needle or no pointer), `stop_peg()` / `twin_peg()` stoppers (screw, dome, flat, hex or ball head). One `rail = [flange_w, flange_t, web_w, web_h]` spec keeps them fitting. |
-| `attach.scad` | `use` | universal mounting: `attach_socket(size)` cutter for a host's back, `attach_plate(type, size)` in wall, keyhole, skadis, hook, magnet, stand or flat. Plates snap in. Sizes S 30×30, M 45×40, L 60×50 mm. |
+| `attach.scad` | `use` | universal mounting. Host side: `attach_xs()` (spread sockets, avoid zones, Skådis grid), `attach_y()`, `attach_fits()` + `attach_fit_msg()` for an assert, `attach_sockets()` cutter, `attach_plates()` (all plates seated), `attach_opts()`, `attach_parts_row()`. Plates: `attach_plate(type, size)` in wall, keyhole, skadis, hook, magnet, stand, flat or roof. Plates snap in. Sizes S 30×30, M 45×40, L 60×50 mm. |
 | `led.scad` | `use` | LED strip system from one cross-section: `led_track()` (glue or screw mount, side wire exit), `led_diffuser()` (flat or dome, snaps in), `led_key()` joiner, `led_end_cap()` with cable hole, `led_corner()` + `led_corner_diffuser()` (inward, outward, flat), `led_recess()` cutter to sink a track into a host |
 | `cable.scad` | `use` | `cable_clip()` (round, snap-in), `flat_cable_clip()`, `tie_mount()`, `cable_duct()` + `cable_duct_lid()` (snap), `cable_grommet()` (split); host cutters `cable_route(pts)`, `cable_notch()`, `cable_hole()`. Adhesive or M3-screw mounting |
-| `emblem.scad` | `use` | badge/logo generators: `leaf_2d()` (measured classic laurel leaf), `laurel_wreath_2d()` / `laurel_branch_2d()` (repeating inner + 2 outer leaf groups, or an explicit leaf list via `laurel_leaves_2d()`), `ribbon_banner_2d(spec)` (arched band, swallowtail tails, folds, bow with lens loops and crossing legs, corner ears; outline or filled), `banner_2d()` (simple banner), `ribbon_2d()`, `taper_ribbon_pts()`, `arc_text_2d()`, `pool_ball_2d()` (ring, number disc, crescent highlight, stripe; optional fitted numeral placement), `stroke_2d()` |
+| `emblem.scad` | `use` | badge/logo generators: `leaf_2d()` (measured classic laurel leaf), `laurel_wreath_2d()` / `laurel_branch_2d()` (repeating inner + 2 outer leaf groups, or an explicit leaf list via `laurel_leaves_2d()`), `ribbon_banner_2d(banner_spec(w))` (arched band, swallowtail tails, folds, bow with lens loops and crossing legs, corner ears; outline or filled; any width, or your own spec), `taper_ribbon_pts()`, `arc_text_2d()`, `pool_ball_2d()` (ring, number disc, crescent highlight, stripe; optional fitted numeral placement) |
 | `emblems/bolavuit_rebuilt.scad` | `include` | fitted data that makes the generic elements reproduce the Bola Vuit logo: `BVR_LEAVES`, `BVR_BANNER`, `BVR_BALL`, `BVR_NUMERAL`, `BVR_LETTERS` |
 | `emblems/bolavuit.scad` | `use` | the Bola Vuit logo, exact (from the original SVG): `bv_ball()` (`bv_ball_ring`, `bv_ball_disc`, `bv_numeral`, `bv_crescent`), `bv_laurel()` / `bv_leaf(i)`, `bv_banner()`, `bv_text()` / `bv_letter(i)`, `bv_logo()`, `bv_frame_fill()`; px units, scale by `w_mm / bv_art_w()` |
-| `scale.scad` | `use` | number scales: `number_row_2d()` with dot, bar, diamond or no separators; `plate_2d()`, `border_2d()`; `plate_body()` + `plate_art()` for 2-colour inlay, raised or engraved numbers |
+| `scale.scad` | `use` | number scales: `number_row_2d()` with dot, bar, diamond or no separators; `scale_plate_2d()`; `plate_body()` + `plate_art()` for 2-colour inlay, raised or engraved numbers |
 
 Each style module also defines its option list (`PLAQUE_SHAPES`, `EDGE_PROFILES`, `MARKER_STYLES`…),
 so a model can copy them into its `// [a, b, c]` Customizer comment.
+
+## Conventions
+
+- **Layers:** `core.scad` (atoms) → element files (`shapes`, `rail`, `scale`, `attach`, `led`, `cable`, `emblem`) →
+  data (`emblems/`, `fonts/`) → projects. Element files may `use <core.scad>` but not each other, except where one
+  clearly builds on another. Projects never copy library code: if something is missing, add it here.
+- **Naming:** 2D generators end in `_2d`, point-list functions in `_pts`, cutters say so in their comment, private
+  helpers start with `_`. Style choices are string parameters with an upper-case option list beside them.
+- **Frames:** every file states its coordinate convention in its header (where the origin is, which face is z=0).
+  Host cutters (`attach_socket`, `cable_route`, `led_recess`) take the host's back face as z=0 with the body at z>0.
+- **One spec, many parts:** parts that must fit each other take the same spec value (`rail`, `led_spec`, attachment
+  `size`), so they cannot drift apart.
+- **Fits:** clearances are constants at the top of the file (`ATTACH_CLR`, `LED_CLR`…); snap parts must bend 2% or less.
+- **After changing a lib file:** run `python3 tools/build.py all --test`. Every project lists its variants in `tests.txt`.
 
 ## Example
 
@@ -33,6 +48,8 @@ translate([0, 0, 12]) {
     for (x=[-85, 85]) translate([x, 0, rail_h(rail)]) stop_peg(style="ball", shaft_l=8);
 }
 ```
+
+A complete small project using core, shapes, fonts and attachments is `projects/_template/`.
 
 ## Attachment plates
 
@@ -52,6 +69,16 @@ notch below it and lever it out. Keep plate features out of the end strips (`att
 | magnet | steel surfaces | pockets for round magnets (default 10 × 3), glued in from the wall side |
 | stand | a table | two fins make a kickstand; `stand_reach` = plate centre to the host's bottom edge |
 | flat | glue or double-sided tape | grooved back for a better bond |
+
+In a project, place sockets with the host helpers (see `projects/_template/_template.scad`):
+
+```scad
+a_x = attach_xs(attach_count, width, attach_type);      // x positions; avoid=[x, half_width] keeps clear of a zone
+a_y = attach_y(0);                                      // plate centre for a host centred on y = 0
+assert(attach_type == "none" || attach_fits(attach_size, height, thickness=t), attach_fit_msg(attach_size, height, t));
+difference() { host(); attach_sockets(attach_type, attach_size, a_x, a_y); }
+pick("attach") attach_plates(attach_type, attach_size, a_x, a_y, attach_opts(roof_gap=10), y_bottom, y_top);
+```
 
 Host rules: the socket needs `attach_socket_len(size)` of height (plate + 3 mm pry notch) and `ATTACH_T` (4.5 mm) of depth, plus a floor
 behind it. Its ceiling is printed as a bridge as wide as the socket (40–65 mm) when the host prints back-down;
@@ -86,6 +113,9 @@ body is z>0. `cable_route([[x,y], ...], w, d)` cuts a groove along a polyline, f
 from an LED track to the edge.
 
 ## Logos and artwork
+
+Check any rebuild against the original with `python3 tools/artfit.py overlay exported.svg reference.png out.png`
+(prints the overlap and writes a comparison picture).
 
 Rebuild a logo **exactly** from its SVG with `python3 tools/svg_to_scad.py art.svg lib/emblems/<name>_data.scad --path <id> --prefix XX`.
 It flattens the paths (lines, cubic and quadratic curves, arcs) into OpenSCAD polygons in the SVG's px frame

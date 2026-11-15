@@ -27,4 +27,6 @@ Notes
 - The pink's number moves above the ball when it would otherwise land on the reds.
 
 Files: `snooker_guide.scad`, `snooker_guide_print/` (guide.3mf + attachment plate), `snooker_guide_parts/`,
-`snooker_guide_configurator.html`, `snooker_guide_514212e.zip` (bundle with lib).
+`snooker_guide_configurator.html`, `snooker_guide_<rev>.zip` (bundle with lib).
+
+Rebuild and check with `python3 tools/build.py snooker_guide --test` (variants in `tests.txt`).

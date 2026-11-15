@@ -1,8 +1,9 @@
+import _env
 import numpy as np, json
 from scipy.optimize import minimize
 from scipy.ndimage import binary_erosion
 from bvdata import REG
-from rast import mask, iou
+from artfit import mask, iou
 from banner_lib import loops, X0
 box=(560,230,1270,380); S=1.0
 white=mask([REG[0][0]],box,S,holes=REG[0][1:])

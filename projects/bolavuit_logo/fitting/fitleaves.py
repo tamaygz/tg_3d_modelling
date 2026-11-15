@@ -1,7 +1,8 @@
+import _env
 import numpy as np, math, json
 from scipy.optimize import minimize
 from bvdata import REG, LEAVES_L
-from rast import mask, iou
+from artfit import mask, iou
 def leaf_pts(L, W, p=0.6, q=1.0, bend=0.0, n=48):
     hw=lambda t: W/2*np.sin(np.pi*t**q)**p
     bx=lambda t: bend*L*t*t

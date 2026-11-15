@@ -8,3 +8,7 @@
 
 # python bytecode
 __pycache__/
+
+# temporary files of tools/build.py --test and the configurator generator
+_test*
+_parts_probe.*

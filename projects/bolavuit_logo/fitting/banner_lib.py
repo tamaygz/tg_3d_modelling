@@ -1,3 +1,4 @@
+import _env
 import numpy as np
 X0 = 913.68                              # banner centre line (mirror axis)
 def qbez(p0, c, p1, n=24):

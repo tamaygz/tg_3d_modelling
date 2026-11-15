@@ -16,4 +16,6 @@ Open `led_kit_configurator.html`, pick your strip, track, corner and cable sizes
 Strip sizes are typical values; measure your strip, or set `strip_type = custom` and `custom_strip = [w, t]`.
 For a flat corner, cut the strip at a cut mark and bridge the corner with a solderless L-connector or two short wires.
 
-Files: `led_kit.scad`, `led_kit_print/` (oriented for printing), `led_kit_configurator.html`, `led_kit_09cd657.zip` (bundle with lib).
+Files: `led_kit.scad`, `led_kit_print/` (oriented for printing), `led_kit_configurator.html`, `led_kit_<rev>.zip` (bundle with lib).
+
+Rebuild and check with `python3 tools/build.py led_kit --test` (variants in `tests.txt`).

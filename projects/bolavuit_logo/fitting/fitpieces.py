@@ -1,7 +1,8 @@
+import _env
 import numpy as np, json
 from scipy.optimize import minimize
 from bvdata import REG
-from rast import mask, iou
+from artfit import mask, iou
 from banner_lib import fold, strip, X0
 def fit(name, hole, fn, x0, box):
     T = mask([hole], box, 1.0)

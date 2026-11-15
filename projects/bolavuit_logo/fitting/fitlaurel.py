@@ -1,35 +1,38 @@
+import _env
 import numpy as np, math, json
 from scipy.optimize import minimize
 from bvdata import REG, LEAVES_L
-from rast import mask, iou
+from artfit import mask, iou
 from fitleaves_lib import leaf_pts, place
 C=np.array([912.,959.])
 box=(80,600,760,1700); S=0.5
 T=mask([REG[i][0] for i in LEAVES_L], box, S)
-PAT="ioo"
-def branch(v, n=9):
-    a0,a1,r,dro,dri,lo,li,L0,grow,ratio,p = v
+# roles per group: [angle offset (deg, along the branch), radius offset, lean (+ out), length scale]
+def branch(v, groups=3):
+    a0, step, r, L0, grow, ratio, p = v[:7]
+    roles = np.array(v[7:]).reshape(3,4)
     polys=[]
-    for k in range(n):
-        t=k/(n-1); a=a0+(a1-a0)*t; side=PAT[k%len(PAT)]
-        rr=r+(dro if side=='o' else dri)
-        bx,by=C+rr*np.array([math.cos(math.radians(a)),math.sin(math.radians(a))])
-        tang=a-90; ang=tang+(lo if side=='o' else -li)
-        L=L0*(1+(grow-1)*t)
-        polys.append(place(leaf_pts(L,ratio*L,p),bx,by,ang))
+    for g in range(groups):
+        for k in range(3):
+            da, dr, lean, ls = roles[k]
+            a = a0 - (g*step + da)                       # walk up the branch (angle decreasing on the left)
+            t = (g*step + da)/(groups*step)
+            bx,by = C+(r+dr)*np.array([math.cos(math.radians(a)),math.sin(math.radians(a))])
+            L = L0*ls*(1+(grow-1)*t)
+            polys.append(place(leaf_pts(L,ratio*L,p),bx,by,a-90+lean))
     return polys
-x0=[210,137,595,5,-15,22,25,320,0.87,0.27,0.62]
+x0=[210, 24, 595, 330, 0.88, 0.268, 0.62,
+    0, -30, -25, 1.0,
+    7, -10, 26, 0.98,
+    18, 20, 13, 0.95]
 f=lambda v: -iou(mask(branch(v),box,S),T)
 best=None
-for it in range(3):
-    r=minimize(f, x0 if best is None else best.x, method='Nelder-Mead', options=dict(maxiter=4000, xatol=0.01, fatol=1e-6, adaptive=True))
+for it in range(4):
+    r=minimize(f, x0 if best is None else best.x, method='Nelder-Mead', options=dict(maxiter=6000, xatol=0.01, fatol=1e-7, adaptive=True))
     if best is None or r.fun<best.fun: best=r
-    print(it, -r.fun)
+    print(it, round(-r.fun,4), flush=True)
 v=best.x
-print("generic branch IoU %.3f" % -best.fun)
-print("params a0 %.1f a1 %.1f r %.1f dr_out %.1f dr_in %.1f lean_out %.1f lean_in %.1f L0 %.1f grow %.3f ratio %.3f p %.2f" % tuple(v))
-json.dump(list(v), open('laurel_generic.json','w'))
-# explicit (per-leaf fitted) branch, for comparison
-lf=json.load(open('leaves_fit.json'))
-E=[place(leaf_pts(l[3],l[4],l[5],l[6],l[7]),l[0],l[1],l[2]) for l in lf]
-print("explicit per-leaf branch IoU %.3f" % iou(mask(E,box,S),T))
+print("grouped branch IoU %.3f" % -best.fun)
+print("a0 %.1f step %.1f r %.1f L0 %.1f grow %.3f ratio %.3f p %.2f" % tuple(v[:7]))
+for name,row in zip(["inner","outer1","outer2"], np.array(v[7:]).reshape(3,4)): print(f"  {name}: offset {row[0]:.1f}deg  dr {row[1]:.1f}  lean {row[2]:.1f}  size {row[3]:.3f}")
+json.dump(list(v), open('laurel_grouped.json','w'))

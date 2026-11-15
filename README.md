@@ -1,20 +1,54 @@
 # tg_3d_modelling
 
-Parametric 3D models (OpenSCAD) for 3D printing. Each model has its own folder under `projects/`, with the
-`.scad` source, a README, a design log, ready-to-print STL/3MF files and an interactive `.html` viewer.
+Parametric 3D models (OpenSCAD) for 3D printing, built from a shared library of reusable parts.
+
+## Projects
 
 | Project | Description |
 |---|---|
 | [scoreboard](projects/scoreboard) | Wall scoreboard with sliding marker pins: configurable players, score range, steps, styles and mounting |
 | [snooker_guide](projects/snooker_guide) | Wall plaque showing the snooker table setup, ball positions and points, in multi-colour relief |
-| [led_kit](projects/led_kit) | LED strip tracks, diffusers, joiners, end caps, corners, and cable clips, ducts and grommets |
 | [bolavuit_logo](projects/bolavuit_logo) | Bola Vuit logo as a 2-colour plaque: exact from the original SVG, or rebuilt from adjustable elements |
-| [attachments](projects/attachments) | Universal mounting plates (wall, keyhole, Skådis, hook, magnet, stand, glue, ceiling) and a test coupon |
+| [led_kit](projects/led_kit) | LED strip tracks, diffusers, joiners, end caps, corners, and cable clips, ducts and grommets |
+| [attachments](projects/attachments) | Universal snap-in mounting plates (wall, keyhole, Skådis, hook, magnet, stand, glue, ceiling) and a test coupon |
 
-Each project also has a `<name>_configurator.html`. Open it in a browser to change the parameters and download
-STLs, with no install needed. Build one with `python3 tools/make_configurator.py projects/<name>/<name>.scad`.
+Every project folder has the same contents:
 
-Shared building blocks (board shapes, routed edges, rails and sliders, number scales, attachment plates, LED strip tracks, cable parts, emblem/logo elements, fonts) live in
-[`lib/`](lib/README.md). Use them from new projects.
+| File | What it is |
+|---|---|
+| `<name>.scad` | the model; all settings at the top, in OpenSCAD Customizer format |
+| `<name>_configurator.html` | open in a browser to change settings, see the model in 3D and download STLs (no install) |
+| `<name>_print/` | print-ready files, oriented for the bed (STL, multi-colour 3MF) |
+| `<name>_parts/` | each part as modelled, in its assembled position |
+| `<name>_<rev>.zip` | everything bundled, including the library files the model needs |
+| `<name>.html` | 3D viewer of the default build |
+| `README.md`, `<name>_log.md` | how to use it; design log with decisions, print feedback and open questions |
+| `tests.txt` | parameter variants that are built and checked automatically |
 
-Tooling: OpenSCAD (`setup_env.sh` installs it plus fonts). Notes for Claude live in `CLAUDE.md`.
+## Library
+
+[`lib/`](lib/README.md) holds the building blocks all projects share: core atoms, board shapes and routed edges, rails
+and sliders, number scales, snap-in attachment plates, LED strip tracks, cable parts, emblem and logo elements, fits
+and bundled fonts. Projects only lay these out; anything reusable goes into the library.
+
+## Tools
+
+| Command | What it does |
+|---|---|
+| `python3 tools/build.py <project> --test` | rebuild a project's outputs (parts, print files, bundle, configurator) and check every variant in its `tests.txt`; `all` does every project |
+| `python3 tools/make_configurator.py projects/<name>/<name>.scad` | only rebuild the browser configurator |
+| `python3 tools/svg_to_scad.py art.svg out.scad --prefix XX` | convert SVG artwork into exact OpenSCAD polygons |
+| `python3 tools/artfit.py overlay exported.svg reference.png out.png` | compare a model's 2D output with reference artwork |
+| `bash setup_env.sh` | install OpenSCAD and fonts on a fresh machine |
+
+`build.py` uses the OpenSCAD skill's `asm.py` (found under `~/.claude/skills`, or set `OSCAD_SCRIPTS`).
+
+## Adding a project
+
+1. Copy `projects/_template/` to `projects/<name>/` and rename its files to `<name>.*`.
+2. Replace the model. Keep the layout: library includes, `part`, Customizer sections, `/* [Hidden] */` with derived
+   values, the `parts` / `checks` / `report` tables, then 2D shapes, solids and the assembly.
+3. Use the library first (`lib/README.md`). Move anything reusable you write into it.
+4. List the parameter combinations worth checking in `tests.txt`.
+5. Run `python3 tools/build.py <name> --test`, fill in the README and log, and add the project to the table above
+   and to `CLAUDE.md`.

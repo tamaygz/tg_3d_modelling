@@ -8,7 +8,7 @@ Set `part = "board_l"` (or any id below) and press F6 → Export STL to export a
 - `scoreboard.scad`: the model (needs `../../lib`)
 - `scoreboard_print/`: print-ready STL/3MF files, oriented for printing
 - `scoreboard_parts/`: each part as an STL in its assembled position
-- `scoreboard_1c3546f.zip`: complete bundle (model, lib, print files, viewer), revision 1c3546f
+- `scoreboard_<rev>.zip`: complete bundle (model, lib, print files, viewer)
 - `scoreboard_configurator.html`: change the parameters in your browser, regenerate the 3D view and download STLs (internet needed for the OpenSCAD engine)
 - `scoreboard.html`: interactive 3D viewer of the default build
 
@@ -82,3 +82,5 @@ so check your slicer's bridging settings.
 5. Press the `stop_div` divider in across the joint. It locks both rails and separates the two sliders.
 The peg shafts are an H7/p6 press fit; add a drop of glue if your printer prints holes oversize.
 Hang the board from the two keyhole slots on the back.
+
+Rebuild and check with `python3 tools/build.py scoreboard --test` (variants in `tests.txt`).

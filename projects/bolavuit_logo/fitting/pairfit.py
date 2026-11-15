@@ -1,11 +1,12 @@
+import _env
 import numpy as np, json, subprocess
 from PIL import Image, ImageFont
 from scipy.optimize import minimize
 import fontaffine as FA
-from rast import iou
-FONT='/home/user/tg_3d_modelling/lib/fonts/SourceSerif4-Bold.ttf'; FN="Source Serif 4:style=Bold"
+from artfit import iou
+FONT=str(_env.FONTS / 'SourceSerif4-Bold.ttf'); FN="Source Serif 4:style=Bold"
 font=ImageFont.truetype(FONT,200); S=FA.S
-SP='/tmp/claude-0/-home-user/01847bc7-7a3d-5b03-975c-4cb2e551f995/scratchpad'
+SP=_env.TMP
 def scad_bbox(s):
     open(f'{SP}/g.scad','w').write(f'use <{FONT}>\nlinear_extrude(1) text("{s}", size=100, font="{FN}", halign="left", valign="baseline");\n')
     subprocess.run(['openscad','-o',f'{SP}/g.stl',f'{SP}/g.scad'],capture_output=True)

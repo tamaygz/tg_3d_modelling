@@ -1,8 +1,9 @@
+import _env
 import numpy as np, json, time
 from scipy.optimize import minimize
 from scipy.ndimage import binary_dilation
 from bvdata import REG
-from rast import mask, iou
+from artfit import mask, iou
 from banner_lib import *
 box=(90,70,1740,650); S=0.5
 T=mask([REG[0][0]], box, S, holes=REG[0][1:])
@@ -38,13 +39,15 @@ def model(v):
 f=lambda v: -iou(model(np.asarray(v)),T)
 print("start IoU %.4f" % -f(x0), flush=True)
 best=np.array(x0); bf=f(best); t0=time.time()
-for rnd in range(3):
-    for n,k in names:                                 # refine block by block (coordinate descent over pieces)
+order=[('strip',8),('loops',7),('legs',8),('ear',10),('stroke',1),('loops',7),('legs',8),('strip',8),('tail',20),('fold',16),('band',7),('ear',10),('stroke',1)]
+for rnd in range(1):
+    for n,k in order:                                 # refine block by block (coordinate descent over pieces)
         i=sum(kk for nn,kk in names[:[m for m,_ in names].index(n)])
         def g(sub): v=best.copy(); v[i:i+k]=sub; return f(v)
         r=minimize(g, best[i:i+k], method='Nelder-Mead', options=dict(maxiter=1500 if k>8 else 800, xatol=0.05, fatol=1e-7, adaptive=True))
         if r.fun<bf: best[i:i+k]=r.x; bf=r.fun
-        print(f"round {rnd} {n:6s} IoU {-bf:.4f}  ({time.time()-t0:.0f}s)", flush=True)
+        print(f"{n:6s} IoU {-bf:.4f}  ({time.time()-t0:.0f}s)", flush=True)
+        json.dump(best.tolist(), open('banner_joint.json','w'))
 json.dump(best.tolist(), open('banner_joint.json','w'))
 from PIL import Image
 m=model(best); im=np.zeros(m.shape+(3,),np.uint8); im[...,0]=T*255; im[...,1]=m*255; im[...,2]=m*255

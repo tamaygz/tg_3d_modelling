@@ -1,10 +1,11 @@
+import _env
 """Render the rebuilt elements with OpenSCAD and score each against the exact artwork (IoU at 1 px)."""
 import subprocess, numpy as np
-from scadsvg import polys, mask_evenodd
-from rast import mask, iou
+from artfit import polys, mask_evenodd
+from artfit import mask, iou
 from bvdata import REG, LEAVES_L, LEAVES_R
-PRJ='/home/user/tg_3d_modelling/projects/bolavuit_logo'
-SP='/tmp/claude-0/-home-user/01847bc7-7a3d-5b03-975c-4cb2e551f995/scratchpad/fit'
+PRJ=str(_env.LOGO)
+SP=_env.TMP
 CHK='''use <../../lib/emblem.scad>
 include <../../lib/emblems/bolavuit_rebuilt.scad>
 what = 0;

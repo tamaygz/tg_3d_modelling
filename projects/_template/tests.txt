@@ -1,0 +1,6 @@
+# parameter variants checked by: python3 tools/build.py _template --test
+# one variant per line: name = value; name = value
+shape = "wave"; edge = "ogee"; groove = "double"
+attach_type = "none"; thickness = 3
+attach_type = "roof"; attach_size = "M"; height = 80
+title = "A B"; font_style = "sans bold"

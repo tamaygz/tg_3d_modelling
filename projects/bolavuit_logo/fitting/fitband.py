@@ -1,7 +1,8 @@
+import _env
 import numpy as np, json
 from scipy.optimize import minimize
 from bvdata import REG
-from rast import mask, iou
+from artfit import mask, iou
 from banner_lib import band, X0
 box=(100,80,1730,640); S=0.5
 T=mask([REG[0][2]], box, S)          # hole 1 = band interior

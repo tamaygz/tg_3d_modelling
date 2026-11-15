@@ -1,13 +1,14 @@
+import _env
 import numpy as np, json, subprocess, os
 from PIL import Image, ImageFont
 from scipy.optimize import minimize
 import fontaffine as FA
-from rast import iou
-FONT='/home/user/tg_3d_modelling/lib/fonts/Eczar-Bold.ttf'
+from artfit import iou
+FONT=str(_env.FONTS / 'SourceSerif4-Bold.ttf')
 font=ImageFont.truetype(FONT,200); S=FA.S
-SP='/tmp/claude-0/-home-user/01847bc7-7a3d-5b03-975c-4cb2e551f995/scratchpad'
+SP=_env.TMP
 def scad_bbox(s):
-    open(f'{SP}/g.scad','w').write(f'use <{FONT}>\nlinear_extrude(1) text("{s}", size=100, font="Eczar:style=Bold", halign="left", valign="baseline");\n')
+    open(f'{SP}/g.scad','w').write(f'use <{FONT}>\nlinear_extrude(1) text("{s}", size=100, font="Source Serif 4:style=Bold", halign="left", valign="baseline");\n')
     subprocess.run(['openscad','-o',f'{SP}/g.stl',f'{SP}/g.scad'],capture_output=True)
     xs=[];ys=[]
     for line in open(f'{SP}/g.stl'):
@@ -29,6 +30,7 @@ for k,(box,T,s,pmin,pmax) in enumerate(FA.TG):
     for _ in range(2): b=minimize(f,b.x,method='Nelder-Mead',options=dict(maxiter=4000,xatol=1e-5,fatol=1e-7,adaptive=True,initial_simplex=simplex(b.x)))
     v=b.x; M=np.array([[v[0],v[1],v[2]],[v[3],v[4],v[5]],[0,0,1]])
     # image pixels of the glyph ink box: gb = (x0, y0, x1, y1) with y down; OpenSCAD ink box (y up)
+    arr=np.array(im)>127; yy,xx=np.where(arr); gb=(xx.min(), yy.min(), xx.max()+1, yy.max()+1)   # real ink box (pixels)
     x0,y0,x1,y1=scad_bbox(s)
     # OpenSCAD glyph (sx, sy) -> glyph image pixel: ink boxes matched (y flipped)
     G=np.array([[(gb[2]-gb[0])/(x1-x0),0,gb[0]-x0*(gb[2]-gb[0])/(x1-x0)],
@@ -37,4 +39,4 @@ for k,(box,T,s,pmin,pmax) in enumerate(FA.TG):
     A=Wd@M@G
     out[s]=A[:2].round(5).tolist()
     print(f"{s:3s} IoU {-b.fun:.3f}  matrix {A[:2].round(4).tolist()}", flush=True)
-json.dump(out,open('letters_eczar.json','w'))
+json.dump(out,open('letters_ss4.json','w'))

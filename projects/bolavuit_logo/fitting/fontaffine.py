@@ -1,8 +1,9 @@
+import _env
 import numpy as np, glob, os, sys, json
 from PIL import Image, ImageDraw, ImageFont
 from scipy.optimize import minimize
 from bvdata import REG
-from rast import mask, iou
+from artfit import mask, iou
 GROUPS=[(24,"B"),(21,"O"),(23,"LA"),(22,"VU"),(28,"I"),(26,"T")]
 S=0.5
 TG=[]

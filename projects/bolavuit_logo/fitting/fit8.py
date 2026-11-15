@@ -1,8 +1,9 @@
+import _env
 import numpy as np, glob, os, sys, json, math
 from PIL import Image, ImageDraw, ImageFont
 from scipy.optimize import minimize
 from bvdata import REG
-from rast import mask, iou
+from artfit import mask, iou
 S=1.0; box=(690,820,1140,1270)
 def circ(c,r,n=360): return [(c[0]+r*math.cos(2*math.pi*i/n), c[1]+r*math.sin(2*math.pi*i/n)) for i in range(n)]
 B=json.load(open('ball_fit.json'))['disc']

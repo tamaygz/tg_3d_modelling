@@ -1,0 +1,7 @@
+# parameter variants checked by: python3 tools/build.py led_kit --test
+corner_type = "inward"; diffuser = "flat"; strip_type = "5mm"
+corner_type = "outward"; diffuser = "dome"; strip_type = "12mm"; track_style = "deep"; mount = "screw"; wire_exit = true; cable_mount = "screw"
+corner_type = "flat"; strip_type = "10mm IP65"; track_style = "deep"; wire_exit = true
+corner_type = "inward"; diffuser = "dome"; strip_type = "8mm IP65"; mount = "screw"; cable_mount = "screw"
+corner_type = "flat"; diffuser = "none"; strip_type = "8mm"
+corner_type = "none"

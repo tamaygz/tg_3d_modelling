@@ -1,0 +1,12 @@
+# parameter variants checked by: python3 tools/build.py snooker_guide --test
+points_color = "ball colour"; points_style = "inlay"
+show_plate = false; attach_type = "wall"
+show_plate = false; attach_type = "roof"
+baulk_side = "right"; points_pos = "left"; ball_style = "hemisphere"
+ball_style = "flat"; points_pos = "below"; show_legend = false; title = ""
+show_points = false; plate_shape = "wave"; plate_edge = "ogee"; table_bottom = "chamfer"
+table_len = 300; ball_scale = 1; points_size = 7; attach_type = "skadis"
+points_pos = "above"; show_cue = false; points_reds = false
+attach_type = "roof"; plate_shape = "wave"
+attach_type = "stand"
+attach_type = "none"; plate_groove = "double"

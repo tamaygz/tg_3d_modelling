@@ -1,0 +1,17 @@
+# parameter variants checked by: python3 tools/build.py attachments --test
+attach_type = "wall"; attach_size = "S"
+attach_type = "wall"; attach_size = "L"
+attach_type = "keyhole"; attach_size = "S"
+attach_type = "keyhole"; attach_size = "L"
+attach_type = "skadis"; attach_size = "S"
+attach_type = "skadis"; attach_size = "L"
+attach_type = "hook"; attach_size = "S"
+attach_type = "hook"; attach_size = "L"
+attach_type = "magnet"; attach_size = "S"
+attach_type = "magnet"; attach_size = "L"
+attach_type = "stand"; attach_size = "S"
+attach_type = "stand"; attach_size = "L"
+attach_type = "flat"; attach_size = "S"
+attach_type = "flat"; attach_size = "L"
+attach_type = "roof"; attach_size = "S"; roof_angle = 70
+attach_type = "roof"; attach_size = "L"; roof_angle = 110

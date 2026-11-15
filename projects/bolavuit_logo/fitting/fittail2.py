@@ -1,8 +1,9 @@
+import _env
 import numpy as np, json
 from scipy.optimize import minimize
 from scipy.ndimage import binary_dilation
 from bvdata import REG
-from rast import mask, iou
+from artfit import mask, iou
 from banner_lib import band, tail2, X0
 box=(100,80,1730,640); S=0.5; STROKE=13
 H=np.array(REG[0][4])                                 # hole 3 = left tail interior
