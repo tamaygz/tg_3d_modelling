@@ -122,7 +122,7 @@ jobs:
         run: |
           set -euo pipefail
           tag="${TAG_INPUT:-configurators-$(date -u +%Y-%m-%d)-${SHA::7}}"
-          python3 tools/release_notes.py release/projects.json \
+          python3 tools/release_notes.py release/pages-src/projects.json \
             --pages "$PAGE_URL" --repo-url "$REPO_URL" --ref "$SHA" > release/notes.md
           cat release/notes.md
           flags=()
