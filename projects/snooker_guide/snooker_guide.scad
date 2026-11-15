@@ -132,7 +132,7 @@ legend = show_legend && show_plate;             // the legend sits on the surrou
 TITLE_H = ttl ? title_size + 8 : 0;             // band above the table for the title
 LEG_H = legend ? max(bd, points_size) + 10 : 0;   // band below the table for the legend
 PW = TW + 2*plate_margin; PH = TH + 2*plate_margin + TITLE_H + LEG_H;
-PC = [0, (LEG_H - TITLE_H)/2];                  // plate centre relative to the table centre
+PC = [0, (TITLE_H - LEG_H)/2];                // plate centre relative to the table centre (title band above, legend band below)
 corner_pockets = [for (a=[-1,1], b=[-1,1]) [a*(Lc/2 + cushion_w*0.45), b*(Wc/2 + cushion_w*0.45)]];
 mid_pockets = [for (b=[-1,1]) [0, b*(Wc/2 + cushion_w*0.9)]];
 POCKETS = concat(corner_pockets, mid_pockets);

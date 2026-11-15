@@ -6,6 +6,7 @@ Open `bolavuit_logo_configurator.html` to set the size, background and style, an
 | Setting | Options |
 |---|---|
 | `source` | **exact** (default): the original artwork, element by element, from `reference/bolavuit.svg`. **rebuilt**: the same design from the generic elements in `lib/emblem.scad`, fitted to the original (0.90 overlap overall); then leaf layout, banner style, bow, text and ball number can be changed |
+| `banner_text`, `font_style`, `text_size`, `text_fill` | rebuilt only: any text is set on the banner's curve and condensed to fit; the original text, font and size use the exact fitted letters |
 | `logo_width` | width of the artwork in mm (lines are 0.95 mm at 120 mm; keep it ≥ 102 mm for a 0.4 mm nozzle) |
 | `show_ball`, `show_wreath`, `show_banner`, `show_text` | use any element on its own |
 | `base_shape` | silhouette (follows the outline), square (the original artboard), round, none |

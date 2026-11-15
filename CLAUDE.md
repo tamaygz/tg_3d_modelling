@@ -26,7 +26,11 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   the browser engine scales it differently). Verify with `tools/artfit.py overlay`. The user wants a 100% match
   when recreating a given logo. To make generic elements match artwork, fit their parameters against the exact
   polygons (template: `projects/bolavuit_logo/fitting/`).
-- **Fonts:** only redistributable fonts in `lib/fonts/` (see its README); register them in `lib/fonts.scad`.
+- **Fonts:** only redistributable fonts in `lib/fonts/` (see its README); register them in `lib/fonts.scad` and
+  re-run `tools/font_metrics.py`. Text that must fit a space uses `text_len()` / `arc_text_2d(max_len=...)`, never
+  guessed letter widths.
+- **Layout tests:** when something must stay on a plate or inside a frame, add `| inside CONTAINER: parts` lines
+  to `tests.txt`, including the variants with each optional band switched off.
 - **Verify before claiming:** numbers first (checks, clash, sections), one look at a render only when needed.
   After a refactor, compare part volumes and triangle counts with the committed STLs: asm.py's "shape changed"
   also fires on mere triangle reordering.
@@ -38,7 +42,7 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 - A second assignment to a variable wins over the first, whatever the order: to try a parameter, rewrite its line
   (build.py's tests do) or pass `-D`.
 - Modules in a `use`d file cannot see the project's variables: that is why `core.scad` is `include`d.
-- Text: a digit is about 0.78 × size wide in the widest bundled font; Pillow's text bbox is not the ink box.
+- Text: OpenSCAD's em is 1.3563 × `size` for every font; use the metrics functions. Pillow's text bbox is not the ink box.
 - `pieces=` in the parts table must count every separate solid (text = one per glyph); compute it in the .scad.
   Free artwork whose count varies: add `| ignore PIECES` to that line in `tests.txt`.
 - `fits.scad`: `fit_mid("H7", d)` holes, `fit_mid("p6"|"k6"|"g6", d)` shafts; no `m6`.

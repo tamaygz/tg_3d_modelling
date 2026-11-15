@@ -21,6 +21,7 @@ in `tools/artfit.py`.
 | Numeral "8" font | `fit8.py` | Lato Bold 0.87 (best of 32 sans/serif fonts) |
 | Lettering font | `fontaffine.py` → `font_ranking.log` | Source Serif 4 Bold 0.861, Eczar 0.858 … (≈120 fonts) |
 | Letter placement | `letterfit.py`, `pairfit.py` | B 0.86, O 0.89, L+A 0.86, V+U 0.86, I 0.95, T 0.90 |
+| Layout for any text on the banner curve | `fit_textarc.py`, `fit_textlayout.py`, `check_text_fit.py` | overlap 0.73; no letter outside the band for 8 texts × 3 fonts |
 | Write `lib/emblems/bolavuit_rebuilt.scad` | `export_scad.py` | |
 | Check in OpenSCAD | `compare_scad.py`, `tools/artfit.py overlay` | per element and whole logo |
 

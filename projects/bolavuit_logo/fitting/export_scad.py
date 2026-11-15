@@ -20,6 +20,7 @@ cx = lambda lst: [round(x - X0, 2) if j % 2 == 0 else round(x, 2) for j, x in en
 # reorder tail: python order A,c1,T1,N,T2,c2,B,c3,c4,c5 matches banner_tail_pts
 spec = [[round(x, 2) for x in band], cx(tail), cx(fold), cx(strip), [round(x, 3) for x in loops], [round(x, 2) for x in legs], cx(ear), round(stroke[0], 2)]
 L = json.load(open(letters_json))
+TA = json.load(open('textlayout_fit.json'))
 BALL = json.load(open('ball_fit.json')); C = np.array(BALL['ring'][:2]); d = 2*BALL['ring'][2]; R = d/2
 dc = BALL['disc']; cr = BALL['crescent']
 BALLP = [round(d,2), round(BALL['ring'][3],2), round(dc[2]/R,4), [round((dc[0]-C[0])/d,5), round((dc[1]-C[1])/d,5)],
@@ -38,6 +39,7 @@ out = ["// Bola Vuit logo REBUILT from the generic emblem elements (lib/emblem.s
        "BVR_BALL = %s;     // pool_ball_2d: [d, ring_w, disc, disc_offset, hl_center, hl_r, hl_from, hl_to, hl_mid, hl_w]" % json.dumps(BALLP),
        'BVR_NUMERAL_FONT = "Lato:style=Bold";      // closest open match to the logo\'s "8"',
        "BVR_NUMERAL = %s;  // 2x3 matrix for text(\"8\", size=100), relative to the ball centre" % json.dumps(NUM),
+       "BVR_TEXT_ARC = %s;  // arc_text_2d layout for any text: [centre x, centre y, radius, size, width, tracking, lean left, lean right, angle]" % json.dumps([round(TA[k], 3) for k in ("cx", "cy", "r", "size", "width", "tracking", "lean0", "lean1", "at")]),
        "BVR_LETTERS = [  // [text, 2x3 matrix applied to text(size=100, halign=left, valign=baseline)]"] + \
       [f'  ["{s}", {m}],' for s, m in L.items()] + ["];"]
 open(_env.REPO / 'lib' / 'emblems' / 'bolavuit_rebuilt.scad', 'w').write("\n".join(out) + "\n")

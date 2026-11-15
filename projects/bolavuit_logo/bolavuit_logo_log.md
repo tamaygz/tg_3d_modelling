@@ -26,6 +26,16 @@
 - Rebuilt output byte-identical after the library cleanup (banner now `banner_spec()`-capable, shared leaf code).
 - fitting/: superseded scripts and results removed, paths made portable, helpers moved to tools/artfit.py.
 
+## v2.2 (2026-11-15)
+- User report: custom banner text ("BOLA VUIT2") was not bent with the banner and ran out of it.
+  Cause: only the original text had a fitted placement; other text used a rough arc with guessed letter widths.
+- Fix: `arc_text_2d()` rewritten on real font metrics (new `lib/fonts_metrics.scad`), with upright letters on an
+  arched baseline, a lean, and `max_len` (condense, then shrink, to fit). Its layout was fitted to the original
+  lettering (fitting/fit_textlayout.py: overlap 0.73 with one uniform layout, vs 0.85 for the per-letter fit,
+  which the unchanged original text still uses).
+- New settings `text_size`, `text_fill`. fitting/check_text_fit.py: 8 texts × 3 fonts, 0% of any letter
+  outside the band.
+
 ## Prints and feedback
 - (none yet)
 

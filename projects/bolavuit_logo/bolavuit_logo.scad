@@ -14,7 +14,8 @@ part = "all";                    // which part to export ("all" = assembly)
 logo_width = 120; // [30:5:400]
 // exact = the original artwork, element by element; rebuilt = adjustable generic elements (settings below)
 source = "exact"; // [exact, rebuilt]
-// rebuilt only: banner text and ball number ("BOLA VUIT" uses the fitted letter placement; other text follows the arch)
+// rebuilt only: banner text and ball number. The original text, font and size use the letter-by-letter fitted
+// placement; anything else is set on the same curve by the generic text layout and condensed to fit the banner.
 banner_text = "BOLA VUIT";
 ball_number = 8;
 
@@ -36,9 +37,12 @@ banner_style = "outline"; // [outline, filled]
 // bow under the banner, and the small ears at the band's top corners
 banner_bow = true;
 banner_ears = true;
-// lettering font (custom text only; "BOLA VUIT" uses Source Serif 4 Bold, the closest open match)
-font_style = "book serif bold"; // [book serif bold, serif bold, serif, sans bold, sans]
-text_width = 0.8; // [0.4:0.05:1.2]
+// lettering font (the original "BOLA VUIT" uses Source Serif 4 Bold, the closest open match)
+font_style = "book serif bold"; // [book serif bold, serif bold, serif, sans bold, sans, round sans bold]
+// letter height, 1 = like the original; other values (and other text or fonts) use the generic layout below
+text_size = 1; // [0.5:0.05:1.3]
+// share of the banner's text space the text may use: longer text is condensed (then shrunk) to fit
+text_fill = 1; // [0.4:0.05:1]
 
 /* [Plaque] */
 // background: square (like the original), round, silhouette (follows the outline), none (artwork only)
@@ -54,7 +58,9 @@ art_h = 0.8;
 probe = 0;                                    // 1 = export the 2D artwork only (for overlay checks)
 PXW = 1809; PXH = 1716;                       // frame of the original artwork (px)
 k = logo_width / bv_art_w();                  // px -> mm (artwork width = logo_width)
-STROKE = BVR_BANNER[7];                       // banner outline width (px)
+STROKE = BVR_BANNER[7];
+// the original text, font and size use the fitted letter-by-letter placement; anything else the generic layout
+FITTED_TEXT = banner_text == "BOLA VUIT" && font_style == "book serif bold" && text_size == 1 && text_fill == 1;                       // banner outline width (px)
 
 parts = [
   ["base", "Base",    "PLA black", [0,0,-10], COL_BLACK],
@@ -78,10 +84,11 @@ module wreath_px() {
 }
 module banner_px() { translate([BVR_CENTER_X, 0]) ribbon_banner_2d(BVR_BANNER, banner_style, banner_bow, banner_ears); }
 module text_px() {
-  if (banner_text == "BOLA VUIT")
+  if (FITTED_TEXT)
     for (l=BVR_LETTERS) affine2d(l[1]) text(l[0], size=100, font=BVR_FONT, halign="left", valign="baseline");
-  else let(R = 4400) translate([BVR_CENTER_X, 395 - R]) arc_text_2d(banner_text, r=R + 50, size=150, font=font_for(font_style),
-                                                                    width=text_width, tracking=0.03);
+  else let(T = BVR_TEXT_ARC, f = font_for(font_style), span = text_len("BOLA VUIT", T[3], font_for("book serif bold"), T[5], T[4]))
+    translate([T[0], T[1]]) arc_text_2d(banner_text, r=T[2], size=T[3]*text_size, font=f, at=T[8], tracking=T[5], width=T[4],
+                                         fan=0, lean=[T[6], T[7]], max_len=span*text_fill);
 }
 module rebuilt_px() {
   difference() {

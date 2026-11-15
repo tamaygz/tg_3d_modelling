@@ -5,3 +5,8 @@ source = "rebuilt"; banner_text = "CLUB 147"; ball_number = 9 | ignore PIECES
 base_shape = "square"; art_style = "inlay"
 base_shape = "round"
 base_shape = "none"; show_wreath = false; show_text = false | ignore PIECES
+# custom banner text is set on the banner's curve and condensed to fit (checked outside the build by fitting/check_text_fit.py)
+source = "rebuilt"; banner_text = "BOLA VUIT2" | ignore PIECES
+source = "rebuilt"; banner_text = "SNOOKER CLUB OF THE YEAR 2026"; font_style = "sans bold" | ignore PIECES
+source = "rebuilt"; text_size = 0.8; text_fill = 0.7 | ignore PIECES
+source = "rebuilt"; banner_text = "I"; font_style = "serif" | ignore PIECES

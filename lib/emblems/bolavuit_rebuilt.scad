@@ -23,6 +23,7 @@ BVR_BALL_C = [913.93, 960.19];   // ball centre
 BVR_BALL = [918.57, 20.19, 0.4803, [-2e-05, 0.09292], [0.08782, -0.05976], 0.6232, 29.93, -119.45, -53.98, 0.1672];     // pool_ball_2d: [d, ring_w, disc, disc_offset, hl_center, hl_r, hl_from, hl_to, hl_mid, hl_w]
 BVR_NUMERAL_FONT = "Lato:style=Bold";      // closest open match to the logo's "8"
 BVR_NUMERAL = [[2.65739, -0.02197, -106.284], [0.01402, 2.8885, -48.716]];  // 2x3 matrix for text("8", size=100), relative to the ball centre
+BVR_TEXT_ARC = [928.307, -1634.437, 2046.935, 144.508, 0.913, -0.004, 3.945, 0.919, 90.418];  // arc_text_2d layout for any text: [centre x, centre y, radius, size, width, tracking, lean left, lean right, angle]
 BVR_LETTERS = [  // [text, 2x3 matrix applied to text(size=100, halign=left, valign=baseline)]
   ["B", [[1.25425, 0.09577, 423.83081], [0.16253, 1.55302, 352.87715]]],
   ["O", [[1.41104, 0.18702, 540.86973], [0.03657, 1.51989, 385.43939]]],

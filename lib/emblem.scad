@@ -2,6 +2,7 @@
 // text on an arc, pool balls. Extrude or inlay them in any project.
 // Use:  use <../../lib/emblem.scad>   (fonts: also `use <../../lib/fonts.scad>`)
 use <core.scad>
+use <fonts.scad>
 // Conventions: 2D, y up, units are whatever the caller works in (mm, or the source drawing's px).
 
 LEAF_STYLES   = ["almond", "pointed", "round"];   // almond = measured classic laurel leaf
@@ -104,21 +105,42 @@ module ribbon_banner_2d(spec, style="outline", show_bow=true, show_ears=true) {
 module ribbon_banner_inside_2d(spec) { ribbon_banner_2d(spec, "filled", show_bow=false, show_ears=false); }
 
 // ---------- text on an arc ----------
-// approximate advance widths (em) of capitals in the bundled serif bold; others fall back to 0.70
-function _adv(ch) = let(t = [["I",0.39],["J",0.50],["M",0.94],["W",1.0],[" ",0.25],["L",0.67],["T",0.67],["E",0.67],
-                             ["F",0.61],["P",0.61],["S",0.56],["1",0.50],["O",0.78],["Q",0.78],["N",0.72],["H",0.78]])
-    let(f = [for (p=t) if (p[0] == ch) p[1]]) len(f) ? f[0] : 0.70;
-function _cum(s, i) = i <= 0 ? 0 : _cum(s, i-1) + _adv(s[i-1]);
-// text centred on angle `at` along a circle of radius r (baseline), reading left to right over the top.
-// size: capitals are about 0.91 x size tall (bundled fonts). width < 1 condenses the letters (0.7 = 30% narrower).
-// tracking adds space between letters (em). inward=true reads along the bottom of the circle instead.
-module arc_text_2d(txt, r=100, size=10, font="Liberation Serif:style=Bold", at=90, tracking=0.04, width=1, inward=false) {
-    em = 1.34*size*width;
-    tot = _cum(txt, len(txt)) + tracking*(len(txt) - 1);
-    for (i=[0:len(txt)-1]) if (txt[i] != " ") let(s = (_cum(txt, i) + i*tracking + _adv(txt[i])/2 - tot/2)*em,
-                                                  a = inward ? at + s/r*180/PI : at - s/r*180/PI)
-        translate(polar(r, a)) rotate(inward ? a + 90 : a - 90)
-            scale([width, 1]) text(txt[i], size=size, font=font, halign="center", valign="baseline");
+// Letter-by-letter text on a circular baseline, using the real advance widths of the bundled fonts (fonts_metrics).
+//   r          baseline radius (the circle is around the origin; move it with translate)
+//   size       text size (OpenSCAD `size`; cap height = size * font_cap(font))
+//   at         angle of the text's middle on the circle (90 = top of the circle)
+//   tracking   extra space between letters (em)         width   horizontal scale of the letters
+//   fan        0 = letters stay upright (arch warp, like badge lettering), 1 = letters point away from the centre
+//   lean       [left, right]: tilt of the letters to the right in degrees, interpolated along the text
+//   max_len    longest allowed length of the text along the baseline: longer text is condensed to fit (down to
+//              `min_width`, then the size shrinks too), shorter text keeps its natural width
+//   inward     text on the lower side of the circle reading left to right (letters stand on the inside)
+function arc_text_fit(txt, size, font, tracking, width, max_len, min_width=0.6) = let(
+    nat  = text_len(txt, size, font, tracking, width),
+    kk   = is_undef(max_len) || nat <= max_len ? 1 : max_len/nat,
+    kw   = max(kk, min_width/width < 1 ? min_width/width : 1),          // width factor applied (condense first)
+    ks   = kk >= kw ? 1 : kk/kw)                                         // then shrink the size
+    [width*kw, size*ks];
+module arc_text_2d(txt, r=100, size=10, font="Liberation Serif:style=Bold", at=90, tracking=0.03, width=1,
+                   fan=1, lean=[0, 0], max_len=undef, min_width=0.6, inward=false) {
+    fit = arc_text_fit(txt, size, font, tracking, width, max_len, min_width);
+    w = fit[0]; sz = fit[1];
+    em = font_em(font)*sz*w;                                              // world length of one em of text
+    adv = [for (i=[0:1:len(txt)-1]) (font_adv(font, txt[i]) + tracking)*em];
+    start = [for (i=[0:1:len(txt)-1]) sum([for (j=[0:1:i-1]) adv[j]])];  // distance of each letter from the text start
+    total = sum(adv) - tracking*em;
+    sgn = inward ? 1 : -1;                                                // angle grows along the text on the lower side
+    for (i=[0:1:len(txt)-1]) if (txt[i] != " ") {
+        la  = font_adv(font, txt[i])*em;                                  // letter advance
+        sc  = start[i] + la/2 - total/2;                                  // letter centre, from the text middle
+        phi = at + sgn*sc/r*180/PI;                                       // angle of the letter's centre on the circle
+        tau = inward ? phi + 90 : phi - 90;                               // baseline direction
+        u   = total > 0 ? (start[i] + la/2)/total : 0.5;                  // 0 at the left end, 1 at the right
+        psi = (inward ? -(phi - 270) : (phi - 90))*fan - ((1 - u)*lean[0] + u*lean[1]);   // up vector, counter-clockwise from vertical
+        o   = polar(r, phi) - la/2*[cos(tau), sin(tau)];                  // origin of the letter (left end of its baseline)
+        multmatrix([[cos(tau)*w, -sin(psi), 0, o[0]], [sin(tau)*w, cos(psi), 0, o[1]], [0, 0, 1, 0], [0, 0, 0, 1]])
+            text(txt[i], size=sz, font=font, halign="left", valign="baseline");
+    }
 }
 
 // ---------- pool ball ----------

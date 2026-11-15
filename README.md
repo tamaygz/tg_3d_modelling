@@ -38,6 +38,7 @@ and bundled fonts. Projects only lay these out; anything reusable goes into the 
 | `python3 tools/build.py <project> --test` | rebuild a project's outputs (parts, print files, bundle, configurator) and check every variant in its `tests.txt`; `all` does every project |
 | `python3 tools/make_configurator.py projects/<name>/<name>.scad` | only rebuild the browser configurator |
 | `python3 tools/svg_to_scad.py art.svg out.scad --prefix XX` | convert SVG artwork into exact OpenSCAD polygons |
+| `python3 tools/font_metrics.py` | regenerate the font width tables after adding a font to `lib/fonts/` |
 | `python3 tools/artfit.py overlay exported.svg reference.png out.png` | compare a model's 2D output with reference artwork |
 | `bash setup_env.sh` | install OpenSCAD and fonts on a fresh machine |
 

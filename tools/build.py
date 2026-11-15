@@ -10,7 +10,9 @@ For each project (a folder under projects/ with <name>/<name>.scad):
               checks, no parts in unexpected pieces, no open meshes, no overlaps deeper than 0.05 mm.
               tests.txt: one variant per line, `name = value; name = value` (# comments allowed). A line may end
               with `| ignore WORD ...` to accept problem lines containing WORD (e.g. `| ignore PIECES` for free
-              artwork whose piece count changes with the text).
+              artwork whose piece count changes with the text), and/or `| inside CONTAINER: part part ...` to
+              require that those parts' XY extents lie within the container part's (a title must stay on its
+              plate). A line with no assignments tests the default build.
 
 Needs the OpenSCAD skill's scripts (asm.py). They are found under ~/.claude/skills, or set OSCAD_SCRIPTS.
 Exit code 0 = everything passed.
@@ -88,6 +90,42 @@ def set_params(text, assigns):
     return text
 
 
+def stl_bbox(path: Path):
+    """(xmin, ymin, xmax, ymax) of an ASCII or binary STL, pure python"""
+    import struct
+    b = path.read_bytes()
+    xs, ys = [], []
+    if b[:5] == b"solid" and b"facet" in b[:400]:
+        for m in re.finditer(rb"vertex\s+(\S+)\s+(\S+)\s+(\S+)", b):
+            xs.append(float(m.group(1))); ys.append(float(m.group(2)))
+    else:
+        n = struct.unpack("<I", b[80:84])[0]
+        for i in range(n):
+            v = struct.unpack("<12fH", b[84 + 50*i: 134 + 50*i])
+            for k in range(3):
+                xs.append(v[3 + 3*k]); ys.append(v[4 + 3*k])
+    return (min(xs), min(ys), max(xs), max(ys)) if xs else None
+
+
+def containment_problems(parts_dir: Path, rule: str, tol=0.05):
+    """rule 'CONTAINER: a b c' -> problems for parts whose XY extent leaves the container's"""
+    cont, _, rest = rule.partition(":")
+    cont = cont.strip()
+    box = stl_bbox(parts_dir / f"{cont}.stl") if (parts_dir / f"{cont}.stl").exists() else None
+    if box is None:
+        return [f"inside: container part {cont!r} has no geometry"]
+    bad = []
+    for part in rest.split():
+        f = parts_dir / f"{part}.stl"
+        if not f.exists():
+            continue                                    # an optional part that is switched off
+        b = stl_bbox(f)
+        if b and (b[0] < box[0] - tol or b[1] < box[1] - tol or b[2] > box[2] + tol or b[3] > box[3] + tol):
+            over = max(box[0] - b[0], box[1] - b[1], b[2] - box[2], b[3] - box[3])
+            bad.append(f"{part} sticks out of {cont} by {over:.1f} mm")
+    return bad
+
+
 def run_tests(name):
     proj = ROOT / "projects" / name
     tests = proj / "tests.txt"
@@ -101,12 +139,16 @@ def run_tests(name):
             line = line.split("#")[0].strip()
             if not line:
                 continue
-            line, _, ignore = line.partition("| ignore ")
-            line = line.strip()
-            assigns = [tuple(s.strip() for s in a.split("=", 1)) for a in line.split(";") if a.strip()]
+            head, *directives = [d.strip() for d in line.split("|")]
+            ignore = " ".join(d[len("ignore"):] for d in directives if d.startswith("ignore"))
+            inside = [d[len("inside"):] for d in directives if d.startswith("inside")]
+            line = head or "(defaults)"
+            assigns = [tuple(s.strip() for s in a.split("=", 1)) for a in head.split(";") if a.strip()]
             tmp.write_text(set_params(src, assigns))
             bad = problems(run_asm(tmp, "--check", "--clash", "--brief"), allow_empty=True)
             bad = [b for b in bad if not any(w in b for w in ignore.split())]
+            for rule in inside:
+                bad += containment_problems(proj / "_test_parts", rule)
             print(f"  {'FAIL' if bad else 'ok  '} {line}")
             for b in bad:
                 print(f"       {b}")

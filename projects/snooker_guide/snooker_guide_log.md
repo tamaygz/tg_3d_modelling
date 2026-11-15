@@ -15,6 +15,13 @@
 - Uses lib/core.scad and the attachment host helpers; sockets are now centred including the pry notch (1.5 mm
   shift), like the scoreboard. Asserts that the plate is thick enough for sockets. 11 variants in tests.txt.
 
+## v1.2 (2026-11-15)
+- User report: with the legend off, the plate kept empty space below and the title hung over the top edge.
+  Cause: the plate's centre offset had the wrong sign (it moved towards the legend instead of the title);
+  with both bands on, the error mostly cancelled, so the tests missed it.
+- Fix: one sign. New `| inside plate:` tests check that title, legend and table stay on the plate for every
+  combination of title and legend; they fail on the old code and pass now.
+
 ## Prints and feedback
 - (none yet)
 

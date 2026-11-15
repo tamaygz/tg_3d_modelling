@@ -1,5 +1,5 @@
 model bolavuit_logo.scad
-rev 3f6839f
-made 2026-11-15 08:49
+rev d7c4ed9
+made 2026-11-15 13:56
 Artwork.stl
 Base.stl
