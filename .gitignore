@@ -9,6 +9,9 @@
 # python bytecode
 __pycache__/
 
+# staging and output of tools/make_pages.py / the configurators workflow
+/build/
+
 # temporary files of tools/build.py --test and the configurator generator
 _test*
 _parts_probe.*
