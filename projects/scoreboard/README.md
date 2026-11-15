@@ -1,13 +1,14 @@
 # Sliding-pin scoreboard (parametric)
 
-Open `scoreboard.scad` in OpenSCAD (keep `fits.scad` and `LiberationSerif-Regular.ttf` beside it).
+Open `scoreboard.scad` in OpenSCAD from inside this repo: it uses the shared `../../lib` folder.
+The Customizer panel (Window → Customizer) shows every setting below with dropdowns.
 Set `part = "board_l"` (or any id below) and press F6 → Export STL to export a single part.
 
 ## Files
-- `scoreboard.scad`: the model (needs `fits.scad` and `LiberationSerif-Regular.ttf` beside it)
+- `scoreboard.scad`: the model (needs `../../lib`)
 - `scoreboard_print/`: print-ready STL/3MF files, oriented for printing
 - `scoreboard_parts/`: each part as an STL in its assembled position
-- `scoreboard_952c807.zip`: complete bundle (model, print files, viewer), revision 952c807
+- `scoreboard_c77074a.zip`: complete bundle (model, lib, print files, viewer), revision c77074a
 - `scoreboard_configurator.html`: change the parameters in your browser, regenerate the 3D view and download STLs (internet needed for the OpenSCAD engine)
 - `scoreboard.html`: interactive 3D viewer of the default build
 
@@ -21,6 +22,37 @@ Set `part = "board_l"` (or any id below) and press F6 → Export STL to export a
 | `pitch`, `step_pitch` | 11, 14 | spacing of the numbers (mm), which sets the board length |
 | `split_board` | true | cut the board at the divider into two halves joined by dowels |
 | `demo_scores` | [[7,2],[15,4]] | where the sliders sit in the preview only |
+
+## Styles
+
+Pick a `style_preset`, or leave it on `custom` and set each style yourself:
+
+| Setting | Options |
+|---|---|
+| `board_shape` | rect, rounded, chamfered, notched, arched, wave, scalloped |
+| `edge_profile` | flat, roundover, chamfer, cove, ogee (classic router-bit profiles) |
+| `groove_style` | none, single, double |
+| `marker_style` | block, rounded, arrow, knob |
+| `pointer_style` | triangle, needle, none |
+| `stopper_style` | screw, dome, flat, hex, ball |
+| `rail_style` | flat, rounded, beveled |
+| `plate_style` | inlay (2-colour), raised, engraved (1 colour) |
+| `font_style` | serif, serif bold, sans, sans bold |
+| `separator` | dot, bar, diamond, none |
+
+| Preset | Look |
+|---|---|
+| classic (default) | the reference photo: wave board, roundover, block markers, screw heads, inlaid serif numbers |
+| modern | rounded board, chamfer, rounded markers with needle pointers, flat heads, raised sans numbers, bar separators |
+| victorian | notched corners, ogee edge, double groove, arrow markers, ball stoppers, bold serif, diamonds |
+| pub | scalloped edge, cove, knob markers, dome stoppers |
+| minimal | plain rectangle, no profile, hex stoppers, numbers engraved in one colour |
+
+![classic](styles/classic.png)
+![modern](styles/modern.png)
+![victorian](styles/victorian.png)
+![pub](styles/pub.png)
+![minimal](styles/minimal.png)
 
 ## Parts (ids)
 `board_l`, `board_r`, `plate_u`/`text_u`, `plate_s`/`text_s` (number plate + black inlay, 2-colour 3MF),

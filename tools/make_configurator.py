@@ -4,13 +4,15 @@
     python3 tools/make_configurator.py projects/<name>/<name>.scad
 
 Writes projects/<name>/<name>_configurator.html. The page embeds the model, every file it
-includes/uses (libraries, .ttf fonts) and runs the real OpenSCAD (WebAssembly, loaded from a CDN)
-in the browser, so the preview always matches the .scad. Re-run after editing the model.
+includes/uses (shared lib/ files, .ttf fonts) and runs the real OpenSCAD (WebAssembly, loaded from
+a CDN) in the browser, so the preview always matches the .scad. Re-run after editing the model or lib/.
 
-What it reads from the .scad:
-  * parameters: `name = value; // comment` lines from the top of the file down to the
-    `// derived` marker (or the first module/function/table). `// ---- Section ----` lines group them.
-    `part` and `$` variables are skipped.
+What it reads from the .scad (OpenSCAD Customizer conventions, so the built-in Customizer works too):
+  * sections: `/* [Section name] */`. Reading stops at `/* [Hidden] */` (or `// derived`, or the
+    first module/function/parts table). Older `// ---- Section ----` headings also work.
+  * parameters: `name = value;` with the description on the `//` line(s) just above, and an
+    optional trailing `// [a, b, c]` (dropdown) or `// [min:step:max]` (number limits).
+    A trailing comment without brackets is used as the description. `part` and `$` variables are skipped.
   * parts: the `parts = [ ["id","Label","note",[dx,dy,dz],"#colour", ...], ... ]` table, if present.
     Each part is rendered separately with -D part="id". Without a table the whole model is one part.
 """
@@ -21,8 +23,14 @@ OPENSCAD_JS = "https://cdn.jsdelivr.net/npm/openscad-wasm-prebuilt@1.2.0/dist/op
 THREE = "https://cdn.jsdelivr.net/npm/three@0.160.0"
 
 
-def collect_files(main: Path):
-    root = main.parent.resolve()
+def repo_root(start: Path) -> Path:
+    for d in [start, *start.parents]:
+        if (d / "lib").is_dir() and (d / "CLAUDE.md").exists():
+            return d
+    return start
+
+
+def collect_files(main: Path, root: Path):
     files, todo = {}, [main.resolve()]
     while todo:
         f = todo.pop()
@@ -36,7 +44,7 @@ def collect_files(main: Path):
         files[rel] = {"text": text}
         for m in re.finditer(r"^\s*(?:include|use)\s*<([^>]+)>", text, re.M):
             dep = (f.parent / m.group(1)).resolve()
-            if root not in dep.parents and dep != root:
+            if root not in dep.parents:
                 sys.exit(f"refusing to embed {m.group(1)}: outside {root}")
             if not dep.exists():
                 sys.exit(f"missing dependency {dep}")
@@ -44,20 +52,46 @@ def collect_files(main: Path):
     return files
 
 
+def parse_options(spec):
+    """'[a, b, c]' -> ('select', [...]); '[0:1:10]' or '[0:10]' -> ('range', [min, step, max])"""
+    body = spec.strip()[1:-1]
+    if re.fullmatch(r"\s*-?[\d.]+\s*(:\s*-?[\d.]+\s*){1,2}", body):
+        n = [float(v) for v in body.split(":")]
+        return ("range", [n[0], n[1], n[2]] if len(n) == 3 else [n[0], None, n[1]])
+    vals = [v.strip().strip('"') for v in body.split(",") if v.strip()]
+    return ("select", [v.split(":")[0] for v in vals])   # Customizer also allows value:label
+
+
 def parse_params(text):
-    params, section = [], "Parameters"
+    params, section, desc = [], "Parameters", []
     for line in text.splitlines():
         s = line.strip()
-        if re.match(r"//\s*derived", s) or re.match(r"(module|function)\s", s) or re.match(r"(parts|checks|travel|report)\s*=", s):
+        if re.match(r"/\*\s*\[\s*Hidden\s*\]\s*\*/", s, re.I) or re.match(r"//\s*derived", s) \
+                or re.match(r"(module|function)\s", s) or re.match(r"(parts|checks|travel|report)\s*=", s):
             break
-        h = re.match(r"//\s*-{2,}\s*(.+?)\s*-{2,}\s*$", s)
+        h = re.match(r"/\*\s*\[\s*(.+?)\s*\]\s*\*/", s) or re.match(r"//\s*-{2,}\s*(.+?)\s*-{2,}\s*$", s)
         if h:
             section = h.group(1)[:1].upper() + h.group(1)[1:]
+            desc = []
+            continue
+        if s.startswith("//"):
+            desc.append(s[2:].strip())
             continue
         m = re.match(r"^([A-Za-z_]\w*)\s*=\s*(.+?);\s*(?://\s*(.*))?$", s)
-        if not m or m.group(1) == "part":
+        if not m:
+            desc = []
             continue
-        name, raw, comment = m.group(1), m.group(2).strip(), (m.group(3) or "").strip()
+        name, raw, trail = m.group(1), m.group(2).strip(), (m.group(3) or "").strip()
+        comment, opts = " ".join(desc), None
+        desc = []
+        if name == "part":
+            continue
+        om = re.match(r"^(\[[^\]]*\])\s*(.*)$", trail)
+        if om:
+            opts = parse_options(om.group(1))
+            comment = comment or om.group(2)
+        elif trail:
+            comment = comment or trail
         if raw in ("true", "false"):
             kind = "bool"
         elif re.fullmatch(r"-?\d+(\.\d+)?", raw):
@@ -66,7 +100,12 @@ def parse_params(text):
             kind = "string"
         else:
             kind = "expr"
-        params.append({"name": name, "raw": raw, "type": kind, "comment": comment, "section": section})
+        p = {"name": name, "raw": raw, "type": kind, "comment": comment, "section": section}
+        if opts and opts[0] == "select":
+            p["options"] = opts[1]
+        elif opts and opts[0] == "range":
+            p["range"] = opts[1]
+        params.append(p)
     return params
 
 
@@ -94,11 +133,12 @@ def main():
     text = scad.read_text()
     first = text.splitlines()[0] if text else ""
     title = re.sub(r"^//\s*", "", first) if first.startswith("//") else scad.stem
+    root = repo_root(scad.resolve().parent)
     model = {
         "name": scad.stem,
-        "main": scad.name,
+        "main": scad.resolve().relative_to(root).as_posix(),
         "title": title,
-        "files": collect_files(scad),
+        "files": collect_files(scad, root),
         "params": parse_params(text),
         "parts": parse_parts(text),
     }
@@ -148,7 +188,7 @@ button { font: 500 13px var(--sans); border: 1px solid var(--line); background: 
 button:hover { border-color: var(--muted) }
 button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600 }
 button:disabled { opacity: .5; cursor: default }
-button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px }
 form { padding: 4px 12px 12px; overflow: auto }
 fieldset { border: 0; padding: 0; margin: 12px 0 0 }
 legend { font: 600 11px var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 0 0 6px }
@@ -157,7 +197,7 @@ legend { font: 600 11px var(--sans); letter-spacing: .08em; text-transform: uppe
 .row .help { grid-column: 1 / -1; color: var(--muted); font-size: 12px }
 .row.wide { grid-template-columns: minmax(0, 1fr) }
 .row.changed label::after { content: " •"; color: var(--accent) }
-input[type=text], input[type=number] { width: 100%; font: 13px var(--mono); padding: 5px 7px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink); font-variant-numeric: tabular-nums }
+input[type=text], input[type=number], select { width: 100%; font: 13px var(--mono); padding: 5px 7px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink); font-variant-numeric: tabular-nums }
 input.bad { border-color: var(--warn) }
 input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); justify-self: start }
 main { display: flex; flex-direction: column; gap: 16px; min-width: 0 }
@@ -257,11 +297,22 @@ for (const p of MODEL.params) {
   row.className = "row" + (p.type === "expr" && p.raw.length > 14 ? " wide" : "");
   const id = "p_" + p.name;
   const lab = document.createElement("label"); lab.htmlFor = id; lab.textContent = p.name;
-  const inp = document.createElement("input"); inp.id = id; inp.name = p.name;
   const val = saved[p.name] ?? p.raw;
-  if (p.type === "bool") { inp.type = "checkbox"; inp.checked = val === "true" }
-  else if (p.type === "number") { inp.type = "number"; inp.step = "any"; inp.value = val }
-  else { inp.type = "text"; inp.value = p.type === "string" ? JSON.parse(val) : val; inp.spellcheck = false }
+  let inp;
+  if (p.options) {
+    inp = document.createElement("select");
+    for (const o of p.options) { const op = document.createElement("option"); op.value = op.textContent = o; inp.appendChild(op) }
+    inp.value = p.type === "string" ? JSON.parse(val) : val;
+  } else {
+    inp = document.createElement("input");
+    if (p.type === "bool") { inp.type = "checkbox"; inp.checked = val === "true" }
+    else if (p.type === "number") {
+      inp.type = "number"; inp.step = p.range && p.range[1] ? p.range[1] : "any"; inp.value = val;
+      if (p.range) { inp.min = p.range[0]; inp.max = p.range[2] }
+    }
+    else { inp.type = "text"; inp.value = p.type === "string" ? JSON.parse(val) : val; inp.spellcheck = false }
+  }
+  inp.id = id; inp.name = p.name;
   row.append(lab, inp);
   if (p.comment) { const h = document.createElement("div"); h.className = "help"; h.textContent = p.comment; row.appendChild(h) }
   sections[p.section].appendChild(row);
@@ -280,7 +331,7 @@ function markChanged() {
     const v = rawValue(p); cur[p.name] = v;
     const inp = $("p_" + p.name);
     inp.closest(".row").classList.toggle("changed", v !== p.raw);
-    inp.classList.toggle("bad", p.type === "number" && !/^-?\d*\.?\d+$/.test(v));
+    inp.classList.toggle("bad", p.type === "number" && (!/^-?\d*\.?\d+$/.test(v) || (p.range && (+v < p.range[0] || +v > p.range[2]))));
   }
   try { localStorage.setItem(STORE, JSON.stringify(cur)) } catch (e) {}
 }

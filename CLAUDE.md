@@ -3,18 +3,24 @@
 Home for all 3D-modelling tasks (repo `tamaygz/tg_3d_modelling`, cloud environment "3DModelling"). Each model lives in `projects/<name>/` with its `.scad`, a README,
 a `<name>_log.md` design log, its print outputs (`<name>_print/`), the per-part STLs as modelled
 (`<name>_parts/`), the latest `--bundle` zip and `<name>_configurator.html`. Commit all of these; the user wants them in the repo.
-When a new bundle is made, delete the old zip. Shared helpers are in `lib/`.
+When a new bundle is made, delete the old zip. Shared building blocks are in `lib/` (see `lib/README.md`): plaque outlines, routed edges, rails/sliders/pegs, number scales, fits, fonts.
 
 ## Toolchain
 - **OpenSCAD**, driven by the `openscad` skill (render.sh / asm.py). Run its `setup.sh` once per fresh container,
   or let the environment setup script install `openscad`, `xvfb` and `fonts-liberation`.
-- **Text in models:** the WebAssembly OpenSCAD engine finds no system fonts, so any text renders empty.
-  Fix: copy the `.ttf` from `lib/` beside the model, add `use <Font.ttf>`, and build with
-  `OSCAD_ENGINE=native` (OpenSCAD 2021 is slower, but fine for models this size).
+- **Text in models:** `use <../../lib/fonts.scad>` and `font_for("serif")` etc. The skill's WebAssembly engine
+  finds no fonts, so build text models with `OSCAD_ENGINE=native` (slower, fine for these sizes).
+- **Reuse the lib first.** Before modelling a board, plaque, rail, slider, peg or number scale, use `lib/`.
+  When a project grows something generic, move it into `lib/` with its style option list and keep
+  `lib/README.md` current. Check every style option of a lib module (fit + clash) after changing it.
+- **Bundles:** after `asm.py --bundle`, run `python3 tools/bundle_with_lib.py projects/<name>/<name>_<rev>.zip`
+  so the zip carries the lib files it needs.
 - `fits.scad` (ISO 286 fits): `fit_mid("H7", d)` for holes and `fit_mid("p6"|"k6"|"g6", d)` for shafts.
   Not every class exists at every size (no `m6`; use `k6`).
 - OpenSCAD ranges `[a:b]` with a > b run BACKWARDS instead of being empty. Always write `[a:1:b]` in loops
   over counts that can reach 0 or 1. Test optional features with empty lists (`steps = []`).
+- Text width: a digit is about 0.78 × text size wide in the widest bundled font (sans bold). Size plates
+  and borders for the widest label, not the pitch.
 - In the parts table, `pieces=` must count every separate solid. Text inlays have one piece per glyph,
   plus dots and borders, so compute that count in the .scad.
 
@@ -22,8 +28,11 @@ When a new bundle is made, delete the old zip. Shared helpers are in `lib/`.
 - `python3 tools/make_configurator.py projects/<name>/<name>.scad` writes `<name>_configurator.html`:
   a standalone page that runs the real .scad with OpenSCAD WebAssembly (from the jsDelivr CDN), with a
   form for every parameter, a coloured 3D view per part, STL downloads and a customised .scad download.
-- It reads the parameters from the top of the file down to `// derived` (`name = value; // comment`, with
-  `// ---- Section ----` headings) and the parts from the `parts` table. Keep new models in that layout.
+- Write parameters in **OpenSCAD Customizer format** (also works in OpenSCAD's own Customizer panel):
+  `/* [Section] */` headings, a `// description` line above each `name = value;`, optional trailing
+  `// [a, b, c]` (dropdown) or `// [min:step:max]`, and `/* [Hidden] */` before derived values.
+- Offer style choices as string parameters with option lists, plus a `style_preset` that overrides
+  them (see the scoreboard's PRESETS table).
 - **Re-run it after every .scad change**, because the page embeds a copy of the model. Commit the HTML too.
 - Fonts work in the browser engine once the .ttf is in `/fonts` with a `fonts.conf`; the page does this.
 
@@ -46,4 +55,4 @@ When a new bundle is made, delete the old zip. Shared helpers are in `lib/`.
 ## Projects
 | Project | Status | Notes |
 |---|---|---|
-| `projects/scoreboard` | v1 modelled, not printed yet | sliding-pin scoreboard (0–19 + 20…100 steps), see its log |
+| `projects/scoreboard` | v2: styles and presets, not printed yet | sliding-pin scoreboard (0–19 + 20…100 steps), see its log |

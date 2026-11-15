@@ -1,92 +1,187 @@
 // Parametric sliding-pin scoreboard (pool / snooker style)
 // Board + number plates + per-player rails, sliders (marker pins) and stopper pegs.
-include <fits.scad>
-use <LiberationSerif-Regular.ttf>   // bundled font so every OpenSCAD build finds it
+// Shapes, rails, pegs and number scales come from the shared library in ../../lib.
+include <../../lib/fits.scad>
+use <../../lib/fonts.scad>
+use <../../lib/shapes.scad>
+use <../../lib/rail.scad>
+use <../../lib/scale.scad>
 
 part = "all";                    // which part to export ("all" = assembly)
 
-// ---------------- scoring ----------------
-players     = 2;                 // number of players = number of tracks (2 tracks share one number plate)
-base_min    = 0;                 // first number of the main range
-base_max    = 19;                // last number of the main range
-steps       = [20,40,60,80,100]; // 2nd-dimension steps (counting beyond the main range); [] = none
-zero_step   = true;              // put a "0" home position in front of the steps (ignored without steps)
-demo_scores = [[7,2],[15,4]];    // per player [main-range index, step index] – only for the preview
+/* [Scoring] */
+// number of players = tracks (two tracks share one number plate)
+players = 2; // [1:1:8]
+// first number of the main range
+base_min = 0;
+// last number of the main range
+base_max = 19;
+// 2nd-dimension steps for counting beyond the main range; [] = none
+steps = [20,40,60,80,100];
+// put a "0" home position in front of the steps (ignored without steps)
+zero_step = true;
+// preview only: per player [main-range index, step index]
+demo_scores = [[7,2],[15,4]];
 
-// ---------------- layout ----------------
-pitch       = 11;    // spacing of main-range numbers (mm)
-step_pitch  = 14;    // spacing of step numbers (mm)
-font        = "Liberation Serif";  // number font
-text_size   = 5.2;   // number cap height (mm)
-dot_d       = 1.4;   // separator dot diameter
-strip_gap   = 9;     // gap between slider edges of neighbouring plates
+/* [Style] */
+// a preset overrides every style setting below; "custom" uses them as set
+style_preset = "custom"; // [custom, classic, modern, victorian, pub, minimal]
+// board outline
+board_shape = "wave"; // [rect, rounded, chamfered, notched, arched, wave, scalloped]
+// routed profile of the board's top edge
+edge_profile = "roundover"; // [flat, roundover, chamfer, cove, ogee]
+// decorative groove around the board face
+groove_style = "single"; // [none, single, double]
+// marker (slider) body
+marker_style = "block"; // [block, rounded, arrow, knob]
+// marker pointer (arrow markers have their own)
+pointer_style = "triangle"; // [triangle, needle, none]
+// stopper head
+stopper_style = "screw"; // [screw, dome, flat, hex, ball]
+// rail top
+rail_style = "flat"; // [flat, rounded, beveled]
+// numbers: 2-colour inlay, raised on the plate, or engraved (one colour)
+plate_style = "inlay"; // [inlay, raised, engraved]
+// number font
+font_style = "serif"; // [serif, serif bold, sans, sans bold]
+// separator between numbers
+separator = "dot"; // [dot, bar, diamond, none]
+// border line around the numbers
+plate_border = true;
 
-// ---------------- board ----------------
-board_t     = 12;    // board thickness
-margin_x    = 14;    // board edge to rail end
-margin_y    = 13;    // board edge (at deepest wave) to slider edge
-wave_amp    = 5;     // height of the wavy top/bottom edge
-waves       = 2;     // number of wave periods along the edge
-corner_r    = 8;     // outline corner radius
-edge_r      = 3;     // roundover of the top edge
-groove_in   = 5.5;   // decorative groove: inset from edge
-groove_w    = 0.8;   // decorative groove width / depth
-split_board = true;  // cut the board at the divider into two printable halves
-dowel_d     = 5;     // alignment dowel diameter (split board)
-dowel_l     = 20;    // alignment dowel length
-keyhole     = true;  // keyhole hanging slots in the back
+/* [Layout] */
+// spacing of main-range numbers (mm)
+pitch = 11; // [8:0.5:20]
+// spacing of step numbers (mm)
+step_pitch = 14; // [8:0.5:24]
+// number cap height (mm)
+text_size = 5.2; // [3:0.1:8]
+// separator size
+dot_d = 1.4;
+// gap between slider edges of neighbouring plates
+strip_gap = 9;
 
-// ---------------- number plate ----------------
-label_h     = 10;    // plate height (Y)
-label_t     = 2;     // plate thickness (sits flush in a pocket)
-label_clr   = 0.2;   // pocket clearance per side
-text_depth  = 0.6;   // depth of the inlaid numbers
-border_in   = 0.9;   // inlaid border line inset
-border_w    = 0.5;   // inlaid border line width
+/* [Board] */
+// board thickness
+board_t = 12;
+// board edge to rail end
+margin_x = 14;
+// board edge (deepest point) to slider edge
+margin_y = 13;
+// height of arched / wave / scalloped edges
+wave_amp = 5;
+// waves along the edge (wave), scallop density (scalloped)
+waves = 2;
+// corner radius / chamfer / notch size
+corner_r = 8;
+// size of the routed top edge
+edge_r = 3;
+// decorative groove: inset from edge
+groove_in = 5.5;
+// decorative groove width and depth
+groove_w = 0.8;
+// cut the board into two printable halves
+split_board = true;
+// alignment dowel diameter (split board)
+dowel_d = 5;
+// alignment dowel length
+dowel_l = 20;
+// keyhole hanging slots in the back
+keyhole = true;
 
-// ---------------- rail & sliders ----------------
-flange_w    = 10;    // rail top flange width
-flange_t    = 2;     // rail top flange thickness
-web_w       = 5;     // rail web width
-web_h       = 3.2;   // rail web height (gap under flange)
-rail_end    = 4;     // rail beyond the stopper-peg centre
-slide_clr   = 0.25;  // slider-to-rail clearance per side
-slider_l    = 10;    // slider length along the rail
-slider_wall = 1.6;   // slider side wall
-slider_top  = 2;     // slider top plate
-lip_t       = 1.8;   // slider lip thickness (under the flange)
-ptr_len     = 3.5;   // pointer reach towards the number plate
-ptr_w       = 6;     // pointer base width
-ptr_t       = 1.4;   // pointer thickness
+/* [Number plate] */
+// plate height (Y)
+label_h = 10;
+// plate thickness (sits flush in a pocket)
+label_t = 2;
+// pocket clearance per side
+label_clr = 0.2;
+// depth (inlay, engraved) or height (raised) of the numbers
+text_depth = 0.6;
+// border line inset
+border_in = 0.9;
+// border line width
+border_w = 0.5;
 
-// ---------------- stopper pegs ----------------
-peg_d       = 3;     // peg shaft (press fit p6 into H7 board hole)
-peg_hole    = 3.4;   // clearance hole in the rail
-peg_depth   = 6;     // depth of the peg hole in the board
-head_d      = 6.5;   // stopper head diameter
-head_h      = 2.5;   // stopper head height above the rail
-div_pin     = 4;     // divider pins at ±this from the rail joint
+/* [Rail and sliders] */
+// rail top flange width
+flange_w = 10;
+// rail top flange thickness
+flange_t = 2;
+// rail web width
+web_w = 5;
+// rail web height (gap under flange)
+web_h = 3.2;
+// rail beyond the stopper-peg centre
+rail_end = 4;
+// slider-to-rail clearance per side
+slide_clr = 0.25;
+// slider length along the rail
+slider_l = 10;
+// slider side wall
+slider_wall = 1.6;
+// slider top plate
+slider_top = 2;
+// slider lip thickness (under the flange)
+lip_t = 1.8;
+// pointer reach towards the number plate
+ptr_len = 3.5;
+// pointer base width
+ptr_w = 6;
+// pointer thickness
+ptr_t = 1.4;
 
+/* [Stopper pegs] */
+// peg shaft (press fit p6 into an H7 board hole)
+peg_d = 3;
+// clearance hole in the rail
+peg_hole = 3.4;
+// depth of the peg hole in the board
+peg_depth = 6;
+// stopper head diameter
+head_d = 6.5;
+// stopper head height above the rail
+head_h = 2.5;
+// divider pins at ±this from the rail joint
+div_pin = 4;
+
+/* [Hidden] */
 $fn = 48;
 
+// style presets: [shape, edge, groove, marker, pointer, stopper, rail, plate, font, separator]
+PRESETS = [
+  ["classic",   ["wave",      "roundover", "single", "block",   "triangle", "screw", "flat",    "inlay",    "serif",      "dot"]],
+  ["modern",    ["rounded",   "chamfer",   "none",   "rounded", "needle",   "flat",  "rounded", "raised",   "sans",       "bar"]],
+  ["victorian", ["notched",   "ogee",      "double", "arrow",   "none",     "ball",  "beveled", "inlay",    "serif bold", "diamond"]],
+  ["pub",       ["scalloped", "cove",      "single", "knob",    "triangle", "dome",  "rounded", "inlay",    "serif",      "dot"]],
+  ["minimal",   ["rect",      "flat",      "none",   "block",   "needle",   "hex",   "flat",    "engraved", "sans",       "none"]]
+];
+custom_style = [board_shape, edge_profile, groove_style, marker_style, pointer_style, stopper_style, rail_style, plate_style, font_style, separator];
+pi_ = search([style_preset], PRESETS)[0];
+ST = is_num(pi_) ? PRESETS[pi_][1] : custom_style;  // active style
+s_shape = ST[0]; s_edge = ST[1]; s_groove = ST[2]; s_marker = ST[3]; s_pointer = ST[4];
+s_stop = ST[5]; s_rail = ST[6]; s_plate = ST[7]; s_font = font_for(ST[8]); s_sep = ST[9];
+
 // derived
+RAIL    = [flange_w, flange_t, web_w, web_h];         // rail spec shared by rail, slider and pegs
 nU      = base_max - base_min + 1;                    // main-range positions
 has_steps = len(steps) > 0;                           // is there a second dimension at all
 slabels = has_steps ? concat(zero_step ? [0] : [], steps) : [];  // step labels
 nS      = len(slabels);                               // step positions
-rail_h  = web_h + flange_t;                           // rail height
-sw      = flange_w + 2*slide_clr + 2*slider_wall;     // slider width (Y)
-s_top   = rail_h + slide_clr + slider_top;            // slider top above board
+rh      = rail_h(RAIL);                               // rail height
+sw      = slider_w(RAIL, slide_clr, slider_wall);     // slider width (Y)
+s_top   = slider_top(RAIL, slide_clr, slider_top);    // slider top above board
 div_hl  = div_pin + head_d/2;                         // divider head half length
-xu      = [for (i=[0:1:nU-1]) i*pitch];                 // main-range pointer x
+xu      = [for (i=[0:1:nU-1]) i*pitch];               // main-range pointer x
+ulabels = [for (i=[0:1:nU-1]) base_min + i];          // main-range labels
 x_start = -(slider_l/2 + head_d/2);                   // start stopper x
 x_div   = xu[nU-1] + slider_l/2 + div_hl;             // divider / rail joint x (only with steps)
 xs      = [for (j=[0:1:nS-1]) x_div + div_hl + slider_l/2 + j*step_pitch]; // step pointer x
 x_end   = (has_steps ? xs[nS-1] : xu[nU-1]) + slider_l/2 + head_d/2;  // end stopper x
-ru1     = has_steps ? x_div : x_end + rail_end;       // main rail end
-x_split = has_steps ? x_div : nU > 1 ? (xu[floor(nU/2)-1] + xu[floor(nU/2)])/2 : 0;  // board cut (between two numbers without steps)
 ru0     = x_start - rail_end;                         // main rail start
+ru1     = has_steps ? x_div : x_end + rail_end;       // main rail end
 rs1     = x_end + rail_end;                           // step rail end
+x_split = has_steps ? x_div : nU > 1 ? (xu[floor(nU/2)-1] + xu[floor(nU/2)])/2 : 0;  // board cut
 bx0     = ru0 - margin_x;                             // board left
 bx1     = rs1 + margin_x;                             // board right
 rail_dy = label_h/2 + 1.5 + sw/2;                     // plate centre to rail centre
@@ -95,18 +190,23 @@ strip_p = 2*rail_dy + sw + strip_gap;                 // plate-to-plate pitch
 strip_y = [for (k=[0:nStrip-1]) -k*strip_p];          // plate centre y
 track_y = [for (p=[0:players-1]) strip_y[floor(p/2)] + (p%2==0 ? rail_dy : -rail_dy)];
 track_up= [for (p=[0:players-1]) p%2==0];             // true = pointer faces down onto the plate below
-by1     = rail_dy + sw/2 + margin_y;                  // board top (wave trough)
+by1     = rail_dy + sw/2 + margin_y;                  // board top (deepest point of the edge)
 by0     = strip_y[nStrip-1] - ((players%2==1) ? label_h/2 + 4 : rail_dy + sw/2) - margin_y; // board bottom
-pl_u    = [xu[0] - pitch/2, xu[nU-1] + pitch/2];      // main plate x span
-pl_s    = has_steps ? [xs[0] - step_pitch/2, xs[nS-1] + step_pitch/2] : [0,0]; // step plate x span
+edge_amp= (s_shape == "arched" || s_shape == "wave" || s_shape == "scalloped") ? wave_amp : 0;  // extra edge height
+function end_pad(label, p) = max(p/2, len(str(label))*0.39*text_size + (plate_border ? border_in + border_w : 0) + 0.6);  // half digit advance ≈ 0.39·size (widest bundled font)
+pl_u    = [xu[0] - end_pad(ulabels[0], pitch), xu[nU-1] + end_pad(ulabels[nU-1], pitch)];  // main plate x span
+pl_s    = has_steps ? [xs[0] - end_pad(slabels[0], step_pitch), xs[nS-1] + end_pad(slabels[nS-1], step_pitch)] : [0,0]; // step plate x span
+peg_l   = rh + peg_depth - 0.5;                       // peg shaft length below the head
 hole_b  = fit_mid("H7", peg_d);                       // board peg hole
 shaft_d = fit_mid("p6", peg_d);                       // peg shaft
 dw_hole = fit_mid("H7", dowel_d);                     // dowel hole
 dw_d    = fit_mid("k6", dowel_d);                     // dowel shaft (H7/k6)
 dz      = 5;                                          // dowel centre height
 function sumv(v, i=0) = i >= len(v) ? 0 : v[i] + sumv(v, i+1);
-n_txt_u = nStrip * (sumv([for (i=[0:nU-1]) len(str(base_min+i))]) + nU);    // inlay pieces: digits + dots + border
-n_txt_s = nStrip * (sumv([for (v=slabels) len(str(v))]) + nS);
+function art_pieces(labels) = len(labels) == 0 ? 0 :   // separate solids in one plate's artwork
+  sumv([for (v=labels) len(str(v))]) + (s_sep == "none" ? 0 : len(labels) - 1) + (plate_border ? 1 : 0);
+n_txt_u = nStrip * art_pieces(ulabels);               // artwork pieces, main plates
+n_txt_s = nStrip * art_pieces(slabels);               // artwork pieces, step plates
 
 parts = [
   ["board_l",   "Board left",         "PLA wood / brown", [0,0,-30], "#7a2e1c"],
@@ -128,7 +228,7 @@ checks = [
   ["stop_end","rail_u","touch"], ["stop_div","rail_s","touch"]
 ];
 report = [
-  ["board length", bx1 - bx0], ["board height", by1 + wave_amp - (by0 - wave_amp)],
+  ["board length", bx1 - bx0], ["board height", by1 - by0 + 2*edge_amp],
   ["main rail length", ru1 - ru0], ["step rail length", has_steps ? rs1 - x_div : 0],
   ["left half length", split_board ? x_split - bx0 : bx1 - bx0], ["right half length", split_board ? bx1 - x_split : 0],
   ["slider top above board", s_top]
@@ -137,37 +237,22 @@ report = [
 module pick(n){ if (part=="all" || part==n) children(); }
 
 // ---------------- board ----------------
-function wv(t) = wave_amp * 0.5 * (1 + cos(360*waves*t));
 module outline() {
-  N = 160;
-  top = [for (i=[0:N]) let(t=i/N) [bx0 + t*(bx1-bx0), by1 + wv(t)]];
-  bot = [for (i=[N:-1:0]) let(t=i/N) [bx0 + t*(bx1-bx0), by0 - wv(t)]];
-  offset(r=corner_r) offset(delta=-corner_r) polygon(concat(top, bot));
-}
-module board_blank() {
-  n = 6;
-  linear_extrude(board_t - edge_r) outline();
-  for (k=[1:n]) translate([0,0,board_t - edge_r + (k-1)*edge_r/n])
-    linear_extrude(edge_r/n + 0.01) offset(delta=-(edge_r - sqrt(edge_r*edge_r - pow(k*edge_r/n,2)))) outline();
-}
-module plate2d(sp) { offset(r=1) offset(delta=-1) translate([sp[0], -label_h/2]) square([sp[1]-sp[0], label_h]); }
-module keyslot() {
-  translate([0,0,-0.1]) { cylinder(d=9, h=6.1); hull() { cylinder(d=4.5, h=2.6); translate([0,10,0]) cylinder(d=4.5, h=2.6); } }
-  translate([0,0,2.5]) hull() { cylinder(d=9, h=3.5); translate([0,10,0]) cylinder(d=9, h=3.5); }
+  translate([(bx0 + bx1)/2, (by0 + by1)/2])
+    plaque_2d([bx1 - bx0, by1 - by0], s_shape, r=corner_r, amp=wave_amp, waves=waves);
 }
 function peg_x() = has_steps ? [x_start, x_div - div_pin, x_div + div_pin, x_end] : [x_start, x_end];
 module board() {
   difference() {
-    board_blank();
-    translate([0,0,board_t - groove_w]) linear_extrude(1)
-      difference() { offset(delta=-groove_in) outline(); offset(delta=-groove_in-groove_w) outline(); }
+    profiled_slab(board_t, s_edge, edge_r) outline();
+    outline_groove(board_t, groove_in, groove_w, groove_w, s_groove) outline();
     for (y=strip_y) translate([0,y,board_t - label_t]) linear_extrude(label_t + 1) {
-      offset(delta=label_clr) plate2d(pl_u);
-      if (has_steps) offset(delta=label_clr) plate2d(pl_s);
+      offset(delta=label_clr) plate_2d(pl_u[0], pl_u[1], label_h);
+      if (has_steps) offset(delta=label_clr) plate_2d(pl_s[0], pl_s[1], label_h);
     }
     for (y=track_y, x=peg_x()) translate([x,y,board_t - peg_depth]) cylinder(d=hole_b, h=peg_depth + 1, $fn=32);
     if (split_board) for (y=strip_y) translate([x_split,y,dz]) rotate([0,90,0]) cylinder(d=dw_hole, h=dowel_l + 1, center=true, $fn=32);
-    if (keyhole) for (x=[bx0 + 0.2*(bx1-bx0), bx0 + 0.8*(bx1-bx0)]) translate([x, by1 - 14, 0]) keyslot();
+    if (keyhole) for (x=[bx0 + 0.2*(bx1-bx0), bx0 + 0.8*(bx1-bx0)]) translate([x, by1 - 14, 0]) keyhole_slot();
   }
 }
 module board_half(right) {
@@ -180,92 +265,38 @@ module board_half(right) {
 }
 
 // ---------------- number plates ----------------
-module text_u2d() {
-  for (i=[0:1:nU-1]) translate([xu[i],0]) text(str(base_min + i), size=text_size, font=font, halign="center", valign="center");
-  for (i=[0:1:nU-2]) translate([(xu[i]+xu[i+1])/2, 0]) circle(d=dot_d, $fn=16);
+module plate_outline(sp) { plate_2d(sp[0], sp[1], label_h); }
+module plate_artwork(sp, labels, xs_) {
+  number_row_2d(labels, xs_, text_size, s_font, s_sep, dot_d);
+  if (plate_border) border_2d(border_in, border_w) plate_outline(sp);
 }
-module text_s2d() {
-  for (j=[0:1:nS-1]) translate([xs[j],0]) text(str(slabels[j]), size=text_size, font=font, halign="center", valign="center");
-  for (j=[0:1:nS-2]) translate([(xs[j]+xs[j+1])/2, 0]) circle(d=dot_d, $fn=16);
-}
-module border2d(sp) { difference() { offset(delta=-border_in) plate2d(sp); offset(delta=-border_in-border_w) plate2d(sp); } }
-module inlay2d(sp) { if (sp==pl_u) text_u2d(); else text_s2d(); border2d(sp); }
-module num_plate(sp) {
-  difference() {
-    linear_extrude(label_t) plate2d(sp);
-    translate([0,0,label_t - text_depth]) linear_extrude(1) inlay2d(sp);
-  }
-}
-module num_text(sp) { translate([0,0,label_t - text_depth]) linear_extrude(text_depth) intersection() { inlay2d(sp); offset(delta=-0.3) plate2d(sp); } }
-
-// ---------------- rail ----------------
-module rail_profile() {
-  translate([-web_w/2, 0]) square([web_w, web_h + 0.01]);
-  translate([-flange_w/2, web_h]) square([flange_w, flange_t]);
-}
-module rail(x0, x1, holes) {
-  difference() {
-    translate([x0,0,0]) rotate([90,0,90]) linear_extrude(x1 - x0) rail_profile();
-    for (x=holes) translate([x,0,-1]) cylinder(d=peg_hole, h=rail_h + 2, $fn=32);
-  }
-}
-
-// ---------------- slider (marker pin) ----------------
-module slider() {
-  c = slide_clr;
-  zl = web_h - c - lip_t;
-  difference() {
-    union() {
-      translate([-slider_l/2, -sw/2, zl]) cube([slider_l, sw, s_top - zl]);
-      translate([0, -sw/2 + 0.01, s_top - ptr_t]) linear_extrude(ptr_t)
-        polygon([[-ptr_w/2,0],[ptr_w/2,0],[0.4,-ptr_len],[-0.4,-ptr_len]]);
-    }
-    translate([-slider_l, -(flange_w/2 + c), web_h - c]) cube([2*slider_l, flange_w + 2*c, flange_t + 2*c]);
-    translate([-slider_l, -(web_w/2 + c), -1]) cube([2*slider_l, web_w + 2*c, web_h + 1]);
-    translate([0, 0, s_top + 2.4]) sphere(r=3, $fn=48);
-  }
-}
-
-// ---------------- stopper pegs ----------------
-module peg_head() {
-  difference() {
-    union() { cylinder(d=head_d, h=head_h - 0.8); translate([0,0,head_h - 0.8]) cylinder(d1=head_d, d2=head_d - 1.6, h=0.8); }
-    translate([0,0,head_h - 0.6]) cube([head_d, 0.7, 1.4], center=true);
-  }
-}
-module stop_end() {
-  peg_head();
-  translate([0,0,-(rail_h + peg_depth - 0.5)]) cylinder(d=shaft_d, h=rail_h + peg_depth - 0.5 + 0.01, $fn=32);
-}
-module stop_div() {
-  hull() for (s=[-1,1]) translate([s*div_pin,0,0]) cylinder(d=head_d, h=head_h - 0.8);
-  hull() for (s=[-1,1]) translate([s*div_pin,0,head_h - 0.8]) cylinder(d1=head_d, d2=head_d - 1.6, h=0.8);
-  for (s=[-1,1]) translate([s*div_pin,0,-(rail_h + peg_depth - 0.5)]) cylinder(d=shaft_d, h=rail_h + peg_depth - 0.5 + 0.01, $fn=32);
-}
+module num_plate(sp, labels, xs_) { plate_body(label_t, s_plate, text_depth) { plate_outline(sp); plate_artwork(sp, labels, xs_); } }
+module num_text(sp, labels, xs_)  { plate_art(label_t, s_plate, text_depth)  { plate_outline(sp); plate_artwork(sp, labels, xs_); } }
 
 // ---------------- assembly ----------------
 module on_track(p) { translate([0, track_y[p], board_t]) rotate([0,0, track_up[p] ? 0 : 180]) children(); }
 function tx(p,x) = track_up[p] ? x : -x;   // x in track frame (lower tracks are rotated 180°)
+module marker() { rail_slider(RAIL, slider_l, slide_clr, slider_wall, slider_top, lip_t, s_marker, s_pointer, ptr_len, ptr_w, ptr_t); }
 
 pick("board_l") board_half(false);
 pick("board_r") if (split_board) board_half(true);
 for (y=strip_y) translate([0,y,board_t - label_t]) {
-  pick("plate_u") num_plate(pl_u);
-  pick("text_u")  num_text(pl_u);
-  if (has_steps) pick("plate_s") num_plate(pl_s);
-  if (has_steps) pick("text_s")  num_text(pl_s);
+  pick("plate_u") num_plate(pl_u, ulabels, xu);
+  pick("text_u")  num_text(pl_u, ulabels, xu);
+  if (has_steps) pick("plate_s") num_plate(pl_s, slabels, xs);
+  if (has_steps) pick("text_s")  num_text(pl_s, slabels, xs);
 }
 for (p=[0:players-1]) {
   sc = p < len(demo_scores) ? demo_scores[p] : [0,0];
   translate([0, track_y[p], board_t]) {
-    pick("rail_u") rail(ru0, ru1, [x_start, has_steps ? x_div - div_pin : x_end]);
-    if (has_steps) pick("rail_s") rail(x_div, rs1, [x_div + div_pin, x_end]);
-    pick("stop_end") for (x=[x_start, x_end]) translate([x,0,rail_h]) stop_end();
-    if (has_steps) pick("stop_div") translate([x_div,0,rail_h]) stop_div();
+    pick("rail_u") t_rail(ru0, ru1, RAIL, s_rail, [x_start, has_steps ? x_div - div_pin : x_end], peg_hole);
+    if (has_steps) pick("rail_s") t_rail(x_div, rs1, RAIL, s_rail, [x_div + div_pin, x_end], peg_hole);
+    pick("stop_end") for (x=[x_start, x_end]) translate([x,0,rh]) stop_peg(head_d, head_h, s_stop, shaft_d, peg_l);
+    if (has_steps) pick("stop_div") translate([x_div,0,rh]) twin_peg(2*div_pin, head_d, head_h, s_stop, shaft_d, peg_l);
   }
   on_track(p) pick("slider") {
-    translate([tx(p, xu[min(sc[0], nU-1)]), 0, 0]) slider();
-    if (has_steps) translate([tx(p, xs[min(sc[1], nS-1)]), 0, 0]) slider();
+    translate([tx(p, xu[min(sc[0], nU-1)]), 0, 0]) marker();
+    if (has_steps) translate([tx(p, xs[min(sc[1], nS-1)]), 0, 0]) marker();
   }
 }
 pick("dowel") if (split_board) for (y=strip_y) translate([x_split, y, dz]) rotate([0,90,0]) cylinder(d=dw_d, h=dowel_l - 1, center=true, $fn=32);

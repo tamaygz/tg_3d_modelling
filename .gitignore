@@ -5,3 +5,6 @@
 
 # asm.py cache files inside the parts folders
 **/*_parts/.*.json
+
+# python bytecode
+__pycache__/

@@ -15,6 +15,15 @@
 - Default build unchanged (same size and volume); checks pass. Tested: no steps ± zero_step, 3 players,
   unsplit, a single step, a single main number.
 
+## v2 (2026-11-15)
+- Configurable styles: board shape, edge profile, groove, marker, pointer, stopper head, rail top,
+  number plate style, font, separator, plus presets (classic, modern, victorian, pub, minimal).
+  Styles come from the shared `lib/` (shapes, rail, scale, fonts); the model now only lays them out.
+- Parameters in OpenSCAD Customizer format, so they work in OpenSCAD's Customizer too.
+- Fix: number plates grow to fit the widest label (bold sans "100" ran into the border; serif cleared it by 0.3 mm).
+- Default (custom = classic) build is the same apart from slightly longer plate ends; checks pass
+  for every preset (minimal has no separate number parts, by design).
+
 ## Prints and feedback
 - (none yet)
 
