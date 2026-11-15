@@ -7,7 +7,7 @@ Set `part = "board_l"` (or any id below) and press F6 → Export STL to export a
 - `scoreboard.scad`: the model (needs `fits.scad` and `LiberationSerif-Regular.ttf` beside it)
 - `scoreboard_print/`: print-ready STL/3MF files, oriented for printing
 - `scoreboard_parts/`: each part as an STL in its assembled position
-- `scoreboard_7113f59.zip`: complete bundle (model, print files, viewer), revision 7113f59
+- `scoreboard_952c807.zip`: complete bundle (model, print files, viewer), revision 952c807
 - `scoreboard_configurator.html`: change the parameters in your browser, regenerate the 3D view and download STLs (internet needed for the OpenSCAD engine)
 - `scoreboard.html`: interactive 3D viewer of the default build
 
@@ -16,8 +16,8 @@ Set `part = "board_l"` (or any id below) and press F6 → Export STL to export a
 |---|---|---|
 | `players` | 2 | number of tracks; two tracks share one number plate (odd count = last plate has one track) |
 | `base_min`, `base_max` | 0, 19 | main score range |
-| `steps` | [20,40,60,80,100] | second-dimension steps |
-| `zero_step` | true | "0" home position before the steps |
+| `steps` | [20,40,60,80,100] | second-dimension steps; `[]` = no second column (one rail, one slider per player, no divider) |
+| `zero_step` | true | "0" home position before the steps (ignored when `steps = []`) |
 | `pitch`, `step_pitch` | 11, 14 | spacing of the numbers (mm), which sets the board length |
 | `split_board` | true | cut the board at the divider into two halves joined by dowels |
 | `demo_scores` | [[7,2],[15,4]] | where the sliders sit in the preview only |

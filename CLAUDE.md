@@ -13,6 +13,8 @@ When a new bundle is made, delete the old zip. Shared helpers are in `lib/`.
   `OSCAD_ENGINE=native` (OpenSCAD 2021 is slower, but fine for models this size).
 - `fits.scad` (ISO 286 fits): `fit_mid("H7", d)` for holes and `fit_mid("p6"|"k6"|"g6", d)` for shafts.
   Not every class exists at every size (no `m6`; use `k6`).
+- OpenSCAD ranges `[a:b]` with a > b run BACKWARDS instead of being empty. Always write `[a:1:b]` in loops
+  over counts that can reach 0 or 1. Test optional features with empty lists (`steps = []`).
 - In the parts table, `pieces=` must count every separate solid. Text inlays have one piece per glyph,
   plus dots and borders, so compute that count in the .scad.
 

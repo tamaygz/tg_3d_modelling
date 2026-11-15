@@ -1,6 +1,6 @@
 model scoreboard.scad
-rev 7113f59
-made 2026-11-15 04:53
+rev 952c807
+made 2026-11-15 05:23
 Alignment_dowel.stl
 Board_left.stl
 Board_right.stl

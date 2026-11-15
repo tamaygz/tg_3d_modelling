@@ -7,6 +7,14 @@
 - Default board is 356 × 76 mm, split at the divider into 248 mm + 109 mm halves.
 - Checks: clash and fit checks pass; 3- and 4-player variants also build.
 
+## v1.1 (2026-11-15)
+- Fix: `steps = []` now means no second dimension. Before, it drew a step column with a lone "0", or
+  crashed when `zero_step = false`. Now the step plate, step rail, divider and second slider are left
+  out, the main rail runs to an end stopper, and a split board is cut between the two middle numbers.
+- Fix: one-number ranges (`[0:-1]` loops) no longer run backwards; all loops use an explicit step `[a:1:b]`.
+- Default build unchanged (same size and volume); checks pass. Tested: no steps ± zero_step, 3 players,
+  unsplit, a single step, a single main number.
+
 ## Prints and feedback
 - (none yet)
 

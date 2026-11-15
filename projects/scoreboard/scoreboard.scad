@@ -9,8 +9,8 @@ part = "all";                    // which part to export ("all" = assembly)
 players     = 2;                 // number of players = number of tracks (2 tracks share one number plate)
 base_min    = 0;                 // first number of the main range
 base_max    = 19;                // last number of the main range
-steps       = [20,40,60,80,100]; // 2nd-dimension steps (counting beyond the main range)
-zero_step   = true;              // put a "0" home position in front of the steps
+steps       = [20,40,60,80,100]; // 2nd-dimension steps (counting beyond the main range); [] = none
+zero_step   = true;              // put a "0" home position in front of the steps (ignored without steps)
 demo_scores = [[7,2],[15,4]];    // per player [main-range index, step index] – only for the preview
 
 // ---------------- layout ----------------
@@ -71,17 +71,20 @@ $fn = 48;
 
 // derived
 nU      = base_max - base_min + 1;                    // main-range positions
-slabels = concat(zero_step ? [0] : [], steps);        // step labels
+has_steps = len(steps) > 0;                           // is there a second dimension at all
+slabels = has_steps ? concat(zero_step ? [0] : [], steps) : [];  // step labels
 nS      = len(slabels);                               // step positions
 rail_h  = web_h + flange_t;                           // rail height
 sw      = flange_w + 2*slide_clr + 2*slider_wall;     // slider width (Y)
 s_top   = rail_h + slide_clr + slider_top;            // slider top above board
 div_hl  = div_pin + head_d/2;                         // divider head half length
-xu      = [for (i=[0:nU-1]) i*pitch];                 // main-range pointer x
+xu      = [for (i=[0:1:nU-1]) i*pitch];                 // main-range pointer x
 x_start = -(slider_l/2 + head_d/2);                   // start stopper x
-x_div   = xu[nU-1] + slider_l/2 + div_hl;             // divider / rail joint x
-xs      = [for (j=[0:nS-1]) x_div + div_hl + slider_l/2 + j*step_pitch]; // step pointer x
-x_end   = xs[nS-1] + slider_l/2 + head_d/2;           // end stopper x
+x_div   = xu[nU-1] + slider_l/2 + div_hl;             // divider / rail joint x (only with steps)
+xs      = [for (j=[0:1:nS-1]) x_div + div_hl + slider_l/2 + j*step_pitch]; // step pointer x
+x_end   = (has_steps ? xs[nS-1] : xu[nU-1]) + slider_l/2 + head_d/2;  // end stopper x
+ru1     = has_steps ? x_div : x_end + rail_end;       // main rail end
+x_split = has_steps ? x_div : nU > 1 ? (xu[floor(nU/2)-1] + xu[floor(nU/2)])/2 : 0;  // board cut (between two numbers without steps)
 ru0     = x_start - rail_end;                         // main rail start
 rs1     = x_end + rail_end;                           // step rail end
 bx0     = ru0 - margin_x;                             // board left
@@ -95,7 +98,7 @@ track_up= [for (p=[0:players-1]) p%2==0];             // true = pointer faces do
 by1     = rail_dy + sw/2 + margin_y;                  // board top (wave trough)
 by0     = strip_y[nStrip-1] - ((players%2==1) ? label_h/2 + 4 : rail_dy + sw/2) - margin_y; // board bottom
 pl_u    = [xu[0] - pitch/2, xu[nU-1] + pitch/2];      // main plate x span
-pl_s    = [xs[0] - step_pitch/2, xs[nS-1] + step_pitch/2]; // step plate x span
+pl_s    = has_steps ? [xs[0] - step_pitch/2, xs[nS-1] + step_pitch/2] : [0,0]; // step plate x span
 hole_b  = fit_mid("H7", peg_d);                       // board peg hole
 shaft_d = fit_mid("p6", peg_d);                       // peg shaft
 dw_hole = fit_mid("H7", dowel_d);                     // dowel hole
@@ -114,7 +117,7 @@ parts = [
   ["text_s",    "Numbers steps",      "PLA black",        [0,0,26],  "#1a1a1a", str("pieces=",n_txt_s), "plate=plates_s", "mat=PLA black"],
   ["rail_u",    "Rail main range",    "PLA silk gold",    [0,0,12],  "#c9a13b", str("pieces=",players), "print=x180"],
   ["rail_s",    "Rail steps",         "PLA silk gold",    [0,0,12],  "#c9a13b", str("pieces=",players), "print=x180"],
-  ["slider",    "Marker slider",      "PLA silk gold",    [0,0,32],  "#e0b84a", str("pieces=",2*players), "print=x180"],
+  ["slider",    "Marker slider",      "PLA silk gold",    [0,0,32],  "#e0b84a", str("pieces=",(has_steps ? 2 : 1)*players), "print=x180"],
   ["stop_end",  "End stopper",        "PLA silver",       [0,0,45],  "#b8b8b8", str("pieces=",2*players), "print=x180"],
   ["stop_div",  "Column divider",     "PLA silver",       [0,0,45],  "#b8b8b8", str("pieces=",players), "print=x180"],
   ["dowel",     "Alignment dowel",    "PLA",              [0,0,-30], "#555555", str("pieces=",nStrip), "print=x90"]
@@ -126,8 +129,8 @@ checks = [
 ];
 report = [
   ["board length", bx1 - bx0], ["board height", by1 + wave_amp - (by0 - wave_amp)],
-  ["main rail length", x_div - ru0], ["step rail length", rs1 - x_div],
-  ["left half length", x_div - bx0], ["right half length", bx1 - x_div],
+  ["main rail length", ru1 - ru0], ["step rail length", has_steps ? rs1 - x_div : 0],
+  ["left half length", split_board ? x_split - bx0 : bx1 - bx0], ["right half length", split_board ? bx1 - x_split : 0],
   ["slider top above board", s_top]
 ];
 
@@ -152,7 +155,7 @@ module keyslot() {
   translate([0,0,-0.1]) { cylinder(d=9, h=6.1); hull() { cylinder(d=4.5, h=2.6); translate([0,10,0]) cylinder(d=4.5, h=2.6); } }
   translate([0,0,2.5]) hull() { cylinder(d=9, h=3.5); translate([0,10,0]) cylinder(d=9, h=3.5); }
 }
-function peg_x() = [x_start, x_div - div_pin, x_div + div_pin, x_end];
+function peg_x() = has_steps ? [x_start, x_div - div_pin, x_div + div_pin, x_end] : [x_start, x_end];
 module board() {
   difference() {
     board_blank();
@@ -160,10 +163,10 @@ module board() {
       difference() { offset(delta=-groove_in) outline(); offset(delta=-groove_in-groove_w) outline(); }
     for (y=strip_y) translate([0,y,board_t - label_t]) linear_extrude(label_t + 1) {
       offset(delta=label_clr) plate2d(pl_u);
-      offset(delta=label_clr) plate2d(pl_s);
+      if (has_steps) offset(delta=label_clr) plate2d(pl_s);
     }
     for (y=track_y, x=peg_x()) translate([x,y,board_t - peg_depth]) cylinder(d=hole_b, h=peg_depth + 1, $fn=32);
-    if (split_board) for (y=strip_y) translate([x_div,y,dz]) rotate([0,90,0]) cylinder(d=dw_hole, h=dowel_l + 1, center=true, $fn=32);
+    if (split_board) for (y=strip_y) translate([x_split,y,dz]) rotate([0,90,0]) cylinder(d=dw_hole, h=dowel_l + 1, center=true, $fn=32);
     if (keyhole) for (x=[bx0 + 0.2*(bx1-bx0), bx0 + 0.8*(bx1-bx0)]) translate([x, by1 - 14, 0]) keyslot();
   }
 }
@@ -171,19 +174,19 @@ module board_half(right) {
   intersection() {
     board();
     if (!split_board) translate([bx0-50, by0-50, -1]) cube([bx1-bx0+100, by1-by0+100, board_t+2]);
-    else if (right) translate([x_div, by0-50, -1]) cube([bx1-x_div+50, by1-by0+100, board_t+2]);
-    else translate([bx0-50, by0-50, -1]) cube([x_div-bx0+50, by1-by0+100, board_t+2]);
+    else if (right) translate([x_split, by0-50, -1]) cube([bx1-x_split+50, by1-by0+100, board_t+2]);
+    else translate([bx0-50, by0-50, -1]) cube([x_split-bx0+50, by1-by0+100, board_t+2]);
   }
 }
 
 // ---------------- number plates ----------------
 module text_u2d() {
-  for (i=[0:nU-1]) translate([xu[i],0]) text(str(base_min + i), size=text_size, font=font, halign="center", valign="center");
-  for (i=[0:nU-2]) translate([(xu[i]+xu[i+1])/2, 0]) circle(d=dot_d, $fn=16);
+  for (i=[0:1:nU-1]) translate([xu[i],0]) text(str(base_min + i), size=text_size, font=font, halign="center", valign="center");
+  for (i=[0:1:nU-2]) translate([(xu[i]+xu[i+1])/2, 0]) circle(d=dot_d, $fn=16);
 }
 module text_s2d() {
-  for (j=[0:nS-1]) translate([xs[j],0]) text(str(slabels[j]), size=text_size, font=font, halign="center", valign="center");
-  for (j=[0:nS-2]) translate([(xs[j]+xs[j+1])/2, 0]) circle(d=dot_d, $fn=16);
+  for (j=[0:1:nS-1]) translate([xs[j],0]) text(str(slabels[j]), size=text_size, font=font, halign="center", valign="center");
+  for (j=[0:1:nS-2]) translate([(xs[j]+xs[j+1])/2, 0]) circle(d=dot_d, $fn=16);
 }
 module border2d(sp) { difference() { offset(delta=-border_in) plate2d(sp); offset(delta=-border_in-border_w) plate2d(sp); } }
 module inlay2d(sp) { if (sp==pl_u) text_u2d(); else text_s2d(); border2d(sp); }
@@ -249,20 +252,20 @@ pick("board_r") if (split_board) board_half(true);
 for (y=strip_y) translate([0,y,board_t - label_t]) {
   pick("plate_u") num_plate(pl_u);
   pick("text_u")  num_text(pl_u);
-  pick("plate_s") num_plate(pl_s);
-  pick("text_s")  num_text(pl_s);
+  if (has_steps) pick("plate_s") num_plate(pl_s);
+  if (has_steps) pick("text_s")  num_text(pl_s);
 }
 for (p=[0:players-1]) {
   sc = p < len(demo_scores) ? demo_scores[p] : [0,0];
   translate([0, track_y[p], board_t]) {
-    pick("rail_u") rail(ru0, x_div, [x_start, x_div - div_pin]);
-    pick("rail_s") rail(x_div, rs1, [x_div + div_pin, x_end]);
+    pick("rail_u") rail(ru0, ru1, [x_start, has_steps ? x_div - div_pin : x_end]);
+    if (has_steps) pick("rail_s") rail(x_div, rs1, [x_div + div_pin, x_end]);
     pick("stop_end") for (x=[x_start, x_end]) translate([x,0,rail_h]) stop_end();
-    pick("stop_div") translate([x_div,0,rail_h]) stop_div();
+    if (has_steps) pick("stop_div") translate([x_div,0,rail_h]) stop_div();
   }
   on_track(p) pick("slider") {
     translate([tx(p, xu[min(sc[0], nU-1)]), 0, 0]) slider();
-    translate([tx(p, xs[min(sc[1], nS-1)]), 0, 0]) slider();
+    if (has_steps) translate([tx(p, xs[min(sc[1], nS-1)]), 0, 0]) slider();
   }
 }
-pick("dowel") if (split_board) for (y=strip_y) translate([x_div, y, dz]) rotate([0,90,0]) cylinder(d=dw_d, h=dowel_l - 1, center=true, $fn=32);
+pick("dowel") if (split_board) for (y=strip_y) translate([x_split, y, dz]) rotate([0,90,0]) cylinder(d=dw_d, h=dowel_l - 1, center=true, $fn=32);
