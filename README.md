@@ -11,6 +11,7 @@ Parametric 3D models (OpenSCAD) for 3D printing, built from a shared library of 
 | [bolavuit_logo](projects/bolavuit_logo) | Bola Vuit logo as a 2-colour plaque: exact from the original SVG, or rebuilt from adjustable elements |
 | [led_kit](projects/led_kit) | LED strip tracks, diffusers, joiners, end caps, corners, and cable clips, ducts and grommets |
 | [attachments](projects/attachments) | Universal snap-in mounting plates (wall, keyhole, Skådis, hook, magnet, stand, glue, ceiling) and a test coupon |
+| [pattern_gallery](projects/pattern_gallery) | Catalogue of the 12 library patterns (lattices, weaves, Voronoi, scales, Truchet, Girih, waves, ripples) in every application mode, plus a box with independent wall, floor and lid patterns |
 
 Every project folder has the same contents:
 
@@ -28,8 +29,8 @@ Every project folder has the same contents:
 ## Library
 
 [`lib/`](lib/README.md) holds the building blocks all projects share: core atoms, board shapes and routed edges, rails
-and sliders, number scales, snap-in attachment plates, LED strip tracks, cable parts, emblem and logo elements, fits
-and bundled fonts. Projects only lay these out; anything reusable goes into the library.
+and sliders, number scales, snap-in attachment plates, LED strip tracks, cable parts, emblem and logo elements,
+parametric surface patterns (cut-through, raised, engraved, open lattice, lining), fits and bundled fonts. Projects only lay these out; anything reusable goes into the library.
 
 ## Tools
 

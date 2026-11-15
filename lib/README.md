@@ -17,13 +17,15 @@ Reusable OpenSCAD building blocks. Projects live in `projects/<name>/`, so they 
 | `emblems/bolavuit_rebuilt.scad` | `include` | fitted data that makes the generic elements reproduce the Bola Vuit logo: `BVR_LEAVES`, `BVR_BANNER`, `BVR_BALL`, `BVR_NUMERAL`, `BVR_LETTERS` |
 | `emblems/bolavuit.scad` | `use` | the Bola Vuit logo, exact (from the original SVG): `bv_ball()` (`bv_ball_ring`, `bv_ball_disc`, `bv_numeral`, `bv_crescent`), `bv_laurel()` / `bv_leaf(i)`, `bv_banner()`, `bv_text()` / `bv_letter(i)`, `bv_logo()`, `bv_frame_fill()`; px units, scale by `w_mm / bv_art_w()` |
 | `scale.scad` | `use` | number scales: `number_row_2d()` with dot, bar, diamond or no separators; `scale_plate_2d()`; `plate_body()` + `plate_art()` for 2-colour inlay, raised or engraved numbers |
+| `patterns.scad` | `use` | 12 parametric patterns for any flat surface, and the ways to apply them: `pattern_spec()`, `pattern_2d()`, `pattern_3d()`, `pattern_cutout_2d()`, `pattern_panel_2d()`, `pattern_relief()`, `pattern_cutter()`, `pattern_lining()`, `pattern_panel(mode, ...)`; checks `pattern_problem()`, `pattern_features()`, `pattern_is_connected()`. See [Patterns](#patterns) |
+| `patterns/*.scad` | `use` (optional) | the single generators behind `patterns.scad`, if you want one directly: `geometric.scad` (`hex_honeycomb_2d`, `square_grid_2d`, `diamond_lattice_2d`, `triangular_lattice_2d` and their `*_holes()` point lists), `woven.scad` (`basket_weave_3d/_2d`, `tri_weave_3d/_2d`, `weave_strand()`), `organic.scad` (`voronoi_2d`, `voronoi_cell_pts()`), `decorative.scad` (`fish_scales_2d`, `truchet_arcs_2d`, `girih_star_cross_2d`), `relief.scad` (`flowing_waves_2d`, `concentric_ripples_2d`), `tiling.scad` (`pat_hash()`, `pat_clip_halfplane()`) |
 
 Each style module also defines its option list (`PLAQUE_SHAPES`, `EDGE_PROFILES`, `MARKER_STYLES`…),
 so a model can copy them into its `// [a, b, c]` Customizer comment.
 
 ## Conventions
 
-- **Layers:** `core.scad` (atoms) → element files (`shapes`, `rail`, `scale`, `attach`, `led`, `cable`, `emblem`) →
+- **Layers:** `core.scad` (atoms) → element files (`shapes`, `rail`, `scale`, `attach`, `led`, `cable`, `emblem`, `patterns`) →
   data (`emblems/`, `fonts/`) → projects. Element files may `use <core.scad>` but not each other, except where one
   clearly builds on another. Projects never copy library code: if something is missing, add it here.
 - **Naming:** 2D generators end in `_2d`, point-list functions in `_pts`, cutters say so in their comment, private
@@ -50,6 +52,144 @@ translate([0, 0, 12]) {
 ```
 
 A complete small project using core, shapes, fonts and attachments is `projects/_template/`.
+
+## Patterns
+
+`patterns.scad` makes decorative and structural patterns a building block for any flat surface: walls, floors,
+roofs, lids, panels, inserts. A project picks a pattern by name, sets a few numbers and says how to apply it.
+The catalogue and test bench is `projects/pattern_gallery`.
+
+Three layers, kept apart:
+
+| Layer | Modules | Job |
+|---|---|---|
+| 1. pattern engine | `pattern_2d()`, `pattern_3d()` (generators in `patterns/`) | the bare pattern, tiled, rotated, clipped |
+| 2. surface application | `pattern_cutout_2d()`, `pattern_panel_2d()`, `pattern_relief()`, `pattern_cutter()`, `pattern_lining()`, `pattern_panel(mode)` | cut through, raise, engrave, open lattice, lining |
+| 3. project geometry | your project | place the result with `translate()` / `rotate()` |
+
+### Frame
+
+Every module works in the XY plane, centred on the origin, inside the rectangle `size = [x, y]`. The decorated
+surface is the plane z = 0 and its outside is +Z:
+
+| Module | Z range |
+|---|---|
+| `pattern_2d` | 2D |
+| `pattern_3d`, `pattern_relief` | stands on z = 0, rises to z = h (relief starts 0.01 below, to fuse with the host) |
+| `pattern_cutter` | z = 0 down to z = −depth: subtract it from a host whose surface is z = 0 |
+| `pattern_lining` | lies on z = 0, `t` thick (plus `depth` when raised) |
+| `pattern_panel` | slab z = 0..t, decorated face on top; relief and linings above t |
+
+For a vertical wall, a sloped roof or any other flat face, build in this frame and then move the result, e.g.
+`rotate([90, 0, 0])` for a wall facing −Y. The **child** of a module is the surface outline (any 2D shape inside
+`size`); without a child the outline is the rectangle `size`. The pattern is anchored at the origin (a cell centre
+or a strand lies on it), so a larger `size` adds cells around the same centre and neighbouring panels cut from
+the same spec line up when their origins are a whole number of cells apart.
+
+### The 12 patterns
+
+`PATTERNS` lists the names. `cell` is the repeat size and `strut` the width of the material; an opening is
+about `cell − strut` wide. Pattern-specific settings go into `opts=[["key", value], ...]`.
+
+| Name | What it is | `cell` (default) | `strut` (default) | `opts` (default) |
+|---|---|---|---|---|
+| `hex_honeycomb` | connected honeycomb ribs | centre-to-centre distance (12) | rib width (1.5) | `orient`: "pointy" / "flat" |
+| `square_grid` | orthogonal ribs | pitch, or [x, y] (10) | rib width, or [vertical, horizontal] (1.5) | `stagger` 0..0.5: shift of every other row (0) |
+| `diamond_lattice` | diagonal ribs | [diamond width, height] ([12, 18]) | rib width (1.5) | – |
+| `triangular_lattice` | three rib families, triangular openings | triangle side (14) | rib width (1.5) | `alternate` (true; false opens every other triangle), `orient`: "up" / "side" |
+| `basket_weave` | plain over-under weave of strips, real 3D | strip pitch (10) | strip width (7; = cell for a closed weave) | `lift` in mm (0.375 × h), `style`: "flat" / "rounded" |
+| `tri_weave` | three-direction cane weave (kagome), real 3D | distance between parallel strands (24) | strand width (3; must be under cell/3) | `lift`, `style` |
+| `voronoi` | irregular cell network | average cell size (14) | wall width (1.5) | `irregularity` 0..1 (1), `round` corner radius (0), `min_cell` fill cells smaller than this (0); uses `seed` |
+| `fish_scales` | overlapping scales, tip down | [scale width, height] ([12, 12]) | line width of the scale edges (0.8) | `overlap` (0.4), `curvature` 0.2..1 (0.7), `stagger` (0.5), `shingle` (true: raised as stepped scales), `steps` (3) |
+| `truchet_arcs` | quarter-ring tiles that join into paths | tile size (12) | arc width (1.6) | `variation`: "random" / "alternate" / "rows" / "uniform", `bias` (0.5); uses `seed` |
+| `girih_star_cross` | eight-point stars touching at their tips, crosses between | repeat spacing (24) | strap width (1.6) | `star` diameter (= cell; smaller adds straight straps between the tips), `star_ratio` (0.765) |
+| `flowing_waves` | parallel sine ribs | rib pitch (8) | rib width (2.4) | `amplitude` (3), `wavelength` (30), `phase` (0°), `shift` per rib (0°) |
+| `concentric_ripples` | rings around one or more centres | ring spacing (6) | ring width (2) | `rings` (0 = fill), `first` radius, `centers` ([[0, 0]]), `spokes` (0), `falloff` 0..0.9 (0), `steps` (4) |
+
+Common settings of a spec, for every pattern:
+
+```scad
+p = pattern_spec(name, cell, strut,
+                 angle=0,            // rotation of the pattern (degrees)
+                 offset=[0, 0],      // shift (phase), in the pattern's own axes
+                 density=1,          // >1 = more, smaller cells (pitch = cell/density, strut unchanged)
+                 seed=1,             // voronoi, truchet_arcs: same seed = same pattern
+                 scale=[1, 1],       // stretch of the finished pattern (ribs stretch too)
+                 opts=[],            // pattern-specific settings
+                 min_strut=0.8, min_opening=1);     // printability limits (0 = no check)
+```
+
+Every module takes a spec or just a name; with a name you can pass `cell`, `strut`, `angle`, `seed` and `opts`
+directly: `pattern_2d("voronoi", [100, 80], cell=10, seed=7)`.
+
+### Applying a pattern
+
+| You want | Use | Notes |
+|---|---|---|
+| the pattern as a 2D shape | `pattern_2d(p, size)` | material (ribs / lines); combine with `linear_extrude`, `difference`, `intersection`, `union` |
+| the pattern as a solid | `pattern_3d(p, size, h)` | weaves as real strands, fish scales as shingles, ripples with falloff, others extruded; `profile="round"` rounds rib tops |
+| holes through a wall | `pattern_cutout_2d(p, size, inset=3)` in a 2D `difference()`, or `pattern_cutter(p, size, depth, pad=3, cut="cells")` in 3D | `cut="cells"` removes the openings, `"lines"` the pattern itself |
+| an open framework | `pattern_panel_2d(p, size, border=3)` then extrude, or `pattern_panel("open_lattice", ...)` | frame `border` wide all round; `border=0` when the host provides the frame |
+| a raised pattern | `pattern_relief(p, size, h, pad=2)` | add it at the surface |
+| an engraved pattern | `pattern_cutter(p, size, depth)` | subtract it at the surface |
+| a lining / overlay | `pattern_lining(p, size, t=0.6, mode, depth, inset, border, edge)` | separate skin on the surface: `"through_cut"` (perforated), `"raised"`, `"recessed"`; `edge="chamfer"` |
+| a whole panel in one call | `pattern_panel(mode, p, size, t, depth, border, pad)` | `PATTERN_MODES`: solid, through_cut, open_lattice, raised, recessed, overlay |
+
+```scad
+use <../../lib/patterns.scad>
+
+// standalone pattern
+linear_extrude(1) pattern_2d("hex_honeycomb", [100, 80], cell=12, strut=1.5, angle=15);
+
+// cut-out in a 2D outline, then extrude: a wall with real openings
+linear_extrude(2) difference() {
+    wall_outline_2d();
+    pattern_cutout_2d("hex_honeycomb", [100, 80], cell=12, strut=1.5, inset=4) wall_outline_2d();
+}
+
+// raised and engraved on an existing solid (surface at z = 0, body below)
+host();
+pattern_relief("flowing_waves", [100, 80], h=0.8, pad=3, profile="round");
+difference() { host(); pattern_cutter("truchet_arcs", [100, 80], depth=0.6, pad=3); }
+
+// open lattice panel in any outline, woven or not
+pattern_panel("open_lattice", "tri_weave", [100, 80], t=2.4, border=3) circle(d=80);
+
+// lining on a wall: 0.6 mm perforated skin, 1.5 mm from the edge, with its own 1.5 mm frame
+wall();
+pattern_lining("girih_star_cross", [100, 80], t=0.6, mode="through_cut", inset=1.5, border=1.5);
+
+// independent wall, floor and roof
+wall  = pattern_spec("basket_weave", cell=10, strut=7);
+floor = pattern_spec("concentric_ripples", opts=[["falloff", 0.5]]);
+roof  = pattern_spec("hex_honeycomb", cell=12);
+pattern_panel("raised", floor, [70, 50], t=3, depth=0.8);
+translate([0, -25, 20]) rotate([90, 0, 0]) translate([0, 0, -2]) pattern_panel("open_lattice", wall, [70, 40], t=2, border=3);
+translate([0, 0, 40]) pattern_panel("through_cut", roof, [70, 50], t=2, border=3);
+```
+
+### Printability
+
+- `pattern_problem(p)` returns "" or a sentence saying what is wrong; every module asserts it. Limits are the spec's
+  `min_strut` and `min_opening`. Dimensions are never changed for you. `pattern_features(p)` gives
+  [rib width, smallest opening].
+- Lattices are cut from one plate, so they are always one network and join the frame of any outline. Openings cut
+  off by the edge that would be narrower than `min_opening` stay closed instead of leaving slivers.
+- `pattern_is_connected(p)` is false for Truchet arcs and for ripples without `spokes`: those would fall apart
+  when cut through, so `through_cut` and `open_lattice` refuse them. Wave ribs only meet at the frame: keep a `border`.
+- Weaves stand on z = 0 and need no supports. `lift` must stay at or below 85% of the strand thickness
+  (`WEAVE_MIN_FUSE`), so crossing strands share material; total height h = strand thickness + lift.
+- Reliefs and linings overlap their host by 0.01 mm so the union is one clean solid.
+
+### Limits
+
+- Desktop OpenSCAD 2021 (CGAL) needs about 15–40 s for a 100 mm woven panel, more with `style="rounded"`; 2D
+  patterns take a second or two. Newer OpenSCAD (Manifold) and the browser configurator are much faster.
+- Voronoi is the Voronoi diagram of one random site per grid square. Cell sizes spread around `cell`; there is no
+  relaxation, so high irregularity gives some slim cells (`min_cell` fills the small ones in).
+- `scale` stretches rib widths along with the pattern. Rounded rib tops, fish-scale shingles and ripple falloff
+  are built in steps (3–4 levels), which is what a printer makes of a slope at these heights anyway.
+- Patterns are planar: a curved wall needs flat facets, each with its own panel.
 
 ## Attachment plates
 

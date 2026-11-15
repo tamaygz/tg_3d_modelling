@@ -21,6 +21,12 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   `attach_fits` assert, `attach_sockets`, `attach_plates`, `attach_parts_row`) and expose `attach_type`,
   `attach_size`, `attach_count`. Plates snap in (the user wants snap fits, not slides or keys).
 - **Lighting and wiring:** `lib/led.scad` and `lib/cable.scad`, not one-off parts.
+- **Patterns** (lattices, weaves, Voronoi, scales, Truchet, Girih, waves, ripples): `lib/patterns.scad`, never
+  project code. Pick by name via `pattern_spec()`, apply with `pattern_panel(mode, ...)` or the single helpers
+  (`pattern_cutout_2d`, `pattern_relief`, `pattern_cutter`, `pattern_lining`). Frame: XY plane, surface z = 0,
+  outside +Z; build flat, then rotate onto walls. New patterns: a generator in `lib/patterns/`, a branch in
+  `_pat_gen_2d`, defaults + `pattern_features`, a gallery tile and tests. Do clipping and cuts in 2D and extrude:
+  3D booleans are slow in OpenSCAD 2021 (only the weaves need one).
 - **Snap fits** must bend the flexing part by 2% or less; prove it with a probe (see `projects/led_kit`, `probe`).
 - **Logos / artwork:** exact reproduction = `tools/svg_to_scad.py` into `lib/emblems/` (never `import()` an SVG:
   the browser engine scales it differently). Verify with `tools/artfit.py overlay`. The user wants a 100% match
@@ -48,6 +54,11 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 - `pieces=` in the parts table must count every separate solid (text = one per glyph); compute it in the .scad.
   Free artwork whose count varies: add `| ignore PIECES` to that line in `tests.txt`.
 - `fits.scad`: `fit_mid("H7", d)` holes, `fit_mid("p6"|"k6"|"g6", d)` shafts; no `m6`.
+- Variables of a `use`d file are not visible to the file that uses it (`GIRIH_RATIO` was undefined in
+  patterns.scad), and passing `undef` to a parameter does NOT fall back to its default: resolve defaults inside.
+- `if ($children > 0)` must be decided in the public module: a nested `children()` call counts as one child even
+  when it is empty, and `intersection()` with an empty child gives nothing.
+- No `rands()` for patterns: `pat_hash()` gives the same numbers in every OpenSCAD version and in the browser.
 - Guard long-running Python scripts with `__main__` (an import once re-ran a 30-minute fit).
 
 ## Browser configurator
@@ -82,4 +93,5 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 | `projects/bolavuit_logo` | v2, not printed yet | logo plaque: exact (from SVG) or rebuilt from lib/emblem (0.90 overlap) |
 | `projects/led_kit` | v1, not printed yet | LED tracks, diffusers, corners, cable parts |
 | `projects/attachments` | v3, not printed yet | test coupon + every attachment plate; print first to check the snap fit |
+| `projects/pattern_gallery` | v1, not printed yet | catalogue + test bench of the 12 `lib/patterns.scad` patterns; views: gallery, sample, modes, box |
 | `projects/_template` | – | starting point for new projects |

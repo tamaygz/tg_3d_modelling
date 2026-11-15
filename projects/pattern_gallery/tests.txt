@@ -1,0 +1,52 @@
+# parameter variants checked by: python3 tools/build.py pattern_gallery --test
+# every part must be one watertight piece: that proves lattices are connected and reliefs are fused to their panel
+
+# --- every pattern as a sample, in its natural mode, with changed size / ribs / rotation / outline ---
+view = "sample"; pattern = "hex_honeycomb"; cell = 9; strut = 1.2; angle = 15; sample_shape = "round"
+view = "sample"; pattern = "hex_honeycomb"; hex_orient = "flat"; sample_w = 97; sample_h = 43; sample_shape = "rect"; mode = "through_cut"
+view = "sample"; pattern = "square_grid"; cell = 12; cell_y = 7; strut = 1; grid_stagger = 0.5; sample_shape = "chamfered"
+view = "sample"; pattern = "diamond_lattice"; cell = 8; cell_y = 16; angle = 30; sample_shape = "hexagon"
+view = "sample"; pattern = "triangular_lattice"; cell = 11; strut = 1; sample_shape = "arched"
+view = "sample"; pattern = "triangular_lattice"; tri_alternate = false; angle = 90; mode = "through_cut"; pad = 3
+view = "sample"; pattern = "basket_weave"; sample_shape = "rect"
+view = "sample"; pattern = "basket_weave"; cell = 8; strut = 8; strand_style = "rounded"; angle = 45; sample_shape = "round"; thickness = 3
+view = "sample"; pattern = "tri_weave"; sample_shape = "hexagon"
+view = "sample"; pattern = "tri_weave"; cell = 18; strut = 2.4; strand_style = "rounded"; weave_lift = 0.8; angle = 30; sample_w = 61; sample_h = 67
+view = "sample"; pattern = "voronoi"; seed = 7; cell = 10; voronoi_round = 1
+view = "sample"; pattern = "voronoi"; seed = 42; voronoi_irregularity = 0.5; voronoi_min_cell = 9; mode = "through_cut"; sample_shape = "scalloped"
+view = "sample"; pattern = "fish_scales"; mode = "raised"
+view = "sample"; pattern = "fish_scales"; mode = "raised"; cell = 16; cell_y = 12; scale_overlap = 0.6; scale_curvature = 1; angle = 180; sample_shape = "round"
+view = "sample"; pattern = "fish_scales"; mode = "recessed"; relief = 0.6; scale_stagger = 0.3
+view = "sample"; pattern = "fish_scales"; mode = "open_lattice"; strut = 1.4; scale_shingle = false
+view = "sample"; pattern = "truchet_arcs"; mode = "raised"; seed = 3
+view = "sample"; pattern = "truchet_arcs"; mode = "recessed"; truchet_variation = "alternate"; cell = 15; strut = 2.5; angle = 45
+view = "sample"; pattern = "girih_star_cross"; mode = "raised"; relief_profile = "round"
+view = "sample"; pattern = "girih_star_cross"; mode = "open_lattice"; cell = 30; girih_star = 0.75; sample_shape = "notched"
+view = "sample"; pattern = "flowing_waves"; mode = "raised"; relief_profile = "round"; wave_shift = 30; angle = 20
+view = "sample"; pattern = "flowing_waves"; mode = "open_lattice"; wave_amplitude = 2; wave_length = 20; cell = 6; strut = 1.6
+view = "sample"; pattern = "concentric_ripples"; mode = "raised"; ripple_two_centers = true
+view = "sample"; pattern = "concentric_ripples"; mode = "recessed"; ripple_rings = 5; ripple_falloff = 0; offset_x = 12; offset_y = -6
+view = "sample"; pattern = "concentric_ripples"; mode = "open_lattice"; ripple_spokes = 8; sample_shape = "round"
+
+# --- overlays / linings ---
+view = "sample"; pattern = "hex_honeycomb"; mode = "overlay"; lining_edge = "chamfer"
+view = "sample"; pattern = "truchet_arcs"; mode = "overlay"; lining_mode = "raised"; lining_inset = 3
+view = "sample"; pattern = "flowing_waves"; mode = "overlay"; lining_mode = "recessed"; lining_t = 1.2; lining_edge = "chamfer"
+
+# --- limits: thin ribs, dense cells, odd sizes ---
+view = "sample"; pattern = "hex_honeycomb"; cell = 4; strut = 0.8; sample_w = 33; sample_h = 71; border = 1
+view = "sample"; pattern = "voronoi"; density = 2; strut = 0.8; sample_shape = "rect"; border = 0
+view = "sample"; pattern = "square_grid"; density = 0.5; offset_x = 5; offset_y = 3.5; angle = -20
+
+# --- one pattern in every mode ---
+view = "modes"
+view = "modes"; pattern = "basket_weave"; sample_w = 50; sample_h = 50
+view = "modes"; pattern = "voronoi"; sample_shape = "round"; sample_w = 60
+view = "modes"; pattern = "girih_star_cross"; sample_w = 60
+view = "modes"; pattern = "truchet_arcs"; sample_w = 60 | ignore PIECES
+view = "modes"; pattern = "concentric_ripples"; sample_w = 60 | ignore PIECES
+
+# --- box: independent wall, floor and roof patterns ---
+view = "box"
+view = "box"; wall_pattern = "diamond_lattice"; wall_mode = "open_lattice"; front_pattern = "fish_scales"; floor_pattern = "square_grid"; floor_mode = "recessed"; roof_pattern = "voronoi"; roof_mode = "open_lattice"
+view = "box"; wall_pattern = "flowing_waves"; wall_mode = "raised"; front_pattern = "truchet_arcs"; front_mode = "recessed"; floor_mode = "solid"; roof_pattern = "tri_weave"; roof_mode = "raised"; box_w = 83; box_d = 57; box_h = 41
