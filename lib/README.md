@@ -12,6 +12,8 @@ Reusable OpenSCAD building blocks. Projects live in `projects/<name>/`, so they 
 | `attach.scad` | `use` | universal mounting: `attach_socket(size)` cutter for a host's back, `attach_plate(type, size)` in wall, keyhole, skadis, hook, magnet, stand or flat. Plates snap in. Sizes S 30×30, M 45×40, L 60×50 mm. |
 | `led.scad` | `use` | LED strip system from one cross-section: `led_track()` (glue or screw mount, side wire exit), `led_diffuser()` (flat or dome, snaps in), `led_key()` joiner, `led_end_cap()` with cable hole, `led_corner()` + `led_corner_diffuser()` (inward, outward, flat), `led_recess()` cutter to sink a track into a host |
 | `cable.scad` | `use` | `cable_clip()` (round, snap-in), `flat_cable_clip()`, `tie_mount()`, `cable_duct()` + `cable_duct_lid()` (snap), `cable_grommet()` (split); host cutters `cable_route(pts)`, `cable_notch()`, `cable_hole()`. Adhesive or M3-screw mounting |
+| `emblem.scad` | `use` | badge/logo generators: `leaf_2d()`, `laurel_branch_2d()` / `laurel_wreath_2d()`, `ribbon_2d()` (Bezier ribbon with notched ends), `banner_2d()` (arched band, tails, bow; filled or outline), `arc_text_2d()` (lettering on an arc, condensable), `pool_ball_2d()` (ring, number disc, crescent highlight, stripe), `stroke_2d()` outlines |
+| `emblems/bolavuit.scad` | `use` | the Bola Vuit logo, exact (from the original SVG): `bv_ball()` (`bv_ball_ring`, `bv_ball_disc`, `bv_numeral`, `bv_crescent`), `bv_laurel()` / `bv_leaf(i)`, `bv_banner()`, `bv_text()` / `bv_letter(i)`, `bv_logo()`, `bv_frame_fill()`; px units, scale by `w_mm / bv_art_w()` |
 | `scale.scad` | `use` | number scales: `number_row_2d()` with dot, bar, diamond or no separators; `plate_2d()`, `border_2d()`; `plate_body()` + `plate_art()` for 2-colour inlay, raised or engraved numbers |
 
 Each style module also defines its option list (`PLAQUE_SHAPES`, `EDGE_PROFILES`, `MARKER_STYLES`…),
@@ -43,6 +45,7 @@ notch below it and lever it out. Keep plate features out of the end strips (`att
 |---|---|---|
 | wall | wall, with 2 countersunk wood screws (Ø4.5, head 8.5) | screw the plate to the wall, then hang the host on it |
 | keyhole | a screw or nail head in the wall | head up to Ø9 × 2 mm |
+| roof | a ceiling: stem up behind the host to a flange with 4 countersunk screws; `roof_angle` 45–135° (90 = hangs straight down) | the stem keeps 0.6 mm off the snap arms; set `roof_reach` above the host's top edge |
 | skadis | IKEA Skådis pegboard | hooks 4.6 mm wide for 5 × 15 mm slots in a 5 mm board; M/L plates have two hooks 40 mm apart. Hosts with several plates keep them on the 40 mm grid. Community-measured sizes, not IKEA's: check against your board. |
 | hook | a rod, rail, wire shelf or door of thickness `hook_gap` | |
 | magnet | steel surfaces | pockets for round magnets (default 10 × 3), glued in from the wall side |
@@ -80,6 +83,17 @@ Mounting parts sit on z=0 with the cable along +X; `mount="screw"` adds a counte
 legs bend 0.25 mm over ramped beads. Host cutters work like `attach_socket()`: the host face is z=0 and its
 body is z>0. `cable_route([[x,y], ...], w, d)` cuts a groove along a polyline, for example in a board's back
 from an LED track to the edge.
+
+## Logos and artwork
+
+Rebuild a logo **exactly** from its SVG with `python3 tools/svg_to_scad.py art.svg lib/emblems/<name>_data.scad --path <id> --prefix XX`.
+It flattens the paths (lines, cubic and quadratic curves, arcs) into OpenSCAD polygons in the SVG's px frame
+(y up) and groups them into regions (an outline plus its holes, even-odd like the SVG). It prints each region's
+centre and size so a small `lib/emblems/<name>.scad` can name the elements (see `bolavuit.scad`).
+Don't use `import("x.svg")` for artwork: desktop OpenSCAD and the browser build scale SVGs differently
+(120 mm came out as 154 mm in the browser). The polygon data has no scaling ambiguity.
+
+`emblem.scad` holds generic, adjustable versions of the same kinds of element for new designs.
 
 ## Fonts
 

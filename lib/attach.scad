@@ -11,7 +11,7 @@
 // centred on the origin; it fills z=0..ATTACH_T and its features point to -z (the wall). +Y is up when the
 // host hangs. The socket reaches from y=-l/2-ATTACH_NOTCH (pry notch) to y=+l/2.
 
-ATTACH_TYPES = ["none", "wall", "keyhole", "skadis", "hook", "magnet", "stand", "flat"];
+ATTACH_TYPES = ["none", "wall", "keyhole", "skadis", "hook", "magnet", "stand", "flat", "roof"];
 ATTACH_SIZES = ["S", "M", "L"];
 ATTACH_T     = 4.5;   // socket depth = plate core thickness
 ATTACH_CLR   = 0.2;   // plate-to-socket clearance per face
@@ -68,8 +68,12 @@ module attach_core(size="M") {
 //   stand_reach        stand: distance from the plate centre down to the host's bottom edge (+ = below)
 //   stand_angle        stand: how far the host leans back from vertical
 //   stand_depth        stand: how far behind the host the foot rests
+//   roof_reach         roof: plate centre up to the ceiling (must clear the host's top edge)
+//   roof_angle         roof: angle between the host and the ceiling (90 = hangs straight down)
+//   roof_depth         roof: ceiling flange depth (front to back)
 module attach_plate(type="wall", size="M", screw_d=4.5, head_d=8.5, magnet=[10, 3], magnet_clr=0.15,
-                    hook_gap=6, stand_reach=40, stand_angle=15, stand_depth=40, skadis_t=5) {
+                    hook_gap=6, stand_reach=40, stand_angle=15, stand_depth=40, skadis_t=5,
+                    roof_reach=60, roof_angle=90, roof_depth=40) {
     w = attach_dims(size)[0]; l = attach_dims(size)[1]; c = ATTACH_CLR;
     difference() {
         union() {
@@ -78,6 +82,7 @@ module attach_plate(type="wall", size="M", screw_d=4.5, head_d=8.5, magnet=[10, 
             if (type == "hook") translate([0, l/2 - attach_strip(), 0]) rail_hook(w - 2*c, hook_gap);
             if (type == "stand") for (s=[-1,1]) translate([s*(w/2 - c - 1.6), 0, 0])        // in the solid corners
                 stand_fin(l - 2*c, stand_reach, stand_angle, stand_depth);
+            if (type == "roof") roof_bracket(w - 2*c, l, roof_reach, roof_angle, roof_depth, screw_d, head_d);
         }
         if (type == "wall") for (y=[-l/4, l/4]) translate([0, y, 0]) {
             translate([0,0,-1]) cylinder(d=screw_d, h=ATTACH_T + 2, $fn=32);
@@ -96,6 +101,29 @@ module attach_plate(type="wall", size="M", screw_d=4.5, head_d=8.5, magnet=[10, 
 }
 
 // ---------- plate features ----------
+// ceiling bracket: a stem rises behind the host from the plate to a ceiling flange (4 countersunk screws, room
+// side). The stem joins only the plate's middle, with 0.6 mm clearance over the snap arms so they can flex.
+// The flange top (ceiling contact) is at y = reach; `angle` is between the host and the ceiling.
+module roof_bracket(w, l, reach=60, angle=90, depth=40, screw_d=4.5, head_d=8.5, st=5, ft=5, tab=10) {
+    sp = attach_strip();
+    jz = -0.6 - st/2;                                            // stem centre line (z)
+    module at_joint() { translate([0, reach, jz]) rotate([90 - angle, 0, 0]) children(); }   // flange frame
+    FW = w + 2*tab;
+    translate([-w/2, -l/2 + sp + 0.5, -0.61]) cube([w, l - 2*sp - 1, 0.62]);                // pad onto the core
+    translate([-w/2, -l/2 + sp + 0.5, -0.6 - st]) cube([w, reach - ft + l/2 - sp - 0.5 + 0.01, st]);  // stem
+    difference() {
+        at_joint() translate([-FW/2, -ft, -depth/2]) cube([FW, ft, depth]);                  // flange
+        for (x=[-1,1], z=[-1,1]) at_joint() translate([x*(w/2 + tab/2), 0, z*(depth/2 - 6)]) rotate([90,0,0]) {
+            translate([0,0,-1]) cylinder(d=screw_d, h=ft + 2, $fn=32);
+            translate([0,0,ft - (head_d - screw_d)/2 - 0.01]) cylinder(d1=screw_d, d2=head_d + 0.4, h=(head_d - screw_d)/2 + 0.02, $fn=48);
+        }
+    }
+    for (x=[-w/2, w/2 - 3]) hull() {                             // gussets, behind the stem only
+        translate([x, reach - ft - 18, -0.6 - st]) cube([3, 18, st]);
+        at_joint() translate([x, -ft, -depth/2 + 1]) cube([3, 0.01, depth/2 - 1 - st/2]);
+    }
+}
+
 function skadis_x(w) = w >= 44 ? [-20, 20] : [0];          // hook columns 40 mm apart (same row)
 function magnet_xy(w, l, d) = let(dx = w/2 - d/2 - 3, dy = l/2 - attach_strip() - d/2 - 1.5)
     (w >= 2*d + 10 && dy >= d/2 + 1) ? [[-dx,-dy],[dx,-dy],[-dx,dy],[dx,dy]] : [[-dx,0],[dx,0]];

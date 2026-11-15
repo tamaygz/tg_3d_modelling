@@ -90,7 +90,7 @@ dowel_l = 20;
 
 /* [Attachment] */
 // how the board mounts: plates snap into sockets in its back (none = plain back)
-attach_type = "keyhole"; // [none, wall, keyhole, skadis, hook, magnet, stand, flat]
+attach_type = "keyhole"; // [none, wall, keyhole, skadis, hook, magnet, stand, flat, roof]
 // plate size: S 30x30, M 45x40, L 60x50 mm
 attach_size = "M"; // [S, M, L]
 // number of sockets / plates across the back
@@ -107,6 +107,10 @@ hook_gap = 6;
 stand_angle = 15; // [5:1:30]
 // stand: foot distance behind the board
 stand_depth = 40;
+// roof: gap between the board's top edge and the ceiling
+roof_gap = 10;
+// roof: angle between the board and the ceiling (90 = hangs straight down; less tilts the face down towards you)
+roof_angle = 90; // [45:5:135]
 
 /* [Number plate] */
 // plate height (Y)
@@ -233,6 +237,7 @@ a_keep  = split_board ? a_w/2 + dowel_l/2 + 2 : 0;    // keep sockets clear of t
 a_shift = [for (x=a_x0) if (abs(x - x_split) < a_keep) (x >= x_split ? 1 : -1)*(a_keep - abs(x - x_split))];
 a_x     = [for (x=a_x0) x + (len(a_shift) > 0 ? a_shift[0] : 0)];   // socket x positions
 a_reach = a_y - (by0 - edge_amp);                     // stand: plate centre to the board's lowest edge
+a_roof  = (by1 + edge_amp) - a_y + roof_gap;          // roof: plate centre up to the ceiling
 assert(!has_att || a_len <= by1 - by0 - 3, str("attach_size ", attach_size, " needs ", a_len, " mm of board height; this board has ", by1 - by0, " mm. Choose a smaller size."));
 function sumv(v, i=0) = i >= len(v) ? 0 : v[i] + sumv(v, i+1);
 function art_pieces(labels) = len(labels) == 0 ? 0 :   // separate solids in one plate's artwork
@@ -253,7 +258,7 @@ parts = [
   ["stop_end",  "End stopper",        "PLA silver",       [0,0,45],  "#b8b8b8", str("pieces=",2*players), "print=x180"],
   ["stop_div",  "Column divider",     "PLA silver",       [0,0,45],  "#b8b8b8", str("pieces=",players), "print=x180"],
   ["dowel",     "Alignment dowel",    "PLA",              [0,0,-30], "#555555", str("pieces=",nStrip), "print=x90"],
-  ["attach",    "Attachment plate",   "PLA",              [0,0,-55], "#4d6170", str("pieces=",attach_count), (attach_type == "skadis" || attach_type == "hook") ? "print=auto" : "print=x180"]
+  ["attach",    "Attachment plate",   "PLA",              [0,0,-55], "#4d6170", str("pieces=",attach_count), (attach_type == "skadis" || attach_type == "hook" || attach_type == "roof") ? "print=auto" : "print=x180"]
 ];
 checks = concat([
   ["slider","rail_u","clear"], ["slider","rail_s","clear"],
@@ -334,5 +339,6 @@ for (p=[0:players-1]) {
   }
 }
 if (has_att) for (x=a_x) translate([x, a_y, 0])
-  pick("attach") attach_plate(attach_type, attach_size, screw_d, screw_head_d, magnet, 0.15, hook_gap, a_reach, stand_angle, stand_depth);
+  pick("attach") attach_plate(attach_type, attach_size, screw_d, screw_head_d, magnet, 0.15, hook_gap, a_reach, stand_angle, stand_depth,
+                              roof_reach=a_roof, roof_angle=roof_angle);
 pick("dowel") if (split_board) for (y=strip_y) translate([x_split, y, dz]) rotate([0,90,0]) cylinder(d=dw_d, h=dowel_l - 1, center=true, $fn=32);

@@ -19,6 +19,10 @@ When a new bundle is made, delete the old zip. Shared building blocks are in `li
 - **Lighting and wiring:** use `lib/led.scad` (tracks, diffusers, corners, recess cutter) and `lib/cable.scad`
   (clips, ties, ducts, grommets, route grooves) rather than one-off parts. Snap fits must bend the flexing
   part by 2% or less: check this with a probe (see projects/led_kit `probe`).
+- **Logos / artwork:** exact reproduction = `tools/svg_to_scad.py` into `lib/emblems/` (never `import()` an SVG:
+  the browser engine scales it differently). Verify by rasterising the export and diffing against the original
+  (bolavuit: 0 px differ beyond 2 px of an edge). Generic look-alike elements live in `lib/emblem.scad`.
+  The user wants a 100% match when recreating a given logo.
 - **Bundles:** after `asm.py --bundle`, run `python3 tools/bundle_with_lib.py projects/<name>/<name>_<rev>.zip`
   so the zip carries the lib files it needs.
 - `fits.scad` (ISO 286 fits): `fit_mid("H7", d)` for holes and `fit_mid("p6"|"k6"|"g6", d)` for shafts.
@@ -63,4 +67,5 @@ When a new bundle is made, delete the old zip. Shared building blocks are in `li
 |---|---|---|
 | `projects/scoreboard` | v3: styles, presets and attachment plates, not printed yet | sliding-pin scoreboard (0–19 + 20…100 steps), see its log |
 | `projects/led_kit` | v1, not printed yet | LED tracks, diffusers, corners, cable parts; test and showcase for lib/led + lib/cable |
+| `projects/bolavuit_logo` | v1, not printed yet | Bola Vuit logo plaque: exact (from the SVG) or rebuilt from lib/emblem; 2-colour |
 | `projects/attachments` | v2 snap fit, not printed yet | test coupon + every attachment plate type; print this first to check the snap fit |

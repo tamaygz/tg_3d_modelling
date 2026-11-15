@@ -36,6 +36,10 @@
 - Attachment plates now snap straight in (lib change); the lock key and `lock_key` parameter are gone.
   Sockets are shorter (plate + 3 mm notch), so size L fits a 2-player board.
 
+## v3.2 (2026-11-15)
+- New attachment type `roof` (ceiling bracket); the stem reach is computed from the board's top edge + `roof_gap`;
+  `roof_angle` tilts the board. Checked at 90° and 75°.
+
 ## Prints and feedback
 - (none yet)
 

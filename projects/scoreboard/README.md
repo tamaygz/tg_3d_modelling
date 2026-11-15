@@ -8,7 +8,7 @@ Set `part = "board_l"` (or any id below) and press F6 → Export STL to export a
 - `scoreboard.scad`: the model (needs `../../lib`)
 - `scoreboard_print/`: print-ready STL/3MF files, oriented for printing
 - `scoreboard_parts/`: each part as an STL in its assembled position
-- `scoreboard_5016537.zip`: complete bundle (model, lib, print files, viewer), revision 5016537
+- `scoreboard_1c3546f.zip`: complete bundle (model, lib, print files, viewer), revision 1c3546f
 - `scoreboard_configurator.html`: change the parameters in your browser, regenerate the 3D view and download STLs (internet needed for the OpenSCAD engine)
 - `scoreboard.html`: interactive 3D viewer of the default build
 
@@ -60,7 +60,8 @@ The board's back has sockets for the shared attachment plates (see [`lib/README.
 
 | Setting | Default | Meaning |
 |---|---|---|
-| `attach_type` | keyhole | none, wall, keyhole, skadis, hook, magnet, stand, flat |
+| `attach_type` | keyhole | none, wall, keyhole, skadis, hook, magnet, stand, flat, roof |
+| `roof_gap`, `roof_angle` | 10, 90 | roof: gap from the board's top edge to the ceiling; angle between board and ceiling |
 | `attach_size` | M | S 30×30, M 45×40, L 60×50 mm. The board must be tall enough (L needs 2 players' height) |
 | `attach_count` | 2 | 1–4 plates, spread over the back and kept clear of the split dowels. Skådis keeps them on the 40 mm grid |
 

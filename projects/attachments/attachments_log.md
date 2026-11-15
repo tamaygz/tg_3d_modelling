@@ -16,6 +16,11 @@
   0.4 mm, the bumps catch. Solid 4 mm corners carry the load.
 - Socket is now plate length + 3 mm (was + a quarter of the length), so bigger plates fit smaller boards.
 
+## v3 (2026-11-15) – roof
+- New type `roof`: ceiling bracket. A 5 mm stem runs up behind the host from the plate's middle (0.6 mm clear of
+  the snap arms, checked) to a 5 mm ceiling flange with 4 countersunk screws (room side) and two gussets.
+  `roof_angle` 45–135° sets the angle between host and ceiling; checked at 70/90/110° for S and L.
+
 ## Prints and feedback
 - (none yet)
 

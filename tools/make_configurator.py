@@ -37,15 +37,17 @@ def collect_files(main: Path, root: Path):
         rel = f.relative_to(root).as_posix()
         if rel in files:
             continue
-        if f.suffix.lower() in (".ttf", ".otf"):
+        if f.suffix.lower() in (".ttf", ".otf", ".stl", ".png"):
             files[rel] = {"b64": base64.b64encode(f.read_bytes()).decode()}
             continue
         text = f.read_text()
         files[rel] = {"text": text}
-        for m in re.finditer(r"^\s*(?:include|use)\s*<([^>]+)>", text, re.M):
-            dep = (f.parent / m.group(1)).resolve()
+        refs = [m.group(1) for m in re.finditer(r"^\s*(?:include|use)\s*<([^>]+)>", text, re.M)]
+        refs += [m.group(1) for m in re.finditer(r'import\s*\(\s*(?:file\s*=\s*)?"([^"]+)"', text)]   # SVG/DXF/STL artwork
+        for ref in refs:
+            dep = (f.parent / ref).resolve()
             if root not in dep.parents:
-                sys.exit(f"refusing to embed {m.group(1)}: outside {root}")
+                sys.exit(f"refusing to embed {ref}: outside {root}")
             if not dep.exists():
                 sys.exit(f"missing dependency {dep}")
             todo.append(dep)

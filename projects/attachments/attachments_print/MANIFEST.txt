@@ -1,5 +1,5 @@
 model attachments.scad
-rev a2bb953
-made 2026-11-15 05:59
+rev 44a74a9
+made 2026-11-15 06:31
 Attachment_plate.stl
 Test_coupon.stl

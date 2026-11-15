@@ -7,12 +7,13 @@ Parametric 3D models (OpenSCAD) for 3D printing. Each model has its own folder u
 |---|---|
 | [scoreboard](projects/scoreboard) | Wall scoreboard with sliding marker pins: configurable players, score range, steps, styles and mounting |
 | [led_kit](projects/led_kit) | LED strip tracks, diffusers, joiners, end caps, corners, and cable clips, ducts and grommets |
-| [attachments](projects/attachments) | Universal mounting plates (wall, keyhole, Skådis, hook, magnet, stand, glue) and a test coupon |
+| [bolavuit_logo](projects/bolavuit_logo) | Bola Vuit logo as a 2-colour plaque: exact from the original SVG, or rebuilt from adjustable elements |
+| [attachments](projects/attachments) | Universal mounting plates (wall, keyhole, Skådis, hook, magnet, stand, glue, ceiling) and a test coupon |
 
 Each project also has a `<name>_configurator.html`. Open it in a browser to change the parameters and download
 STLs, with no install needed. Build one with `python3 tools/make_configurator.py projects/<name>/<name>.scad`.
 
-Shared building blocks (board shapes, routed edges, rails and sliders, number scales, attachment plates, LED strip tracks, cable parts, fonts) live in
+Shared building blocks (board shapes, routed edges, rails and sliders, number scales, attachment plates, LED strip tracks, cable parts, emblem/logo elements, fonts) live in
 [`lib/`](lib/README.md). Use them from new projects.
 
 Tooling: OpenSCAD (`setup_env.sh` installs it plus fonts). Notes for Claude live in `CLAUDE.md`.
