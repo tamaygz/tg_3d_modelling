@@ -3,7 +3,7 @@
 // Use:  use <../../lib/emblem.scad>   (fonts: also `use <../../lib/fonts.scad>`)
 // Conventions: 2D, y up, units are whatever the caller works in (mm, or the source drawing's px).
 
-LEAF_STYLES   = ["almond", "pointed", "round"];
+LEAF_STYLES   = ["almond", "pointed", "round"];   // almond = measured classic laurel leaf
 BANNER_STYLES = ["filled", "outline"];
 
 // ---------- helpers ----------
@@ -23,10 +23,11 @@ function circle3(a, b, c) = let(
 function polar(r, a) = [r*cos(a), r*sin(a)];
 
 // ---------- leaves and laurel ----------
-// leaf from its base (origin) to its tip (0, len). belly = where it is widest (0..1), bend curves the
-// tip sideways (+ = to +x), vein > 0 cuts a centre vein of that width.
-module leaf_2d(len=30, w=10, style="almond", belly=0.45, bend=0.12, vein=0, n=36) {
-    p = style == "pointed" ? 1.35 : style == "round" ? 0.65 : 1.0;
+// leaf from its base (origin) to its tip (0, len). Width profile w/2 * sin(pi t^q)^p, with q set so the leaf is
+// widest at `belly`. style sets p: almond 0.62 (measured from classic laurel artwork: slender, slightly blunt ends),
+// pointed 1.0, round 0.45. bend curves the tip sideways (+ = to +x); vein > 0 cuts a centre vein.
+module leaf_2d(len=30, w=8, style="almond", belly=0.5, bend=0, vein=0, n=40) {
+    p = style == "pointed" ? 1.0 : style == "round" ? 0.45 : 0.62;
     q = ln(0.5)/ln(belly);
     function hw(t) = w/2 * pow(sin(180*pow(t, q)), p);
     function bx(t) = bend*len*t*t;
@@ -38,25 +39,30 @@ module leaf_2d(len=30, w=10, style="almond", belly=0.45, bend=0.12, vein=0, n=36
                                      [for (i=[n-2:-1:1]) let(t=i/n) [bx(t) - vein/2*(1-t), t*len]]));
     }
 }
-// branch along an arc of radius r around the origin, from angle a0 (base) to a1 (tip); leaves alternate
-// outside / inside the arc and lean towards the tip by out_angle / in_angle. grow scales the leaves from
-// the base (1) to the tip (grow). stem > 0 draws the stem.
-module laurel_branch_2d(r=100, a0=228, a1=140, pairs=6, leaf_len=40, leaf_w=13, out_angle=32, in_angle=38,
-                        tip_leaf=true, grow=0.9, style="almond", bend=0.1, vein=0, stem=0) {
-    dir = a1 < a0 ? -1 : 1;                                    // walking direction along the arc
-    n = 2*pairs;
-    for (i=[0:n-1]) let(t = (i + 0.5)/n, a = a0 + (a1 - a0)*t, k = 1 + (grow - 1)*t, out = i % 2 == 0,
-                        tang = a + dir*90, lean = out ? -dir*out_angle : dir*in_angle)
-        translate(polar(r, a)) rotate(tang + lean - 90)
-            leaf_2d(leaf_len*k, leaf_w*k, style, bend=(out ? -1 : 1)*dir*bend, vein=vein*k);
-    if (tip_leaf) translate(polar(r, a1)) rotate(a1 + dir*90 - 90) leaf_2d(leaf_len*grow*1.05, leaf_w*grow, style, bend=0, vein=vein*grow);
-    if (stem > 0) for (i=[0:23]) hull() for (j=[i, i+1]) translate(polar(r, a0 + (a1 - a0)*j/24)) circle(d=stem, $fn=12);
+// leaves listed explicitly, for a left branch around the origin: [angle of the base (deg), radius of the base,
+// lean from the branch direction (+ = outwards), length, width]. The branch runs up with decreasing angle.
+module laurel_leaves_2d(leaves, style="almond", vein=0) {
+    for (l=leaves) translate(polar(l[1], l[0])) rotate(l[0] - 90 + l[2] - 90) leaf_2d(l[3], l[4], style, vein=vein*l[4]);
+}
+// leaves generated in repeating groups along an arc (left branch, base at angle a0, walking up by step per group).
+// roles = per leaf in a group: [angle offset (deg), radius offset, lean (+ = out), size]. Defaults: one inner and
+// two outer leaves per group, fitted to classic laurel artwork. Leaves taper from size 1 to `grow` at the tip.
+LAUREL_ROLES = [[0, -30.9, -21.8, 0.942], [6.7, -10.0, 28.2, 1.033], [20.3, 19.2, 12.9, 0.878]];
+function laurel_group_leaves(r=600, a0=209, step=28.3, groups=3, leaf_len=324, ratio=0.287, grow=0.935, roles=LAUREL_ROLES) =
+    [for (g=[0:groups-1], k=[0:len(roles)-1]) let(ro = roles[k], d = g*step + ro[0], t = d/(groups*step),
+                                                  L = leaf_len*ro[3]*(1 + (grow - 1)*t))
+        [a0 - d, r + ro[1], ro[2], L, ratio*L]];
+module laurel_branch_2d(r=600, a0=209, step=28.3, groups=3, leaf_len=324, ratio=0.287, grow=0.935, roles=LAUREL_ROLES,
+                        leaves=undef, style="almond", vein=0, stem=0) {
+    L = is_undef(leaves) ? laurel_group_leaves(r, a0, step, groups, leaf_len, ratio, grow, roles) : leaves;
+    laurel_leaves_2d(L, style, vein);
+    if (stem > 0) let(a1 = min([for (l=L) l[0]]), a2 = max([for (l=L) l[0]]))
+        for (i=[0:23]) hull() for (j=[i, i+1]) translate(polar(r, a2 + (a1 - a2)*j/24)) circle(d=stem, $fn=12);
 }
 // wreath: a branch on the left (around the origin) and its mirror image on the right
-module laurel_wreath_2d(r=100, a0=228, a1=140, pairs=6, leaf_len=40, leaf_w=13, out_angle=32, in_angle=38,
-                        tip_leaf=true, grow=0.9, style="almond", bend=0.1, vein=0, stem=0) {
-    for (m=[0, 1]) mirror([m, 0])
-        laurel_branch_2d(r, a0, a1, pairs, leaf_len, leaf_w, out_angle, in_angle, tip_leaf, grow, style, bend, vein, stem);
+module laurel_wreath_2d(r=600, a0=209, step=28.3, groups=3, leaf_len=324, ratio=0.287, grow=0.935, roles=LAUREL_ROLES,
+                        leaves=undef, style="almond", vein=0, stem=0) {
+    for (m=[0, 1]) mirror([m, 0]) laurel_branch_2d(r, a0, step, groups, leaf_len, ratio, grow, roles, leaves, style, vein, stem);
 }
 
 // ---------- ribbons and banners ----------
@@ -87,10 +93,9 @@ module banner_loops_2d(w=100, d=6) { for (s=[-1,1]) hull() { translate([0, -0.45
 module banner_ends_2d(w=100, d=6, tail_w=9, notch=5) {
     for (s=[-1,1]) ribbon_2d([[0, -0.55*d], [s*0.3*d, -0.7*d], [s*0.55*d, -0.82*d], [s*0.8*d, -0.92*d]], tail_w*0.45, notch_end=notch*0.4);
 }
-// complete banner. bow adds a knot with two loops and hanging ends under the middle. style "outline" draws
-// every piece as a stroke-wide outline, hidden behind the pieces in front of it (band, knot, loops, ends, tails).
+// complete banner (simple version): band, tails, optional bow. See ribbon_banner_2d() for the detailed one.
 module banner_2d(w=100, h=18, sag=4, tail_len=12, tail_drop=12, tail_w=9, notch=5, bow=true, style="filled", stroke=1) {
-    d = 0.12*w;                                                   // bow size
+    d = 0.12*w;
     module band()  banner_band_2d(w, h, sag);
     module knot()  if (bow) banner_knot_2d(w, d);
     module loops() if (bow) banner_loops_2d(w, d);
@@ -104,6 +109,56 @@ module banner_2d(w=100, h=18, sag=4, tail_len=12, tail_drop=12, tail_w=9, notch=
         difference() { stroke_2d(stroke, inside=true) tails(); band(); knot(); loops(); ends(); }
     } else { band(); knot(); loops(); ends(); tails(); }
 }
+
+// ---------- detailed ribbon banner ----------
+// Built like a drawn ribbon: the INTERIORS of the pieces (front band, two swallowtail tails, two folds, the strip
+// under the band) are trimmed by the pieces in front of them, then an outline `stroke` wide is drawn around all of
+// them; the bow (two lens loops and two crossing tapered legs) and the two corner ears are solid.
+// spec = [band, tail, fold, strip, loops, legs, ear, stroke] (see BANNER_SPEC_* for the layout of each entry);
+// coordinates are relative to the banner's centre line x = 0, mirrored for the right side.
+// style "outline" (like engraved/printed badges) or "filled" (solid ribbon).
+function _qb(p0, c, p1, n=24) = [for (i=[0:n]) let(t=i/n) (1-t)*(1-t)*p0 + 2*(1-t)*t*c + t*t*p1];
+function _inner(l) = [for (i=[1:len(l)-2]) l[i]];
+function _tail1(l) = [for (i=[1:len(l)-1]) l[i]];
+function banner_band_pts(v, n=40) = let(hwt=v[0], hwb=v[1], yt=v[2], st=v[3], yb=v[4], sb=v[5], bulge=v[6], ym=(yt - st + yb - sb)/2)
+    concat([for (i=[0:n-1]) let(x = -hwt + 2*hwt*i/(n-1)) [x, yt - st*pow(x/hwt, 2)]],
+           _inner(_qb([hwt, yt - st], [(hwt + hwb)/2 + bulge, ym], [hwb, yb - sb])),
+           [for (i=[0:n-1]) let(x = hwb - 2*hwb*i/(n-1)) [x, yb - sb*pow(x/hwb, 2)]],
+           _inner(_qb([-hwb, yb - sb], [-(hwt + hwb)/2 - bulge, ym], [-hwt, yt - st])));
+// tail: A -c1- T1 -c3- N -c4- T2 -c2- B -c5- A  (v = [A, c1, T1, N, T2, c2, B, c3, c4, c5] as 20 numbers)
+function banner_tail_pts(v) = let(P = [for (i=[0:9]) [v[2*i], v[2*i+1]]])
+    concat(_qb(P[0], P[1], P[2]), _tail1(_qb(P[2], P[7], P[3])), _tail1(_qb(P[3], P[8], P[4])),
+           _tail1(_qb(P[4], P[5], P[6])), _inner(_qb(P[6], P[9], P[0])));
+// closed shape: 4 corners + 4 edge controls (16 numbers + 16 numbers as [x,y] pairs: corners first)
+function banner_qpoly_pts(v) = let(P = [for (i=[0:7]) [v[2*i], v[2*i+1]]])
+    [for (i=[0:3]) let(e = _qb(P[i], P[4+i], P[(i+1)%4], 16)) each [for (j=[0:15]) e[j]]];
+function _leaf_pts(L, W, p=0.62, bend=0, n=40) =
+    concat([for (i=[0:n]) let(t=i/n) [bend*L*t*t + W/2*pow(sin(180*t), p), t*L]],
+           [for (i=[n-1:-1:1]) let(t=i/n) [bend*L*t*t - W/2*pow(sin(180*t), p), t*L]]);
+// tapered ribbon along a quadratic Bezier p0-c-p1, width w0 -> w1
+function taper_ribbon_pts(p0, c, p1, w0, w1, n=24) = let(
+    P = [for (i=[0:n]) let(t=i/n) (1-t)*(1-t)*p0 + 2*(1-t)*t*c + t*t*p1],
+    N = [for (i=[0:n]) let(t=i/n, d = 2*(1-t)*(c - p0) + 2*t*(p1 - c)) [-d[1], d[0]]/norm(d)],
+    w = [for (i=[0:n]) (w0 + (w1 - w0)*i/n)/2])
+    concat([for (i=[0:n]) P[i] + w[i]*N[i]], [for (i=[n:-1:0]) P[i] - w[i]*N[i]]);
+module _both() { children(); mirror([1, 0]) children(); }
+module ribbon_banner_2d(spec, style="outline", show_bow=true, show_ears=true) {
+    bandv = spec[0]; tailv = spec[1]; foldv = spec[2]; stripv = spec[3]; lv = spec[4]; gv = spec[5]; earv = spec[6]; st = spec[7];
+    module band()  polygon(banner_band_pts(bandv));
+    module bandO() offset(r=st, $fn=24) band();
+    module loops() if (show_bow) _both() translate([-lv[0], lv[1]]) rotate(90 - lv[2]) polygon(_leaf_pts(lv[3], lv[4], lv[5], lv[6]));
+    module legs()  if (show_bow) _both() polygon(taper_ribbon_pts([-gv[0], gv[1]], [gv[2], gv[3]], [gv[4], gv[5]], gv[6], gv[7]));
+    module ears()  if (show_ears) _both() polygon(concat(_qb([earv[0], earv[1]], [earv[6], earv[7]], [earv[2], earv[3]]), [[earv[4], earv[5]]],
+                                                       _inner(_qb([earv[4], earv[5]], [earv[8], earv[9]], [earv[0], earv[1]]))));
+    module tails() difference() { _both() polygon(banner_tail_pts(tailv)); bandO(); }
+    module folds() difference() { _both() polygon(banner_qpoly_pts(foldv)); bandO(); offset(r=st, $fn=24) tails(); loops(); }
+    module strip() difference() { polygon([for (i=[0:3]) [stripv[2*i], stripv[2*i+1]]]); bandO(); loops(); offset(r=st, $fn=24) folds(); }
+    module inside() { band(); tails(); folds(); strip(); }
+    if (style == "filled") { inside(); loops(); legs(); ears(); }
+    else { difference() { offset(r=st, $fn=24) inside(); inside(); } loops(); legs(); ears(); }
+}
+// interiors only (the dark parts of an outlined banner), e.g. for a plaque's background
+module ribbon_banner_inside_2d(spec) { ribbon_banner_2d(spec, "filled", show_bow=false, show_ears=false); }
 
 // ---------- text on an arc ----------
 // approximate advance widths (em) of capitals in the bundled serif bold; others fall back to 0.70
@@ -128,12 +183,14 @@ module arc_text_2d(txt, r=100, size=10, font="Liberation Serif:style=Bold", at=9
 // highlight from angle hl_from to hl_to, thickest (hl_w x radius) at hl_mid. pool_ball_body_2d() is the full disc (for the dark layer). stripe=true adds a stripe band.
 module pool_ball_2d(d=50, number=8, ring_w=2, disc=0.5, disc_offset=[-0.005, 0.11], numeral=0.29,
                     font="Liberation Sans:style=Bold", highlight=true, hl_center=[0, 0], hl_from=20, hl_to=-98, hl_mid=-70, hl_r=0.846, hl_w=0.166,
-                    stripe=false) {
+                    stripe=false, numeral_matrix=undef) {
     R = d/2;
     stroke_2d(ring_w, inside=true) circle(r=R, $fn=144);
-    translate(disc_offset*d) difference() {
-        circle(r=disc*R, $fn=96);
-        text(str(number), size=numeral*d, font=font, halign="center", valign="center");
+    difference() {
+        translate(disc_offset*d) circle(r=disc*R, $fn=96);
+        if (is_undef(numeral_matrix)) translate(disc_offset*d) text(str(number), size=numeral*d, font=font, halign="center", valign="center");
+        else multmatrix([[numeral_matrix[0][0], numeral_matrix[0][1], 0, numeral_matrix[0][2]], [numeral_matrix[1][0], numeral_matrix[1][1], 0, numeral_matrix[1][2]], [0,0,1,0], [0,0,0,1]])
+            text(str(number), size=100, font=font, halign="left", valign="baseline");   // fitted placement (relative to the ball centre)
     }
     if (highlight) let(ro = hl_r*R, mid = hl_mid, c0 = hl_center*d,
                        p1 = c0 + polar(ro, hl_from), p2 = c0 + polar(ro, hl_to), pm = c0 + polar(ro - hl_w*R, mid),

@@ -12,7 +12,8 @@ Reusable OpenSCAD building blocks. Projects live in `projects/<name>/`, so they 
 | `attach.scad` | `use` | universal mounting: `attach_socket(size)` cutter for a host's back, `attach_plate(type, size)` in wall, keyhole, skadis, hook, magnet, stand or flat. Plates snap in. Sizes S 30×30, M 45×40, L 60×50 mm. |
 | `led.scad` | `use` | LED strip system from one cross-section: `led_track()` (glue or screw mount, side wire exit), `led_diffuser()` (flat or dome, snaps in), `led_key()` joiner, `led_end_cap()` with cable hole, `led_corner()` + `led_corner_diffuser()` (inward, outward, flat), `led_recess()` cutter to sink a track into a host |
 | `cable.scad` | `use` | `cable_clip()` (round, snap-in), `flat_cable_clip()`, `tie_mount()`, `cable_duct()` + `cable_duct_lid()` (snap), `cable_grommet()` (split); host cutters `cable_route(pts)`, `cable_notch()`, `cable_hole()`. Adhesive or M3-screw mounting |
-| `emblem.scad` | `use` | badge/logo generators: `leaf_2d()`, `laurel_branch_2d()` / `laurel_wreath_2d()`, `ribbon_2d()` (Bezier ribbon with notched ends), `banner_2d()` (arched band, tails, bow; filled or outline), `arc_text_2d()` (lettering on an arc, condensable), `pool_ball_2d()` (ring, number disc, crescent highlight, stripe), `stroke_2d()` outlines |
+| `emblem.scad` | `use` | badge/logo generators: `leaf_2d()` (measured classic laurel leaf), `laurel_wreath_2d()` / `laurel_branch_2d()` (repeating inner + 2 outer leaf groups, or an explicit leaf list via `laurel_leaves_2d()`), `ribbon_banner_2d(spec)` (arched band, swallowtail tails, folds, bow with lens loops and crossing legs, corner ears; outline or filled), `banner_2d()` (simple banner), `ribbon_2d()`, `taper_ribbon_pts()`, `arc_text_2d()`, `pool_ball_2d()` (ring, number disc, crescent highlight, stripe; optional fitted numeral placement), `stroke_2d()` |
+| `emblems/bolavuit_rebuilt.scad` | `include` | fitted data that makes the generic elements reproduce the Bola Vuit logo: `BVR_LEAVES`, `BVR_BANNER`, `BVR_BALL`, `BVR_NUMERAL`, `BVR_LETTERS` |
 | `emblems/bolavuit.scad` | `use` | the Bola Vuit logo, exact (from the original SVG): `bv_ball()` (`bv_ball_ring`, `bv_ball_disc`, `bv_numeral`, `bv_crescent`), `bv_laurel()` / `bv_leaf(i)`, `bv_banner()`, `bv_text()` / `bv_letter(i)`, `bv_logo()`, `bv_frame_fill()`; px units, scale by `w_mm / bv_art_w()` |
 | `scale.scad` | `use` | number scales: `number_row_2d()` with dot, bar, diamond or no separators; `plate_2d()`, `border_2d()`; `plate_body()` + `plate_art()` for 2-colour inlay, raised or engraved numbers |
 
@@ -93,7 +94,10 @@ centre and size so a small `lib/emblems/<name>.scad` can name the elements (see 
 Don't use `import("x.svg")` for artwork: desktop OpenSCAD and the browser build scale SVGs differently
 (120 mm came out as 154 mm in the browser). The polygon data has no scaling ambiguity.
 
-`emblem.scad` holds generic, adjustable versions of the same kinds of element for new designs.
+`emblem.scad` holds generic, adjustable versions of the same kinds of element for new designs. Their default
+shapes were measured from the Bola Vuit artwork: leaves are slender almonds (width ∝ sin(πt)^0.62, 27% of the length),
+wreaths grow in groups of one inner and two outer leaves, banners are drawn as interiors plus an outline stroke.
+To match another logo, fit the parameters against its exact polygons (see `projects/bolavuit_logo/README.md`).
 
 ## Fonts
 
