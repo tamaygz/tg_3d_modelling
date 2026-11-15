@@ -44,10 +44,11 @@ jobs:
           sudo apt-get install -y -q openscad
 
       - name: Stage models, library and editor.toml
+        env:
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          ONLY: ${{ inputs.projects }}
         run: |
-          python3 tools/make_pages.py --out build/pages-src \
-            --repo-url "${{ github.server_url }}/${{ github.repository }}" \
-            --ref "${{ github.sha }}" --only "${{ inputs.projects }}"
+          python3 tools/make_pages.py --out build/pages-src --repo-url "$REPO_URL" --ref "$GITHUB_SHA" --only "$ONLY"
 
       - name: Generate the configurator site
         # pinned to a commit of v2 (same generator the pages were tested with)
