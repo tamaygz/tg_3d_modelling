@@ -23,6 +23,10 @@ When a new bundle is made, delete the old zip. Shared building blocks are in `li
   the browser engine scales it differently). Verify by rasterising the export and diffing against the original
   (bolavuit: 0 px differ beyond 2 px of an edge). Generic look-alike elements live in `lib/emblem.scad`.
   The user wants a 100% match when recreating a given logo.
+- **Fitting generic elements to artwork:** model the element in Python with the same formulas as the .scad module,
+  maximise IoU against the exact polygons (scipy Nelder-Mead with explicit initial steps), export the parameters to
+  `lib/emblems/<name>_rebuilt.scad`, then re-measure the OpenSCAD output. Template: projects/bolavuit_logo/fitting/.
+- **Commit and push after each finished step**, not only at the end (the user lost track of uncommitted work once).
 - **Bundles:** after `asm.py --bundle`, run `python3 tools/bundle_with_lib.py projects/<name>/<name>_<rev>.zip`
   so the zip carries the lib files it needs.
 - `fits.scad` (ISO 286 fits): `fit_mid("H7", d)` for holes and `fit_mid("p6"|"k6"|"g6", d)` for shafts.

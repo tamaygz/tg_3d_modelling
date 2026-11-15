@@ -57,7 +57,7 @@ STROKE = BVR_BANNER[7];                       // banner outline width (px)
 
 parts = [
   ["base", "Base",    "PLA black", [0,0,-10], "#151515"],
-  ["art",  "Artwork", "PLA white", [0,0,10],  "#f2f2f2", str("pieces=", source == "exact" ? 29 : 33)]
+  ["art",  "Artwork", "PLA white", [0,0,10],  "#f2f2f2", str("pieces=", source == "exact" ? 29 : 32)]
 ];
 report = [ ["artwork width", logo_width], ["artboard", PXW*k], ["thinnest line (mm)", STROKE*k] ];
 if (STROKE*k < 0.8) echo(str("WARNING: at ", logo_width, " mm the banner outlines are ", STROKE*k, " mm wide; use at least ", ceil(0.8/STROKE*bv_art_w()), " mm for a 0.4 mm nozzle"));
