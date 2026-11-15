@@ -25,6 +25,12 @@ zero_step = true;
 // preview only: per player [main-range index, step index]
 demo_scores = [[7,2],[15,4]];
 
+/* [Headline] */
+// title above the first track (empty = none)
+title = "SCORES";
+// title size (mm)
+title_size = 9; // [4:1:20]
+
 /* [Style] */
 // a preset overrides every style setting below; "custom" uses them as set
 style_preset = "custom"; // [custom, classic, modern, victorian, pub, minimal]
@@ -214,7 +220,8 @@ strip_p = 2*rail_dy + sw + strip_gap;                 // plate-to-plate pitch
 strip_y = [for (k=[0:nStrip-1]) -k*strip_p];          // plate centre y
 track_y = [for (p=[0:players-1]) strip_y[floor(p/2)] + (p%2==0 ? rail_dy : -rail_dy)];
 track_up= [for (p=[0:players-1]) p%2==0];             // true = pointer faces down onto the plate below
-by1     = rail_dy + sw/2 + margin_y;                  // board top (deepest point of the edge)
+title_h = len(title) > 0 ? title_size + 8 : 0;
+by1     = rail_dy + sw/2 + margin_y + title_h;        // board top (deepest point of the edge)
 by0     = strip_y[nStrip-1] - ((players%2==1) ? label_h/2 + 4 : rail_dy + sw/2) - margin_y; // board bottom
 edge_amp= (s_shape == "arched" || s_shape == "wave" || s_shape == "scalloped") ? wave_amp : 0;  // extra edge height
 function end_pad(label, p) = max(p/2, len(str(label))*0.39*text_size + (plate_border ? border_in + border_w : 0) + 0.6);  // half digit advance ≈ 0.39·size (widest bundled font)
@@ -227,6 +234,11 @@ dw_hole = fit_mid("H7", dowel_d);                     // dowel hole
 dw_d    = fit_mid("k6", dowel_d);                     // dowel shaft (H7/k6)
 dz      = 5;                                          // dowel centre height
 do_split = split_board && bx1 - bx0 > 120;            // boards under 120 mm stay in one piece
+title_left = bx0 + max(corner_r, groove_in + groove_w + 2);
+title_right = (do_split ? x_split : bx1) - max(corner_r, groove_in + groove_w + 2);
+title_width = max(1, title_right - title_left);
+title_font = font_for("serif bold");
+title_scale = len(title) > 0 ? min(1, title_width / (1.15 * text_len(title, title_size, title_font))) : 1;
 has_att = attach_type != "none";                      // any sockets at all
 a_y     = attach_y((by0 + by1)/2);                    // plate centre y (socket + pry notch centred on the board)
 a_keep  = do_split ? attach_socket_w(attach_size)/2 + dowel_l/2 + 2 : 0;   // keep sockets clear of the split dowels
@@ -241,6 +253,7 @@ n_txt_s = nStrip * art_pieces(slabels);               // artwork pieces, step pl
 parts = [
   ["board_l",   "Board left",         "PLA wood / brown", [0,0,-30], COL_WOOD],
   ["board_r",   "Board right",        "PLA wood / brown", [30,0,-30], COL_WOOD],
+  ["title",     "Headline",           "PLA silk gold",    [0,0,20],  COL_GOLD, str("pieces=",len([for (c=title) if (c != " ") c]))],
   ["plate_u",   "Number plate main",  "PLA silk gold",    [0,0,20],  COL_PLATE, str("pieces=",nStrip), "plate=plates_u", "mat=PLA gold"],
   ["text_u",    "Numbers main",       "PLA black",        [0,0,26],  COL_INK, str("pieces=",n_txt_u), "plate=plates_u", "mat=PLA black"],
   ["plate_s",   "Number plate steps", "PLA silk gold",    [0,0,20],  COL_PLATE, str("pieces=",nStrip), "plate=plates_s", "mat=PLA gold"],
@@ -311,6 +324,9 @@ module marker() { rail_slider(RAIL, slider_l, slide_clr, slider_wall, slider_top
 
 pick("board_l") board_half(false);
 pick("board_r") if (do_split) board_half(true);
+if (len(title) > 0) pick("title") slab(board_t, board_t + 0.8)
+  translate([(title_left + title_right)/2, by1 - title_h/2 - margin_y/2])
+    scale([title_scale, 1]) text(title, size=title_size, font=title_font, halign="center", valign="center", spacing=1.15);
 for (y=strip_y) translate([0,y,board_t - label_t]) {
   pick("plate_u") num_plate(pl_u, ulabels, xu);
   pick("text_u")  num_text(pl_u, ulabels, xu);

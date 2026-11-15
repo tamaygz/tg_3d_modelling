@@ -5,6 +5,7 @@ kind,item,note,qty,material,id
 "made","Board right","PLA wood / brown","1","","board_r"
 "made","Column divider","PLA silver","2","","stop_div"
 "made","End stopper","PLA silver","4","","stop_end"
+"made","Headline","PLA silk gold","6","","title"
 "made","Marker slider","PLA silk gold","4","","slider"
 "made","Number plate main","PLA silk gold","1","PLA gold","plate_u"
 "made","Number plate steps","PLA silk gold","1","PLA gold","plate_s"
