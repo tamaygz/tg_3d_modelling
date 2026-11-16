@@ -77,15 +77,21 @@ function shell_rim_height(p, size, base, rise=[0, 0], waves=[[0, 1], [0, 1]], ph
     base + rise[0]*(p[0]/size[0] + 0.5) + rise[1]*(p[1]/size[1] + 0.5)
          + waves[0][0]*cos(360*waves[0][1]*p[0]/size[0] + phase) + waves[1][0]*cos(360*waves[1][1]*p[1]/size[1] + phase);
 
-// A dip in the rim (a grip cut-out, a pouring lip): subtract it from a rim height. The rim drops by `depth` over
-// `width` in the middle of one side (side = "front" / "back" / "left" / "right", center = shift along that side)
-// with smooth shoulders, and fades out over `fade` mm away from that wall, so the other walls are not affected.
+// A dip in the rim (a grip cut-out, a pouring lip): subtract it from a rim height. The rim drops by `depth` in
+// the middle of one side (side = "front" / "back" / "left" / "right", center = shift along that side) and fades
+// out over `fade` mm away from that wall, so the other walls are not affected. `width` is the width of the dip at
+// half its depth. The shoulders are never steeper than about 50 degrees (SHELL_DIP_RUN mm of run per mm of drop),
+// so a rim band keeps its strength along them: a dip too narrow for its depth comes out shallower, and
+// shell_rim_dip_depth() tells you how deep it really is.
+SHELL_DIP_RUN = 1.2;
 function _sh_ramp(x) = x <= 0 ? 1 : x >= 1 ? 0 : (1 + cos(180*x))/2;
+function shell_rim_dip_depth(depth, width) = min(depth, width/SHELL_DIP_RUN);
 function shell_rim_dip(p, size, depth=10, width=30, center=0, side="front", fade=8) = let(
+    d = shell_rim_dip_depth(depth, width),
     along = side == "front" || side == "back" ? p[0] : p[1],
     away = side == "front" ? p[1] + size[1]/2 : side == "back" ? size[1]/2 - p[1] : side == "left" ? p[0] + size[0]/2 : size[0]/2 - p[0],
-    shoulder = min(width/2, max(depth, 4)))
-    depth*_sh_ramp((abs(along - center) - (width/2 - shoulder))/shoulder)*_sh_ramp(away/fade - 0.5);
+    shoulder = min(width, max(SHELL_DIP_RUN*d, 4)))
+    d <= 0 ? 0 : d*_sh_ramp((abs(along - center) - (width - shoulder)/2)/shoulder)*_sh_ramp(away/fade - 0.5);
 
 // distance along the outline of the point on it that is nearest to q (to place things on a wall from plan coordinates)
 function shell_dist_at(pts, q) = let(u = shell_dists(pts), n = len(pts),

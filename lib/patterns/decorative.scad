@@ -34,6 +34,8 @@ module fish_visible_2d(size, j, cell, overlap=0.4, curvature=0.7, stagger=0.5, c
 module fish_scales_2d(size, cell=[12, 12], strut=0.8, overlap=0.4, curvature=0.7, stagger=0.5, center=[0, 0]) {
     rp = fish_row_pitch(cell, overlap);
     cover = ceil(1/(1 - overlap)) - 1;
+    // closing by a hair: where two outlines meet in a single point the gap between them would pinch to nothing
+    offset(delta=-FISH_STEP_GAP) offset(delta=FISH_STEP_GAP)
     for (j=[pat_i0(size[1], rp, center[1], 2):pat_i1(size[1], rp, center[1], 2)]) difference() {
         fish_row_2d(size, j, cell, overlap, curvature, stagger, strut/2, 0, center);
         fish_row_2d(size, j, cell, overlap, curvature, stagger, -strut/2, 0, center);

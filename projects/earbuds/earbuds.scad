@@ -48,7 +48,7 @@ rise_back = 0; // [0:1:80]
 /* [Front grip] */
 // lower the front rim so a finger can get under the case
 grip = true;
-// width of the cut-out and how far down it goes (mm)
+// width of the cut-out (at half its depth) and how far down it goes (mm); a narrow cut-out cannot be deep
 grip_width = 26; // [8:1:120]
 grip_depth = 14; // [2:1:80]
 
@@ -103,8 +103,9 @@ runs = shell_rect_runs(size, corners, cr, round_fn, 1);
 run_edges = shell_runs_edges(runs);
 seam = corners == "square" ? shell_run(run_edges, "left")[1] : shell_run(run_edges, "corner_bl")[1] + floor(round_fn/2);
 pts = split ? shell_runs_pts(runs) : shell_start_at(shell_runs_pts(runs), seam);     // seam at the back left corner
-dip = grip ? min(grip_depth, height - floor_t - 2) : 0;
-rim = function(p) shell_rim_height(p, size, height, [0, rise_back]) - shell_rim_dip(p, size, dip, min(grip_width, size[0] - 2*cr), 0, "front", wall_t + 4);
+grip_w = min(grip_width, (size[0] - 2*cr)/1.6);        // width at half depth; the shoulders need room on the straight front
+dip = grip ? shell_rim_dip_depth(min(grip_depth, height - floor_t - 2), grip_w) : 0;
+rim = function(p) shell_rim_height(p, size, height, [0, rise_back]) - shell_rim_dip(p, size, dip, grip_w, 0, "front", wall_t + 4);
 h_ref = height + rise_back;
 
 // ---------- patterns ----------
