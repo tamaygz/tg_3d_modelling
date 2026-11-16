@@ -45,18 +45,20 @@ module weave_strand(L, w, t, lift, P, x0=0, style="flat", flat=0.25) {
 
 // ---------- basket weave (plain weave, strips along X and Y) ----------
 // cell = strip pitch (centre to centre), strip = strip width (cell - strip is the open gap; 0 = closed weave)
-module basket_weave_3d(size, h=2.4, cell=10, strip=7, lift, style="flat") {
+module basket_weave_3d(size, h=2.4, cell=10, strip=7, lift, style="flat", center=[0, 0]) {
     assert(weave_ok(h, lift), weave_msg(h, lift));
     l = weave_lift(h, lift); t = h - l;
     nx = pat_n(size[0], cell); ny = pat_n(size[1], cell);
     Lx = (2*nx + 1)*cell; Ly = (2*ny + 1)*cell;
-    for (j=[-ny:ny]) translate([0, j*cell, 0]) weave_strand(Lx, strip, t, l, 2*cell, (abs(j)%2)*cell, style);
-    for (i=[-nx:nx]) translate([i*cell, 0, 0]) rotate(90) weave_strand(Ly, strip, t, l, 2*cell, (1 - abs(i)%2)*cell, style);
+    ic = round(center[0]/cell); jc = round(center[1]/cell);      // the strands are built around this crossing
+    for (j=[jc-ny:jc+ny]) translate([ic*cell, j*cell, 0]) weave_strand(Lx, strip, t, l, 2*cell, (abs(j)%2 - ic)*cell, style);
+    for (i=[ic-nx:ic+nx]) translate([i*cell, jc*cell, 0]) rotate(90) weave_strand(Ly, strip, t, l, 2*cell, (1 - abs(i)%2 - jc)*cell, style);
 }
-module basket_weave_2d(size, cell=10, strip=7) {
+module basket_weave_2d(size, cell=10, strip=7, center=[0, 0]) {
     nx = pat_n(size[0], cell); ny = pat_n(size[1], cell);
-    for (j=[-ny:ny]) translate([0, j*cell]) square([(2*nx + 1)*cell, strip], center=true);
-    for (i=[-nx:nx]) translate([i*cell, 0]) square([strip, (2*ny + 1)*cell], center=true);
+    ic = round(center[0]/cell); jc = round(center[1]/cell);
+    for (j=[jc-ny:jc+ny]) translate([ic*cell, j*cell]) square([(2*nx + 1)*cell, strip], center=true);
+    for (i=[ic-nx:ic+nx]) translate([i*cell, jc*cell]) square([strip, (2*ny + 1)*cell], center=true);
 }
 
 // ---------- tri-weave (kagome: strands at 0, 60 and 120 degrees) ----------
@@ -68,20 +70,16 @@ TRI_SHIFT  = [0, 0, 0.5];          // the third family is shifted half a cell, s
 function tri_weave_opening(cell, strand) = cell/3 - strand;     // width left of the small triangular openings
 // position along strand m of family a where it crosses line 0 of family b
 function _tri_cross(cell, a, m, b) = cell*(TRI_SHIFT[b] - (m + TRI_SHIFT[a])*cos(TRI_ANGLES[b] - TRI_ANGLES[a]))/sin(TRI_ANGLES[a] - TRI_ANGLES[b]);
-module _tri_family(size, cell, a, w) {
-    R = norm(size)/2 + cell; n = ceil(R/cell) + 1;
-    for (m=[-n:n]) rotate(TRI_ANGLES[a]) translate([0, (m + TRI_SHIFT[a])*cell]) children();
-}
-module tri_weave_3d(size, h=2.4, cell=24, strand=3, lift, style="flat") {
+module tri_weave_3d(size, h=2.4, cell=24, strand=3, lift, style="flat", center=[0, 0]) {
     assert(weave_ok(h, lift), weave_msg(h, lift));
     l = weave_lift(h, lift); t = h - l;
     R = norm(size)/2 + cell; n = ceil(R/cell) + 1; P = cell/sin(60);
-    for (a=[0:2]) for (m=[-n:n])
-        rotate(TRI_ANGLES[a]) translate([0, (m + TRI_SHIFT[a])*cell, 0])
-            weave_strand(2*R, strand, t, l, P, _tri_cross(cell, a, m, (a + 1)%3), style, 0.2);
+    for (a=[0:2]) let(c = pat_rot(center, -TRI_ANGLES[a]), mc = round(c[1]/cell)) for (m=[mc-n:mc+n])
+        rotate(TRI_ANGLES[a]) translate([c[0], (m + TRI_SHIFT[a])*cell, 0])
+            weave_strand(2*R, strand, t, l, P, _tri_cross(cell, a, m, (a + 1)%3) - c[0], style, 0.2);
 }
-module tri_weave_2d(size, cell=24, strand=3) {
+module tri_weave_2d(size, cell=24, strand=3, center=[0, 0]) {
     R = norm(size)/2 + cell; n = ceil(R/cell) + 1;
-    for (a=[0:2]) for (m=[-n:n])
-        rotate(TRI_ANGLES[a]) translate([0, (m + TRI_SHIFT[a])*cell]) square([2*R, strand], center=true);
+    for (a=[0:2]) let(c = pat_rot(center, -TRI_ANGLES[a]), mc = round(c[1]/cell)) for (m=[mc-n:mc+n])
+        rotate(TRI_ANGLES[a]) translate([c[0], (m + TRI_SHIFT[a])*cell]) square([2*R, strand], center=true);
 }

@@ -1,0 +1,36 @@
+# parameter variants checked by: python3 tools/build.py custombox --test
+# every part must be one watertight piece: walls fused round every corner, to the floor, the ledge and the boss
+
+# --- outline and corners ---
+corners = "chamfer"; corner_r = 12; wall_pattern = "truchet_arcs"; wall_mode = "recessed"; wall_t = 3; rise_right = 20
+corners = "square"; corner_fill = "solid"; wall_pattern = "square_grid"; front_pattern = "girih_star_cross"; lid = "inset"; lid_grip = "knob"
+width = 80; depth = 80; height = 40; corner_r = 40; wall_mode = "overlay"; wall_pattern = "girih_star_cross"
+shape = "squircle"; squareness = 5; wall_pattern = "fish_scales"; wall_mode = "raised"; floor_mode = "raised"
+shape = "ellipse"; side_wave = 2.5; side_wave_count = 10; wall_pattern = "voronoi"; rim_wave_x = 6; rim_wave_y = 6; rim_wave_x_count = 2; rim_wave_y_count = 2
+side_wave = 3; side_wave_count = 12; wall_mode = "solid"; floor_pattern = "voronoi"; floor_mode = "through_cut"
+
+# --- rim: slopes and waves ---
+rise_back = 35; wall_pattern = "triangular_lattice"
+rim_wave_x = 10; rim_wave_x_count = 1.5; wall_pattern = "diamond_lattice"; height = 45
+width = 173; depth = 67; height = 83; rise_back = -20; rim_wave_y = 4; wall_pattern = "voronoi"; wall_seed = 9
+rim_wave_x = 8; rim_wave_x_count = 2; rim_wave_phase = 180; rise_right = 15; wall_pattern = "square_grid"; wall_angle = 45; fit_cells = false
+
+# --- walls: solid corners, per-wall patterns, weaves ---
+corner_fill = "solid"; wall_pattern = "basket_weave"; wall_mode = "open_lattice"; back_pattern = "hex_honeycomb"; corner_r = 10
+corner_fill = "solid"; wall_pattern = "tri_weave"; wall_mode = "open_lattice"; wall_cell = 16; wall_strut = 2.4; strand_style = "rounded"; rim_wave_x = 5
+wall_pattern = "concentric_ripples"; ripple_spokes = 0
+wall_pattern = "flowing_waves"; wall_mode = "raised"; floor_mode = "through_cut"; floor_pattern = "square_grid"
+
+# --- lid ---
+lid = "inset"; lid_mode = "through_cut"; lid_pattern = "hex_honeycomb"; wall_mode = "solid"
+lid = "inset"; lid_grip = "none"; lid_mode = "raised"; lid_pattern = "fish_scales"; shape = "ellipse"; wall_pattern = "diamond_lattice"
+lid = "inset"; rise_back = 10
+
+# --- mounting ---
+attach_type = "skadis"; corner_fill = "solid"; back_pattern = "hex_honeycomb"; front_pattern = "voronoi"; front_mode = "through_cut"
+attach_type = "wall"; attach_size = "M"; attach_count = 2; width = 160; height = 70; wall_mode = "solid"
+attach_type = "keyhole"; rise_back = 25; corners = "square"; wall_pattern = "triangular_lattice"
+
+# --- limits ---
+width = 40; depth = 40; height = 25; corner_r = 6; wall_cell = 6; wall_strut = 1; base_band = 2; rim_band = 2
+wall_t = 1.2; floor_t = 0.8; wall_cell = 20; wall_strut = 3; facet = 3

@@ -118,41 +118,67 @@ function pattern_problem(p) = let(s = _ps(p), f = pattern_features(s), closed = 
 
 // ---------- layer 1: pattern engine ----------
 // the bare 2D pattern (material), generated to cover `cover` around the origin, in the pattern's own axes
-module _pat_gen_2d(s, cover) {
+module _pat_gen_2d(s, cover, g=[0, 0]) {
     n = s[0]; c = _pc(s); st = s[2];
-    if (n == "hex_honeycomb") hex_honeycomb_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "orient", "pointy"));
-    else if (n == "square_grid") square_grid_2d(cover, c, st, _po(s, "stagger", 0));
-    else if (n == "diamond_lattice") diamond_lattice_2d(cover, c, pat_xy(st)[0]);
-    else if (n == "triangular_lattice") triangular_lattice_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "alternate", true), _po(s, "orient", "up"));
-    else if (n == "basket_weave") basket_weave_2d(cover, pat_xy(c)[0], pat_xy(st)[0]);
-    else if (n == "tri_weave") tri_weave_2d(cover, pat_xy(c)[0], pat_xy(st)[0]);
-    else if (n == "voronoi") voronoi_2d(cover, pat_xy(c)[0], pat_xy(st)[0], s[6], _po(s, "irregularity", 1), _po(s, "min_cell", 0), _po(s, "round", 0));
-    else if (n == "fish_scales") fish_scales_2d(cover, pat_xy(c), pat_xy(st)[0], _po(s, "overlap", 0.4), _po(s, "curvature", 0.7), _po(s, "stagger", 0.5));
-    else if (n == "truchet_arcs") truchet_arcs_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "variation", "random"), s[6], _po(s, "bias", 0.5));
-    else if (n == "girih_star_cross") girih_star_cross_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "star", undef), _po(s, "star_ratio", undef));
-    else if (n == "flowing_waves") flowing_waves_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "amplitude", 3), _po(s, "wavelength", 30), _po(s, "phase", 0), _po(s, "shift", 0));
-    else if (n == "concentric_ripples") concentric_ripples_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "rings", 0), _po(s, "first", undef), _po(s, "centers", [[0, 0]]), _po(s, "spokes", 0));
+    if (n == "hex_honeycomb") hex_honeycomb_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "orient", "pointy"), center=g);
+    else if (n == "square_grid") square_grid_2d(cover, c, st, _po(s, "stagger", 0), center=g);
+    else if (n == "diamond_lattice") diamond_lattice_2d(cover, c, pat_xy(st)[0], center=g);
+    else if (n == "triangular_lattice") triangular_lattice_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "alternate", true), _po(s, "orient", "up"), center=g);
+    else if (n == "basket_weave") basket_weave_2d(cover, pat_xy(c)[0], pat_xy(st)[0], center=g);
+    else if (n == "tri_weave") tri_weave_2d(cover, pat_xy(c)[0], pat_xy(st)[0], center=g);
+    else if (n == "voronoi") voronoi_2d(cover, pat_xy(c)[0], pat_xy(st)[0], s[6], _po(s, "irregularity", 1), _po(s, "min_cell", 0), _po(s, "round", 0), center=g);
+    else if (n == "fish_scales") fish_scales_2d(cover, pat_xy(c), pat_xy(st)[0], _po(s, "overlap", 0.4), _po(s, "curvature", 0.7), _po(s, "stagger", 0.5), center=g);
+    else if (n == "truchet_arcs") truchet_arcs_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "variation", "random"), s[6], _po(s, "bias", 0.5), center=g);
+    else if (n == "girih_star_cross") girih_star_cross_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "star", undef), _po(s, "star_ratio", undef), center=g);
+    else if (n == "flowing_waves") flowing_waves_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "amplitude", 3), _po(s, "wavelength", 30), _po(s, "phase", 0), _po(s, "shift", 0), center=g);
+    else if (n == "concentric_ripples") concentric_ripples_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "rings", 0), _po(s, "first", undef), _po(s, "centers", [[0, 0]]), _po(s, "spokes", 0), center=g);
 }
 // relief levels: most patterns are one flat level; fish scales rise towards their tips, ripples fall off outwards
 function pattern_levels(p) = let(s = _ps(p), n = s[0])
     n == "fish_scales" && _po(s, "shingle", true) ? _po(s, "steps", 3) :
     n == "concentric_ripples" && _po(s, "falloff", 0) > 0 ? _po(s, "steps", 4) : 1;
 function _pat_level_top(s, k, K) = s[0] == "concentric_ripples" ? 1 - _po(s, "falloff", 0)*(K - k)/K : k/K;   // share of h
-module _pat_level_2d(s, cover, k, K) {
+module _pat_level_2d(s, cover, k, K, g=[0, 0]) {
     n = s[0]; c = _pc(s); st = s[2];
-    if (K == 1) _pat_gen_2d(s, cover);
-    else if (n == "fish_scales") fish_scales_level_2d(cover, k, K, pat_xy(c), _po(s, "overlap", 0.4), _po(s, "curvature", 0.7), _po(s, "stagger", 0.5));
-    else concentric_ripples_level_2d(cover, k, K, pat_xy(c)[0], pat_xy(st)[0], _po(s, "rings", 0), _po(s, "first", undef), _po(s, "centers", [[0, 0]]), _po(s, "spokes", 0));
+    if (K == 1) _pat_gen_2d(s, cover, g);
+    else if (n == "fish_scales") fish_scales_level_2d(cover, k, K, pat_xy(c), _po(s, "overlap", 0.4), _po(s, "curvature", 0.7), _po(s, "stagger", 0.5), center=g);
+    else concentric_ripples_level_2d(cover, k, K, pat_xy(c)[0], pat_xy(st)[0], _po(s, "rings", 0), _po(s, "first", undef), _po(s, "centers", [[0, 0]]), _po(s, "spokes", 0), center=g);
 }
-module _pat_weave_3d(s, cover, h) {
+module _pat_weave_3d(s, cover, h, g=[0, 0]) {
     c = pat_xy(_pc(s))[0]; w = pat_xy(s[2])[0];
-    if (s[0] == "basket_weave") basket_weave_3d(cover, h, c, w, _po(s, "lift", undef), _po(s, "style", "flat"));
-    else tri_weave_3d(cover, h, c, w, _po(s, "lift", undef), _po(s, "style", "flat"));
+    if (s[0] == "basket_weave") basket_weave_3d(cover, h, c, w, _po(s, "lift", undef), _po(s, "style", "flat"), g);
+    else tri_weave_3d(cover, h, c, w, _po(s, "lift", undef), _po(s, "style", "flat"), g);
 }
-// area the generator must cover so that the rotated, shifted, scaled pattern fills `size`
-function _pat_cover(s, size) = let(a = s[3], e = [abs(size[0]*cos(a)) + abs(size[1]*sin(a)), abs(size[0]*sin(a)) + abs(size[1]*cos(a))],
-    o = 2*norm(s[4])) [(e[0] + o)/s[7][0], (e[1] + o)/s[7][1]];
+// Window: set the special variable $pat_window = [[cx, cy], [w, h]] around any module of this file to build only
+// that part of the surface. The result is exactly the piece of the full pattern, panel or lining inside the
+// window (frames and outlines are still worked out on the whole surface). lib/shell.scad uses this to bend a
+// panel round corners piece by piece; use it yourself to split a large panel into printable tiles.
+function _pat_win(size) = is_undef($pat_window) ? [[0, 0], size] : $pat_window;
+// area the generator must cover (in its own axes) to fill a window of `wsize`, and the point it must cover it around
+function _pat_cover(s, wsize) = let(a = s[3]) [(abs(wsize[0]*cos(a)) + abs(wsize[1]*sin(a)))/s[7][0], (abs(wsize[0]*sin(a)) + abs(wsize[1]*cos(a)))/s[7][1]];
+function _pat_gcenter(s, wc) = let(q = pat_rot(wc, -s[3]) - s[4]) [q[0]/s[7][0], q[1]/s[7][1]];
 module _pat_place(s) { rotate(s[3]) translate(s[4]) scale(s[7]) children(); }
+// the surface rectangle, cut down to the window
+module _pat_rect(size) {
+    if (is_undef($pat_window)) square(size, center=true);
+    else intersection() { square(size, center=true); translate($pat_window[0]) square($pat_window[1], center=true); }
+}
+// clip finished 2D geometry to the window (nothing to do without one)
+module _pat_w() {
+    if (is_undef($pat_window)) children();
+    else intersection() { translate($pat_window[0]) square($pat_window[1], center=true); children(); }
+}
+// the placed pattern, generated for the window only
+module _pat_field(s, size) { w = _pat_win(size); _pat_place(s) _pat_gen_2d(s, _pat_cover(s, w[1]), _pat_gcenter(s, w[0])); }
+// inset of an outline: b = one distance all round, or [sides, bottom, top] / [x, y] for different frame widths
+// (the list form moves the outline instead of offsetting it, so a wavy top edge keeps a band of constant height)
+function _pat_b3(b) = is_list(b) ? (len(b) > 2 ? b : [b[0], b[1], b[1]]) : [b, b, b];
+function _pat_badd(b, d) = is_list(b) ? [for (x=b) max(0, x + d)] : max(0, b + d);
+module _pat_inset(b) {
+    if (is_list(b)) { q = _pat_b3(b); intersection() { translate([q[0], 0]) children(); translate([-q[0], 0]) children(); translate([0, q[1]]) children(); translate([0, -q[2]]) children(); } }
+    else if (b == 0) children();
+    else offset(delta=-b) children();
+}
 module _pat_check(s, size) {
     assert(is_list(size) && len(size) == 2 && size[0] > 0 && size[1] > 0, "pattern: size must be [x, y]");
     assert(pattern_problem(s) == "", pattern_problem(s));
@@ -166,10 +192,11 @@ module pattern_2d(p, size, cell, strut, angle, seed, opts) {
     if ($children > 0) _pattern_2d(s, size) children(); else _pattern_2d(s, size) square(size, center=true);
 }
 module _pattern_2d(s, size) {
-    intersection() { square(size, center=true); children(); _pat_place(s) _pat_gen_2d(s, _pat_cover(s, size)); }
+    intersection() { _pat_rect(size); children(); _pat_field(s, size); }
 }
 module _pattern_level(s, size, k, K) {
-    intersection() { square(size, center=true); children(); _pat_place(s) _pat_level_2d(s, _pat_cover(s, size), k, K); }
+    w = _pat_win(size);
+    intersection() { _pat_rect(size); children(); _pat_place(s) _pat_level_2d(s, _pat_cover(s, w[1]), k, K, _pat_gcenter(s, w[0])); }
 }
 
 // 3D pattern in its natural form, standing on z = 0, h high in total, clipped like pattern_2d:
@@ -184,8 +211,9 @@ module pattern_3d(p, size, h=2, cell, strut, angle, seed, opts, profile="flat", 
 module _pattern_3d(s, size, h, profile="flat", steps=3) {
     K = pattern_levels(s);
     if (pattern_is_3d(s)) intersection() {
-        _pat_place(s) _pat_weave_3d(s, _pat_cover(s, size), h);
-        translate([0, 0, -1]) linear_extrude(h + 2) intersection() { square(size, center=true); children(); }
+        w = _pat_win(size);
+        _pat_place(s) _pat_weave_3d(s, _pat_cover(s, w[1]), h, _pat_gcenter(s, w[0]));
+        translate([0, 0, -1]) linear_extrude(h + 2) intersection() { _pat_rect(size); children(); }
     }
     else if (K == 1 && profile == "round") {
         r = min(h, pat_xy(s[2])[0]/2);                                // rounding radius of the rib tops
@@ -211,8 +239,8 @@ module pattern_cutout_2d(p, size, cell, strut, angle, seed, opts, inset=0, cut="
     else _pattern_cutout_2d(s, size, inset, cut) square(size, center=true);
 }
 module _pattern_cutout_2d(s, size, inset=0, cut="cells") {
-    if (cut == "lines") intersection() { offset(delta=-inset) _pat_outline(size) children(); _pat_place(s) _pat_gen_2d(s, _pat_cover(s, size)); }
-    else _pat_open(s[10]) difference() { offset(delta=-inset) _pat_outline(size) children(); _pat_place(s) _pat_gen_2d(s, _pat_cover(s, size)); }
+    if (cut == "lines") _pat_w() intersection() { _pat_inset(inset) _pat_outline(size) children(); _pat_field(s, size); }
+    else _pat_w() _pat_open(s[10]) difference() { _pat_inset(inset) _pat_outline(size) children(); _pat_field(s, size); }
 }
 // 2D open lattice: the outline with the cells cut out, leaving the pattern and a closed frame `border` wide
 module pattern_panel_2d(p, size, cell, strut, angle, seed, opts, border=2, cut="cells") {
@@ -222,7 +250,7 @@ module pattern_panel_2d(p, size, cell, strut, angle, seed, opts, border=2, cut="
     else _pattern_panel_2d(s, size, border, cut) square(size, center=true);
 }
 module _pattern_panel_2d(s, size, border=2, cut="cells") {
-    difference() { _pat_outline(size) children(); _pattern_cutout_2d(s, size, border, cut) children(); }
+    _pat_w() difference() { _pat_outline(size) children(); _pattern_cutout_2d(s, size, border, cut) children(); }
 }
 
 // raised pattern to add on a surface at z = 0: h high, kept `pad` away from the edge of the outline.
@@ -234,7 +262,7 @@ module pattern_relief(p, size, h=0.8, cell, strut, angle, seed, opts, pad=0, pro
     else _pattern_relief(s, size, h, pad, profile, steps) square(size, center=true);
 }
 module _pattern_relief(s, size, h, pad=0, profile="flat", steps=3) {
-    translate([0, 0, -PAT_EPS]) _pattern_3d(s, size, h + PAT_EPS, profile, steps) offset(delta=-pad) children();
+    translate([0, 0, -PAT_EPS]) _pattern_3d(s, size, h + PAT_EPS, profile, steps) _pat_inset(pad) children();
 }
 
 // cutter to subtract from a host whose surface is z = 0 (body below): engraves the pattern ("lines") or cuts
@@ -268,10 +296,10 @@ module _pattern_lining(s, size, t, mode, depth, inset, border, edge, profile) {
     zs = [0, min(zc, zh), max(zc, zh), t];               // layers: plain / cut and / or stepped in
     translate([0, 0, -PAT_EPS]) for (i=[0:2]) if (zs[i+1] - zs[i] > 0.001)
         translate([0, 0, zs[i]]) linear_extrude(zs[i+1] - zs[i] + PAT_EPS) difference() {
-            offset(delta=-inset - (ch > 0 && zs[i] >= zh - 0.001 ? ch : 0)) _pat_outline(size) children();
-            if (cut_d > 0 && zs[i] >= zc - 0.001) _pattern_cutout_2d(s, size, inset + border, mode == "through_cut" ? "cells" : "lines") children();
+            _pat_w() offset(delta=-inset - (ch > 0 && zs[i] >= zh - 0.001 ? ch : 0)) _pat_outline(size) children();
+            if (cut_d > 0 && zs[i] >= zc - 0.001) _pattern_cutout_2d(s, size, _pat_badd(border, inset), mode == "through_cut" ? "cells" : "lines") children();
         }
-    if (mode == "raised") translate([0, 0, t]) _pattern_relief(s, size, depth, inset + border, profile) children();
+    if (mode == "raised") translate([0, 0, t]) _pattern_relief(s, size, depth, _pat_badd(border, inset), profile) children();
 }
 
 // a complete flat panel from an outline: slab z = 0..t, decorated face on top.
@@ -293,23 +321,23 @@ module _pattern_panel(mode, s, size, t, depth, border, pad, profile, lining_t, l
     open = mode == "through_cut" || mode == "open_lattice";
     assert(!open || pattern_is_connected(s), str(s[0], " leaves loose pieces as ", mode, ": use raised, recessed or overlay", s[0] == "concentric_ripples" ? ", or add spokes" : ""));
     assert(mode != "recessed" || depth < t, str("panel: recess depth ", depth, " must be less than the thickness ", t));
-    if (mode == "solid") linear_extrude(t) _pat_outline(size) children();
+    if (mode == "solid") linear_extrude(t) _pat_w() _pat_outline(size) children();
     else if (mode == "open_lattice" && pattern_is_3d(s)) {
-        if (border > 0) linear_extrude(t) difference() { _pat_outline(size) children(); offset(delta=-border) _pat_outline(size) children(); }
-        _pattern_3d(s, size, t) offset(delta=-max(0, border + pad - 0.3)) children();     // strands reach 0.3 into the frame
+        linear_extrude(t) _pat_w() difference() { _pat_outline(size) children(); _pat_inset(border) _pat_outline(size) children(); }
+        _pattern_3d(s, size, t) _pat_inset(_pat_badd(_pat_badd(border, pad), -0.3)) children();     // strands reach 0.3 into the frame
     }
-    else if (open) linear_extrude(t) _pattern_panel_2d(s, size, border + pad) children();
+    else if (open) linear_extrude(t) _pattern_panel_2d(s, size, _pat_badd(border, pad)) children();
     else if (mode == "raised") {
-        linear_extrude(t) _pat_outline(size) children();
-        translate([0, 0, t]) _pattern_relief(s, size, depth, border + pad, profile) children();
+        linear_extrude(t) _pat_w() _pat_outline(size) children();
+        translate([0, 0, t]) _pattern_relief(s, size, depth, _pat_badd(border, pad), profile) children();
     }
     else if (mode == "recessed") {
-        linear_extrude(t - depth) _pat_outline(size) children();
-        translate([0, 0, t - depth - PAT_EPS]) linear_extrude(depth + PAT_EPS)
-            difference() { _pat_outline(size) children(); _pattern_cutout_2d(s, size, border + pad, "lines") children(); }
+        linear_extrude(t - depth) _pat_w() _pat_outline(size) children();
+        translate([0, 0, t - depth - PAT_EPS]) linear_extrude(depth + PAT_EPS) _pat_w()
+            difference() { _pat_outline(size) children(); _pattern_cutout_2d(s, size, _pat_badd(border, pad), "lines") children(); }
     }
     else {
-        linear_extrude(t) _pat_outline(size) children();
+        linear_extrude(t) _pat_w() _pat_outline(size) children();
         translate([0, 0, t]) _pattern_lining(s, size, lining_t, lining_mode, depth, pad, border, lining_edge, profile) children();
     }
 }

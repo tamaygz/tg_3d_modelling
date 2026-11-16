@@ -14,17 +14,17 @@ function wave_min_radius(amplitude, wavelength) = amplitude == 0 ? 1e9 : pow(wav
 // smallest gap between two neighbouring ribs (they come closest where the wave is steepest; exact for shift = 0)
 function wave_gap(cell, strut, amplitude, wavelength, shift=0) = let(v = cell - 2*amplitude*abs(sin(shift/2)))
     v/sqrt(1 + pow(wave_max_slope(amplitude, wavelength), 2)) - strut;
-function wave_rib_pts(L, y0, strut, amplitude, wavelength, phase, n) = let(
+function wave_rib_pts(L, y0, strut, amplitude, wavelength, phase, n, xc=0) = let(
     k = 360/wavelength,
-    c = [for (i=[0:n]) let(x = -L/2 + i*L/n, s = amplitude*k*PI/180*cos(k*x + phase), u = [-s, 1]/norm([s, 1]))
+    c = [for (i=[0:n]) let(x = xc - L/2 + i*L/n, s = amplitude*k*PI/180*cos(k*x + phase), u = [-s, 1]/norm([s, 1]))
         [[x, y0 + amplitude*sin(k*x + phase)], u*strut/2]])
     concat([for (p=c) p[0] + p[1]], [for (i=[n:-1:0]) c[i][0] - c[i][1]]);
-module flowing_waves_2d(size, cell=8, strut=2.4, amplitude=3, wavelength=30, phase=0, shift=0) {
+module flowing_waves_2d(size, cell=8, strut=2.4, amplitude=3, wavelength=30, phase=0, shift=0, center=[0, 0]) {
     assert(wave_min_radius(amplitude, wavelength) > strut/2, str("flowing_waves: the wave bends tighter (radius ",
         wave_min_radius(amplitude, wavelength), ") than half the rib width ", strut/2, ": lower the amplitude or raise the wavelength"));
-    ny = pat_n(size[1] + 2*amplitude, cell);
     L = size[0] + 2*cell; n = max(8, ceil(L/wavelength*32));
-    for (j=[-ny:ny]) polygon(wave_rib_pts(L, j*cell, strut, amplitude, wavelength, phase + j*shift, n));
+    for (j=[pat_i0(size[1] + 2*amplitude, cell, center[1]):pat_i1(size[1] + 2*amplitude, cell, center[1])])
+        polygon(wave_rib_pts(L, j*cell, strut, amplitude, wavelength, phase + j*shift, n, center[0]));
 }
 
 // ---------- concentric ripples ----------
@@ -43,11 +43,12 @@ module ripple_rings_2d(i0, i1, cell=6, strut=2, first, centers=[[0, 0]], spokes=
             translate([ripple_radius(i0, cell, first), -strut/2]) square([ripple_radius(i1, cell, first) - ripple_radius(i0, cell, first), strut]);
     }
 }
-module concentric_ripples_2d(size, cell=6, strut=2, rings=0, first, centers=[[0, 0]], spokes=0) {
-    ripple_rings_2d(1, ripple_count(size, cell, rings, first, centers), cell, strut, first, centers, spokes);
+// (rings always start at their centre, so a window far from it still needs every ring up to there)
+module concentric_ripples_2d(size, cell=6, strut=2, rings=0, first, centers=[[0, 0]], spokes=0, center=[0, 0]) {
+    ripple_rings_2d(1, ripple_count(size + 2*[abs(center[0]), abs(center[1])], cell, rings, first, centers), cell, strut, first, centers, spokes);
 }
 // relief with falloff, level k of `steps` (1 = lowest, all rings): the inner rings rise higher than the outer ones
-module concentric_ripples_level_2d(size, k, steps=4, cell=6, strut=2, rings=0, first, centers=[[0, 0]], spokes=0) {
-    n = ripple_count(size, cell, rings, first, centers);
+module concentric_ripples_level_2d(size, k, steps=4, cell=6, strut=2, rings=0, first, centers=[[0, 0]], spokes=0, center=[0, 0]) {
+    n = ripple_count(size + 2*[abs(center[0]), abs(center[1])], cell, rings, first, centers);
     ripple_rings_2d(1, ceil(n*(steps - k + 1)/steps), cell, strut, first, centers, spokes);
 }

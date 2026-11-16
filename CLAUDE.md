@@ -27,6 +27,9 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   outside +Z; build flat, then rotate onto walls. New patterns: a generator in `lib/patterns/`, a branch in
   `_pat_gen_2d`, defaults + `pattern_features`, a gallery tile and tests. Do clipping and cuts in 2D and extrude:
   3D booleans are slow in OpenSCAD 2021 (only the weaves need one).
+- **Containers and curved walls:** `lib/shell.scad` (outline as points or named runs, rim height function,
+  `shell_strip_pts`, `shell_wrap`) with windowed `pattern_panel()` children; `projects/custombox` is the reference.
+  One facet per outline edge: keep straight sides as a single edge. Frame widths as `[sides, bottom, top]`.
 - **Snap fits** must bend the flexing part by 2% or less; prove it with a probe (see `projects/led_kit`, `probe`).
 - **Logos / artwork:** exact reproduction = `tools/svg_to_scad.py` into `lib/emblems/` (never `import()` an SVG:
   the browser engine scales it differently). Verify with `tools/artfit.py overlay`. The user wants a 100% match
@@ -58,6 +61,9 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   patterns.scad), and passing `undef` to a parameter does NOT fall back to its default: resolve defaults inside.
 - `if ($children > 0)` must be decided in the public module: a nested `children()` call counts as one child even
   when it is empty, and `intersection()` with an empty child gives nothing.
+- Special variables (`$pat_window`) pass context down to children without threading parameters; test with
+  `is_undef($x)` (no warning). Function literals (`f = function(p) ...`) work in 2021.01.
+- A pattern window must be tight: generators cover the whole window, and weave strands are as long as its diagonal.
 - No `rands()` for patterns: `pat_hash()` gives the same numbers in every OpenSCAD version and in the browser.
 - Guard long-running Python scripts with `__main__` (an import once re-ran a 30-minute fit).
 
@@ -94,4 +100,5 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 | `projects/led_kit` | v1, not printed yet | LED tracks, diffusers, corners, cable parts |
 | `projects/attachments` | v3, not printed yet | test coupon + every attachment plate; print first to check the snap fit |
 | `projects/pattern_gallery` | v1, not printed yet | catalogue + test bench of the 12 `lib/patterns.scad` patterns; views: gallery, sample, modes, box |
+| `projects/custombox` | v1, not printed yet | configurable box / basket / bin: outline, corners, sloped + wavy rim, patterned walls, floor, inset lid, mounting boss |
 | `projects/_template` | – | starting point for new projects |

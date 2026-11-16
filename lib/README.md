@@ -19,13 +19,14 @@ Reusable OpenSCAD building blocks. Projects live in `projects/<name>/`, so they 
 | `scale.scad` | `use` | number scales: `number_row_2d()` with dot, bar, diamond or no separators; `scale_plate_2d()`; `plate_body()` + `plate_art()` for 2-colour inlay, raised or engraved numbers |
 | `patterns.scad` | `use` | 12 parametric patterns for any flat surface, and the ways to apply them: `pattern_spec()`, `pattern_2d()`, `pattern_3d()`, `pattern_cutout_2d()`, `pattern_panel_2d()`, `pattern_relief()`, `pattern_cutter()`, `pattern_lining()`, `pattern_panel(mode, ...)`; checks `pattern_problem()`, `pattern_features()`, `pattern_is_connected()`. See [Patterns](#patterns) |
 | `patterns/*.scad` | `use` (optional) | the single generators behind `patterns.scad`, if you want one directly: `geometric.scad` (`hex_honeycomb_2d`, `square_grid_2d`, `diamond_lattice_2d`, `triangular_lattice_2d` and their `*_holes()` point lists), `woven.scad` (`basket_weave_3d/_2d`, `tri_weave_3d/_2d`, `weave_strand()`), `organic.scad` (`voronoi_2d`, `voronoi_cell_pts()`), `decorative.scad` (`fish_scales_2d`, `truchet_arcs_2d`, `girih_star_cross_2d`), `relief.scad` (`flowing_waves_2d`, `concentric_ripples_2d`), `tiling.scad` (`pat_hash()`, `pat_clip_halfplane()`) |
+| `shell.scad` | `use` | thin walls that follow a closed outline (boxes, baskets, bins, lamp shades): outlines `shell_rect_runs()` (round / chamfer / square corners, named runs), `shell_ellipse_pts()`, `shell_squircle_pts()`, `shell_wavy_pts()`; measuring `shell_len()`, `shell_dists()`, `shell_bounds()`; rim height field `shell_rim_height()`; `shell_strip_pts()` (the unrolled wall with its top edge) and `shell_wrap()` which bends a flat panel round the outline. See [Shells](#shells) |
 
 Each style module also defines its option list (`PLAQUE_SHAPES`, `EDGE_PROFILES`, `MARKER_STYLES`…),
 so a model can copy them into its `// [a, b, c]` Customizer comment.
 
 ## Conventions
 
-- **Layers:** `core.scad` (atoms) → element files (`shapes`, `rail`, `scale`, `attach`, `led`, `cable`, `emblem`, `patterns`) →
+- **Layers:** `core.scad` (atoms) → element files (`shapes`, `rail`, `scale`, `attach`, `led`, `cable`, `emblem`, `patterns`, `shell`) →
   data (`emblems/`, `fonts/`) → projects. Element files may `use <core.scad>` but not each other, except where one
   clearly builds on another. Projects never copy library code: if something is missing, add it here.
 - **Naming:** 2D generators end in `_2d`, point-list functions in `_pts`, cutters say so in their comment, private
@@ -168,6 +169,23 @@ translate([0, -25, 20]) rotate([90, 0, 0]) translate([0, 0, -2]) pattern_panel("
 translate([0, 0, 40]) pattern_panel("through_cut", roof, [70, 50], t=2, border=3);
 ```
 
+### Frames, windows and generator centres
+
+- **Frame widths:** wherever a module takes `border`, `pad` or `inset` for the pattern area, a list
+  `[sides, bottom, top]` (or `[x, y]`) gives different widths. The list form shifts the outline instead of
+  offsetting it, so a wavy or sloped top edge keeps a band of constant height.
+- **Windows:** set `$pat_window = [[cx, cy], [w, h]]` around any module to build only that part of the surface.
+  The piece is exactly what the full pattern, panel or lining has there (frames are still worked out on the whole
+  outline), so pieces built side by side join up. `shell.scad` uses this to go round corners; you can use it to
+  split a large panel into printable tiles:
+
+  ```scad
+  for (i=[0:1]) translate([i*5, 0, 0]) { $pat_window = [[-50 + i*100, 0], [100, 120]];
+      pattern_panel("open_lattice", "voronoi", [200, 120], t=2.4, border=3); }
+  ```
+- **Generators** (`lib/patterns/*.scad`) take `center=[x, y]`: the point, in the pattern's own axes, around which
+  they cover `size`. The pattern stays anchored at the origin, so any window shows the same pattern.
+
 ### Printability
 
 - `pattern_problem(p)` returns "" or a sentence saying what is wrong; every module asserts it. Limits are the spec's
@@ -192,6 +210,45 @@ translate([0, 0, 40]) pattern_panel("through_cut", roof, [70, 50], t=2, border=3
 - `scale` stretches rib widths along with the pattern. Rounded rib tops, fish-scale shingles and ripple falloff
   are built in steps (3–4 levels), which is what a printer makes of a slope at these heights anyway.
 - Patterns are planar: a curved wall needs flat facets, each with its own panel.
+
+## Shells
+
+`shell.scad` builds thin walls along any closed outline and lets the wall's top edge follow a height field.
+Together with `patterns.scad` this gives patterned boxes, baskets, bins and shades (`projects/custombox`).
+
+- **Outline:** a closed, counter-clockwise list of [x, y] points in the floor plane (z = 0). It is the wall's
+  OUTER face. `shell_rect_runs(size, corner, r, fn, side_n)` returns a box as named runs ("front", "corner_fr",
+  "right", … ) so walls and corners can be treated separately: `shell_runs_pts()` gives the points,
+  `shell_runs_edges()` the edge range of each run. `shell_ellipse_pts()`, `shell_squircle_pts()` and
+  `shell_wavy_pts(pts, amp, count)` give round and flowing outlines.
+- **Rim:** any `function (p) -> height`; `shell_rim_height(p, size, base, rise, waves, phase)` is a ready-made
+  one with a slope in x and y plus cosine waves. Because it depends on the position in plan, it is continuous
+  on every outline.
+- **Strip frame:** the child of `shell_wrap()` builds the wall flat: x = distance along the outline (0 in the
+  middle of the strip), y = height (0 at mid-height `h/2`), z = 0 inner face .. t outer face, relief beyond.
+  That is the pattern frame with `size = [strip length, h]`. `shell_strip_pts(pts, e0, e1, hf, h)` is the
+  strip's outline with the rim as its top edge.
+- **Wrapping:** `shell_wrap(pts, t, e0, e1, h, above)` places one flat facet per outline edge and sets
+  `$pat_window` for it; facets overlap at the joints (more at inward bends), so the wall is one solid. Make
+  straight runs ONE long edge (fast) and curves short edges. Other 2D content in the child needs
+  `shell_window_2d()` to clip it to the facet.
+
+```scad
+use <../../lib/shell.scad>
+use <../../lib/patterns.scad>
+size = [120, 90]; t = 2.4; H = 70;
+runs = shell_rect_runs(size, "round", 16, fn=6, side_n=2);
+pts  = shell_start_at(shell_runs_pts(runs), shell_run(shell_runs_edges(runs), "back")[1] + 1);   // seam at the back
+rim  = function(p) shell_rim_height(p, size, 40, rise=[0, 22], waves=[[4, 2], [0, 1]]);            // sloped, wavy rim
+L = shell_len(pts);
+shell_wrap(pts, t, h=H)
+    pattern_panel("through_cut", "hex_honeycomb", [L + 1, H], t=t, border=[0, 4, 4])
+        polygon(shell_strip_pts(pts, hf=rim, h=H));
+linear_extrude(2) polygon(pts);                                                                    // floor
+```
+
+Limits: walls are vertical (no taper); curved parts are faceted; relief leaves hairline gaps between facets at
+outward corners; woven patterns wrapped over many facets are slow in OpenSCAD 2021 (minutes), fine on flat walls.
 
 ## Attachment plates
 

@@ -14,6 +14,13 @@ function pat_hash(i, j, seed=0, k=0) =
     let(a = ((i*73856093 + j*19349663 + seed*83492791 + k*2654435) % 2147483647 + 2147483647) % 2147483647 + 1)
     _pat_lcg(_pat_lcg(_pat_lcg(_pat_lcg(a))))/2147483647;
 
+// Every generator takes `center` = the point (in the pattern's own axes) around which it must cover `size`.
+// The pattern itself stays anchored at the origin: a window somewhere else shows exactly that part of it.
+// first and last index of the cells of `pitch` needed to cover `extent` around coordinate c
+function pat_i0(extent, pitch, c=0, extra=1) = round(c/pitch) - pat_n(extent, pitch, extra);
+function pat_i1(extent, pitch, c=0, extra=1) = round(c/pitch) + pat_n(extent, pitch, extra);
+function pat_rot(p, a) = [p[0]*cos(a) - p[1]*sin(a), p[0]*sin(a) + p[1]*cos(a)];
+
 // index range that covers `extent` (centred on 0) with cells of `pitch`, plus `extra` cells on both sides
 function pat_n(extent, pitch, extra=1) = ceil(extent/2/pitch) + extra;
 
@@ -32,9 +39,9 @@ function pat_clip_halfplane(poly, m, n) = let(c = len(poly)) c < 3 ? [] : [
 
 // a plate covering `size` (centred) with the listed polygons cut out: the body of every lattice pattern.
 // Cutting holes from one plate gives a connected network with the same rib width everywhere.
-module pat_plate_with_holes(size, holes) {
+module pat_plate_with_holes(size, holes, center=[0, 0]) {
     difference() {
-        square(size, center=true);
+        translate(center) square(size, center=true);
         for (h=holes) if (len(h) >= 3) polygon(h);
     }
 }

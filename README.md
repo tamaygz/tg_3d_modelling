@@ -12,6 +12,7 @@ Parametric 3D models (OpenSCAD) for 3D printing, built from a shared library of 
 | [led_kit](projects/led_kit) | LED strip tracks, diffusers, joiners, end caps, corners, and cable clips, ducts and grommets |
 | [attachments](projects/attachments) | Universal snap-in mounting plates (wall, keyhole, Skådis, hook, magnet, stand, glue, ceiling) and a test coupon |
 | [pattern_gallery](projects/pattern_gallery) | Catalogue of the 12 library patterns (lattices, weaves, Voronoi, scales, Truchet, Girih, waves, ripples) in every application mode, plus a box with independent wall, floor and lid patterns |
+| [custombox](projects/custombox) | Fully configurable container: any outline from square to flowing, sloped and wavy rims, patterned walls / floor / lid, solid or patterned corners, inset lid, snap-in wall mounting |
 
 Every project folder has the same contents:
 
@@ -30,7 +31,8 @@ Every project folder has the same contents:
 
 [`lib/`](lib/README.md) holds the building blocks all projects share: core atoms, board shapes and routed edges, rails
 and sliders, number scales, snap-in attachment plates, LED strip tracks, cable parts, emblem and logo elements,
-parametric surface patterns (cut-through, raised, engraved, open lattice, lining), fits and bundled fonts. Projects only lay these out; anything reusable goes into the library.
+parametric surface patterns (cut-through, raised, engraved, open lattice, lining), shells that bend patterned
+walls round any outline, fits and bundled fonts. Projects only lay these out; anything reusable goes into the library.
 
 ## Tools
 

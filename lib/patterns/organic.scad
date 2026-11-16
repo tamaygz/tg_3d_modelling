@@ -21,15 +21,15 @@ function voronoi_cell_pts(i, j, cell, strut, seed=1, irregularity=1) = let(
     s = voronoi_site(i, j, cell, seed, irregularity), q = 2.5*cell,
     nb = [for (dj=[-2:2]) for (di=[-2:2]) if (di != 0 || dj != 0) voronoi_site(i + di, j + dj, cell, seed, irregularity)])
     _vor_clip([s + [-q, -q], s + [q, -q], s + [q, q], s + [-q, q]], s, nb, strut/2);
-function voronoi_holes(size, cell=14, strut=1.5, seed=1, irregularity=1, min_cell=0) = let(
-    nx = pat_n(size[0], cell), ny = pat_n(size[1], cell))
-    [for (j=[-ny:ny-1]) for (i=[-nx:nx-1]) let(p = voronoi_cell_pts(i, j, cell, strut, seed, irregularity))
+function voronoi_holes(size, cell=14, strut=1.5, seed=1, irregularity=1, min_cell=0, center=[0, 0]) = let(
+    nx = pat_n(size[0], cell), ny = pat_n(size[1], cell), ic = floor(center[0]/cell), jc = floor(center[1]/cell))
+    [for (j=[jc-ny:jc+ny]) for (i=[ic-nx:ic+nx]) let(p = voronoi_cell_pts(i, j, cell, strut, seed, irregularity))
         if (len(p) >= 3 && sqrt(abs(pat_area(p))) >= min_cell) p];
 // round = corner radius of the openings (0 = sharp polygons)
-module voronoi_2d(size, cell=14, strut=1.5, seed=1, irregularity=1, min_cell=0, round=0) {
+module voronoi_2d(size, cell=14, strut=1.5, seed=1, irregularity=1, min_cell=0, round=0, center=[0, 0]) {
     difference() {
-        square(size + [2*cell, 2*cell], center=true);
-        for (h = voronoi_holes(size, cell, strut, seed, irregularity, min_cell))
+        translate(center) square(size + [2*cell, 2*cell], center=true);
+        for (h = voronoi_holes(size, cell, strut, seed, irregularity, min_cell, center))
             if (round > 0) offset(r=round, $fn=16) offset(delta=-round) polygon(h); else polygon(h);
     }
 }
