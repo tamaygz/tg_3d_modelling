@@ -1,5 +1,9 @@
 # Earbuds holder
 
+<table><tr><td align="center"><img src="images/earbuds.png" width="250" alt="Soundcore P31i case in its holder"><br><sub>Soundcore P31i case in its holder</sub></td><td align="center"><img src="images/earbuds_mount.png" width="250" alt="Skådis plate in the back wall"><br><sub>Skådis plate in the back wall</sub></td><td align="center"><img src="images/earbuds_dock.png" width="250" alt="flat pose with a plug dock"><br><sub>flat pose with a plug dock</sub></td></tr></table>
+
+**[Open the online configurator](https://tamaygz.github.io/tg_3d_modelling/earbuds)** · or open `earbuds_configurator.html` from this folder · [model](earbuds.scad) · [print files](earbuds_print) · [design log](earbuds_log.md)
+
 A dock for the charging case of your earbuds: it holds the case, lets the charging cable in, leaves a cut-out to
 grab the case, and mounts with the snap-in attachment plates. Open `earbuds_configurator.html` to set it up.
 
@@ -42,8 +46,9 @@ side by default), or use `custom`.
   rim), so the cable can be laid in. Every opening gets a plain collar.
 - **Grip:** the front rim dips by `grip_depth` over `grip_width` with smooth shoulders; the rim band follows it.
 - **Mounting:** the back wall gets a solid zone with the sockets, built into the wall (the pattern joins its sides;
-  no separate plate behind it). The back wall must be at least 41 mm high for an S plate:
-  raise `rise_back` if the model says so. A desk holder with a floor opening needs the cable to leave through the
+  no separate plate behind it). The back wall must be at least 41 mm high for an S plate. If
+  the plates you ask for do not fit, fewer or smaller ones are used, or none; the render log and the report say so.
+  Raise `rise_back` to make room. A desk holder with a floor opening needs the cable to leave through the
   slot at the back.
 - **Patterns** scale with the holder (`wall_cell = 0`); patterns that cannot be cut through are raised instead (see the report).
 - The white block in the viewer is the case, for checking the fit; it is not printed.

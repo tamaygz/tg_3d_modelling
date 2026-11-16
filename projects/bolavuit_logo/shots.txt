@@ -1,0 +1,4 @@
+# pictures for README.md: python3 tools/make_screenshots.py bolavuit_logo
+# image | parameters | camera tilt,turn
+bolavuit_logo.png | | 30,0
+bolavuit_logo_rebuilt.png | source = "rebuilt"; banner_text = "CLUB 147" | 30,0

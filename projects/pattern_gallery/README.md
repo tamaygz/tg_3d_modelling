@@ -1,5 +1,9 @@
 # Pattern gallery
 
+<table><tr><td align="center"><img src="images/gallery.png" width="250" alt="view gallery: all 12 patterns"><br><sub>view gallery: all 12 patterns</sub></td><td align="center"><img src="images/modes.png" width="250" alt="view modes: one pattern alone and in every mode"><br><sub>view modes: one pattern alone and in every mode</sub></td><td align="center"><img src="images/box.png" width="250" alt="view box: walls, front, floor and lid with their own patterns"><br><sub>view box: walls, front, floor and lid with their own patterns</sub></td></tr></table>
+
+**[Open the online configurator](https://tamaygz.github.io/tg_3d_modelling/pattern_gallery)** · or open `pattern_gallery_configurator.html` from this folder · [model](pattern_gallery.scad) · [print files](pattern_gallery_print) · [design log](pattern_gallery_log.md)
+
 Catalogue and test bench for the 12 parametric patterns in [`lib/patterns.scad`](../../lib/README.md#patterns).
 Open `pattern_gallery_configurator.html` to try a pattern, change its settings and download the result.
 

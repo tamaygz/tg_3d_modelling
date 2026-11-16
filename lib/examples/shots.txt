@@ -1,0 +1,7 @@
+# pictures for lib/README.md: python3 tools/make_screenshots.py lib
+patterns.png        | | 35,0   | patterns_sheet.scad
+pattern_modes.png   | | 50,10  | pattern_modes.scad
+pattern_ties.png    | | 25,0   | pattern_ties.scad
+attach_types.png    | | 40,15  | attach_types.scad
+shell_wrap.png      | | 62,28  | shell_wrap.scad
+container_mount.png | | 62,150 | container_mount.scad

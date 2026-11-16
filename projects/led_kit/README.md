@@ -1,5 +1,9 @@
 # LED kit
 
+<table><tr><td align="center"><img src="images/led_kit.png" width="250" alt="the kit"><br><sub>the kit</sub></td><td align="center"><img src="images/led_kit_corner.png" width="250" alt="inward corner with dome diffuser"><br><sub>inward corner with dome diffuser</sub></td></tr></table>
+
+**[Open the online configurator](https://tamaygz.github.io/tg_3d_modelling/led_kit)** · or open `led_kit_configurator.html` from this folder · [model](led_kit.scad) · [print files](led_kit_print) · [design log](led_kit_log.md)
+
 LED strip tracks and cable parts from [`lib/led.scad` and `lib/cable.scad`](../../lib/README.md#led-strips).
 Open `led_kit_configurator.html`, pick your strip, track, corner and cable sizes, and download the STLs.
 

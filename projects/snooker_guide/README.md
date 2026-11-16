@@ -1,5 +1,9 @@
 # Snooker Setup Guide
 
+<table><tr><td align="center"><img src="images/snooker_guide.png" width="250" alt="default"><br><sub>default</sub></td><td align="center"><img src="images/snooker_guide_table.png" width="250" alt="table only, no surround plate"><br><sub>table only, no surround plate</sub></td></tr></table>
+
+**[Open the online configurator](https://tamaygz.github.io/tg_3d_modelling/snooker_guide)** · or open `snooker_guide_configurator.html` from this folder · [model](snooker_guide.scad) · [print files](snooker_guide_print) · [design log](snooker_guide_log.md)
+
 A wall plaque for next to the snooker table: the table in relief with every ball on its spot and its points,
 so beginners can see the setup at a glance. Each colour is its own part, in one multi-colour 3MF.
 Open `snooker_guide_configurator.html` to change the settings and download the parts.

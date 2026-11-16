@@ -1,0 +1,3 @@
+# pictures for README.md: python3 tools/make_screenshots.py _template
+# image | parameters | camera tilt,turn
+template.png | | 55,20

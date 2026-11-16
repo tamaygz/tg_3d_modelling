@@ -1,0 +1,4 @@
+# pictures for README.md: python3 tools/make_screenshots.py led_kit
+# image | parameters | camera tilt,turn
+led_kit.png | | 55,25
+led_kit_corner.png | corner_type = "inward"; diffuser = "dome" | 60,40

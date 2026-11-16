@@ -1,0 +1,5 @@
+# pictures for README.md: python3 tools/make_screenshots.py pattern_gallery
+# image | parameters | camera tilt,turn
+gallery.png | | 40,0
+modes.png | view = "modes"; pattern = "voronoi"; sample_w = 60; sample_h = 60 | 45,5
+box.png | view = "box" | 60,30

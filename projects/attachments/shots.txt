@@ -1,0 +1,6 @@
+# pictures for README.md: python3 tools/make_screenshots.py attachments
+# image | parameters | camera tilt,turn
+attachments.png | | 125,20
+attachments_slide.png | attach_type = "slide" | 125,25
+attachments_fin.png | attach_type = "fin" | 80,30
+attachments_ball.png | attach_type = "skadis"; attach_joint = "ball" | 115,40

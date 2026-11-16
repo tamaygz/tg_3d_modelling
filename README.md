@@ -1,54 +1,67 @@
 # tg_3d_modelling
 
-Parametric 3D models (OpenSCAD) for 3D printing, built from a shared library of reusable parts.
+Parametric 3D models (OpenSCAD) for 3D printing, built from one shared library of reusable parts. Every model has
+all its settings at the top and comes with a configurator that runs in the browser: change the settings, look at
+the result in 3D, download the STL. Nothing to install.
+
+**Online configurators: [tamaygz.github.io/tg_3d_modelling](https://tamaygz.github.io/tg_3d_modelling/)** ·
+[releases](https://github.com/tamaygz/tg_3d_modelling/releases) (each release links every configurator and its sources)
 
 ## Projects
 
-| Project | Description |
+| | |
 |---|---|
-| [scoreboard](projects/scoreboard) | Wall scoreboard with sliding marker pins: configurable players, score range, steps, styles and mounting |
-| [snooker_guide](projects/snooker_guide) | Wall plaque showing the snooker table setup, ball positions and points, in multi-colour relief |
-| [bolavuit_logo](projects/bolavuit_logo) | Bola Vuit logo as a 2-colour plaque: exact from the original SVG, or rebuilt from adjustable elements |
-| [led_kit](projects/led_kit) | LED strip tracks, diffusers, joiners, end caps, corners, and cable clips, ducts and grommets |
-| [attachments](projects/attachments) | Universal snap-in mounting plates (wall, keyhole, Skådis, hook, magnet, stand, glue, ceiling) and a test coupon |
-| [pattern_gallery](projects/pattern_gallery) | Catalogue of the 12 library patterns (lattices, weaves, Voronoi, scales, Truchet, Girih, waves, ripples) in every application mode, plus a box with independent wall, floor and lid patterns |
-| [custombox](projects/custombox) | Fully configurable container: any outline from square to flowing, sloped and wavy rims, patterned walls / floor / lid, solid or patterned corners, inset lid, snap-in wall mounting |
-| [earbuds](projects/earbuds) | Holder / dock for an earbuds charging case: presets (Soundcore P31i, AirPods, Galaxy Buds, Sony, Bose, Pixel, Nothing), cable opening or plug dock, front grip cut-out, patterned walls, snap-in mounting |
-| [sunglasses](projects/sunglasses) | Tray for folded glasses with nose support, front grip cut-out, patterned walls and snap-in mounting |
+| [<img src="projects/custombox/images/custombox.png" width="220" alt="Custom box">](projects/custombox) | **[Custom box](projects/custombox)**<br>Any container from square and modern to round and flowing: outline, corners, sloped and wavy rim, patterned walls, floor and lid, inset lid, mounting in the back wall or a fin underneath<br>[open the configurator](https://tamaygz.github.io/tg_3d_modelling/custombox) · [source](projects/custombox/custombox.scad) · [print files](projects/custombox/custombox_print) |
+| [<img src="projects/earbuds/images/earbuds.png" width="220" alt="Earbuds holder">](projects/earbuds) | **[Earbuds holder](projects/earbuds)**<br>Dock for an earbuds charging case: presets (Soundcore P31i, AirPods, Galaxy Buds, Sony, Bose, Pixel, Nothing), cable opening or plug dock, grip cut-out<br>[open the configurator](https://tamaygz.github.io/tg_3d_modelling/earbuds) · [source](projects/earbuds/earbuds.scad) · [print files](projects/earbuds/earbuds_print) |
+| [<img src="projects/sunglasses/images/sunglasses.png" width="220" alt="Sunglasses holder">](projects/sunglasses) | **[Sunglasses holder](projects/sunglasses)**<br>Tray for folded glasses with a nose support, grip cut-out and patterned walls<br>[open the configurator](https://tamaygz.github.io/tg_3d_modelling/sunglasses) · [source](projects/sunglasses/sunglasses.scad) · [print files](projects/sunglasses/sunglasses_print) |
+| [<img src="projects/scoreboard/images/scoreboard.png" width="220" alt="Scoreboard">](projects/scoreboard) | **[Scoreboard](projects/scoreboard)**<br>Wall scoreboard with sliding marker pins: players, score range, steps, five style presets<br>[open the configurator](https://tamaygz.github.io/tg_3d_modelling/scoreboard) · [source](projects/scoreboard/scoreboard.scad) · [print files](projects/scoreboard/scoreboard_print) |
+| [<img src="projects/snooker_guide/images/snooker_guide.png" width="220" alt="Snooker setup guide">](projects/snooker_guide) | **[Snooker setup guide](projects/snooker_guide)**<br>Multi-colour relief plaque of the snooker table, ball positions and points<br>[open the configurator](https://tamaygz.github.io/tg_3d_modelling/snooker_guide) · [source](projects/snooker_guide/snooker_guide.scad) · [print files](projects/snooker_guide/snooker_guide_print) |
+| [<img src="projects/bolavuit_logo/images/bolavuit_logo.png" width="220" alt="Bola Vuit logo">](projects/bolavuit_logo) | **[Bola Vuit logo](projects/bolavuit_logo)**<br>Two-colour logo plaque: exact from the SVG, or rebuilt from adjustable elements with your own text<br>[open the configurator](https://tamaygz.github.io/tg_3d_modelling/bolavuit_logo) · [source](projects/bolavuit_logo/bolavuit_logo.scad) · [print files](projects/bolavuit_logo/bolavuit_logo_print) |
+| [<img src="projects/led_kit/images/led_kit.png" width="220" alt="LED kit">](projects/led_kit) | **[LED kit](projects/led_kit)**<br>LED strip tracks, diffusers, corners, joiners, end caps and cable parts<br>[open the configurator](https://tamaygz.github.io/tg_3d_modelling/led_kit) · [source](projects/led_kit/led_kit.scad) · [print files](projects/led_kit/led_kit_print) |
+| [<img src="projects/attachments/images/attachments_ball.png" width="220" alt="Attachments">](projects/attachments) | **[Attachments](projects/attachments)**<br>Every snap-in mounting plate, the slide track, the fin and the ball joint, with a test coupon: print this first<br>[open the configurator](https://tamaygz.github.io/tg_3d_modelling/attachments) · [source](projects/attachments/attachments.scad) · [print files](projects/attachments/attachments_print) |
+| [<img src="projects/pattern_gallery/images/gallery.png" width="220" alt="Pattern gallery">](projects/pattern_gallery) | **[Pattern gallery](projects/pattern_gallery)**<br>Catalogue and test bench of the 12 library patterns in every application mode<br>[open the configurator](https://tamaygz.github.io/tg_3d_modelling/pattern_gallery) · [source](projects/pattern_gallery/pattern_gallery.scad) · [print files](projects/pattern_gallery/pattern_gallery_print) |
 
-Every project folder has the same contents:
+Each project folder holds the same things:
 
 | File | What it is |
 |---|---|
 | `<name>.scad` | the model; all settings at the top, in OpenSCAD Customizer format |
-| `<name>_configurator.html` | open in a browser to change settings, see the model in 3D and download STLs (no install) |
+| `README.md` | what it is, its settings, recipes and print notes, with pictures |
+| `<name>_configurator.html` | the configurator as a single file: open it in a browser, no install |
 | `<name>_print/` | print-ready files, oriented for the bed (STL, multi-colour 3MF) |
-| `<name>_parts/` | each part as modelled, in its assembled position (built locally, not committed) |
-| `<name>_<rev>.zip` | everything bundled, including the library files the model needs (built locally, not committed) |
 | `<name>.html` | 3D viewer of the default build |
-| `README.md`, `<name>_log.md` | how to use it; design log with decisions, print feedback and open questions |
+| `<name>_log.md` | design log: decisions, fixes, print feedback, open questions |
 | `tests.txt` | parameter variants that are built and checked automatically |
+| `shots.txt`, `images/` | the pictures in the README and how to render them again |
+| `<name>_parts/`, `<name>_<rev>.zip` | parts as modelled and a bundle with the library: built locally, not committed |
 
 ## Library
 
-[`lib/`](lib/README.md) holds the building blocks all projects share: core atoms, board shapes and routed edges, rails
-and sliders, number scales, snap-in attachment plates, LED strip tracks, cable parts, emblem and logo elements,
-parametric surface patterns (cut-through, raised, engraved, open lattice, lining), shells that bend patterned
-walls round any outline, fits and bundled fonts. Projects only lay these out; anything reusable goes into the library.
+[`lib/`](lib/README.md) holds everything the projects share. Projects only lay library parts out; anything
+reusable is written there once.
+
+| | |
+|---|---|
+| <img src="lib/examples/images/patterns.png" width="330" alt="The 12 patterns"> | **[Patterns](lib/README.md#patterns)**: 12 patterns (lattices, real weaves, Voronoi, scales, Truchet, Girih, waves, ripples) that can be cut through, raised, engraved, used as an open lattice or as a lining on any flat surface |
+| <img src="lib/examples/images/shell_wrap.png" width="330" alt="A wall bent round an outline"> | **[Shells](lib/README.md#shells) and [containers](lib/README.md#containers)**: walls that follow any outline with a sloped or wavy rim, floors, lids, openings, grip cut-outs, mounting zones |
+| <img src="lib/examples/images/attach_types.png" width="330" alt="Attachment plates"> | **[Attachments](lib/README.md#attachment-plates)**: one socket, many snap-in plates (wall, keyhole, Skådis, hook, magnet, stand, glue, ceiling, slide track, fin) and an optional ball joint |
+
+Also: plaque shapes and routed edges, rails and sliders, number scales, LED strip tracks, cable parts, logo
+elements, fits and bundled fonts. See [`lib/README.md`](lib/README.md).
 
 ## Tools
 
 | Command | What it does |
 |---|---|
-| `python3 tools/build.py <project> --test` | rebuild a project's outputs (parts, print files, bundle, configurator) and check every variant in its `tests.txt`; `all` does every project |
-| `python3 tools/make_configurator.py projects/<name>/<name>.scad` | only rebuild the browser configurator |
-| `python3 tools/svg_to_scad.py art.svg out.scad --prefix XX` | convert SVG artwork into exact OpenSCAD polygons |
-| `python3 tools/prepare_font.py SRC.ttf lib/fonts/OUT.ttf --family NAME` | subset and hint a font for `lib/fonts/` (unhinted fonts crash the browser OpenSCAD) |
-| `python3 tools/make_pages.py` | stage every project for the web configurator site (used by the workflow below) |
-| `python3 tools/font_metrics.py` | regenerate the font width tables after adding a font to `lib/fonts/` |
-| `python3 tools/artfit.py overlay exported.svg reference.png out.png` | compare a model's 2D output with reference artwork |
-| `bash setup_env.sh` | install the native Linux build toolchain and helper |
-| `./setup_env.ps1` | install the Windows build helper and Python environment |
+| `python3 tools/build.py <project> --test` | the one command after any change: rebuilds a project's outputs (parts, print files, bundle, configurator) and checks every variant in its `tests.txt`; `all` does every project |
+| `python3 tools/make_screenshots.py <project> \| lib \| all` | renders the README pictures listed in `shots.txt` |
+| `python3 tools/make_configurator.py projects/<name>/<name>.scad` | only rebuilds the single-file configurator |
+| `python3 tools/make_pages.py` | stages every project for the online configurator site (used by the workflow below) |
+| `python3 tools/svg_to_scad.py art.svg out.scad --prefix XX` | converts SVG artwork into exact OpenSCAD polygons |
+| `python3 tools/artfit.py overlay exported.svg reference.png out.png` | compares a model's 2D output with reference artwork |
+| `python3 tools/prepare_font.py SRC.ttf lib/fonts/OUT.ttf --family NAME` | subsets and hints a font for `lib/fonts/` |
+| `python3 tools/font_metrics.py` | regenerates the font width tables after adding a font |
+| `bash setup_env.sh` / `./setup_env.ps1` | installs the build toolchain on Linux / the build helper on Windows |
 
 `build.py` uses the OpenSCAD skill's `asm.py` (found under `~/.claude/skills`, or set `OSCAD_SCRIPTS`).
 The setup scripts install helper v2.4.0 and an isolated Python environment. The Linux script uses `apt-get`
@@ -64,14 +77,16 @@ $env:OSCAD_SCRIPTS = "$HOME\.claude\skills\openscad-skill\openscad\scripts"
 Adjust the paths if OpenSCAD or Git is installed elsewhere. On Linux, run builds with
 `~/.local/share/tg_3d_modelling/build-venv/bin/python` after setup.
 
-## Web configurators and releases
+## Online configurators and releases
 
-The manual workflow **Web configurators and release** (`.github/workflows/configurators.yml`; Actions → Run workflow)
-builds one browser configurator per project with [web-openscad-editor](https://github.com/yawkat/web-openscad-editor),
-publishes them on GitHub Pages (`https://<owner>.github.io/tg_3d_modelling/<project>`) and creates a release whose
-notes link every configurator and its sources, with an offline copy of the site attached. Each page contains the
-model, every library file it includes and the fonts; OpenSCAD runs in the browser. Pick a **part** to show and export
-a single printable piece. One-time setup: Settings → Pages → Source = **GitHub Actions**.
+The configurators at [tamaygz.github.io/tg_3d_modelling](https://tamaygz.github.io/tg_3d_modelling/) are built by the manual workflow
+**Web configurators and release** (`.github/workflows/configurators.yml`; Actions → Run workflow). It builds one
+page per project with [web-openscad-editor](https://github.com/yawkat/web-openscad-editor), publishes them on
+GitHub Pages and creates a [release](https://github.com/tamaygz/tg_3d_modelling/releases) whose notes link every
+configurator and its sources, with an offline copy of the site attached. Each page contains the model, every
+library file it includes and the fonts; OpenSCAD runs in the browser. Pick a **part** to show and export a single
+printable piece. Run the workflow again after changes to publish them. One-time setup: Settings → Pages →
+Source = **GitHub Actions**.
 
 To try the site locally: `python3 tools/make_pages.py`, then in a web-openscad-editor checkout
 `uv run python src/generate.py --config <repo>/build/pages-src/editor.toml --clean-urls --output site` and serve
@@ -82,7 +97,17 @@ To try the site locally: `python3 tools/make_pages.py`, then in a web-openscad-e
 1. Copy `projects/_template/` to `projects/<name>/` and rename its files to `<name>.*`.
 2. Replace the model. Keep the layout: library includes, `part`, Customizer sections, `/* [Hidden] */` with derived
    values, the `parts` / `checks` / `report` tables, then 2D shapes, solids and the assembly.
-3. Use the library first (`lib/README.md`). Move anything reusable you write into it.
-4. List the parameter combinations worth checking in `tests.txt`.
-5. Run `python3 tools/build.py <name> --test`, fill in the README and log, and add the project to the table above
-   and to `CLAUDE.md`.
+3. Use the library first ([`lib/README.md`](lib/README.md)); move anything reusable you write into it.
+4. List the parameter combinations worth checking in `tests.txt` and the pictures for the README in `shots.txt`.
+5. Run `python3 tools/build.py <name> --test` and `python3 tools/make_screenshots.py <name>`, fill in the README and
+   the log, and add the project to the table above and to `CLAUDE.md`. The workflow picks it up by itself.
+
+## Conventions
+
+- **Settings never stop the model without need.** Something that does not fit is reduced or left out with a
+  `WARNING` in the render log (attachments pick a smaller plate, patterns that would fall apart are raised instead
+  of cut). Only settings that cannot produce a printable part stop with a message that says what to change.
+- **Printable as designed.** No supports where a 45° face or a bridge will do, snap fits bend 2% or less, cut-through
+  patterns are tied into one network, every part is one watertight piece (the tests check this).
+- **Library first, one way to do each thing.** Patterns, shells, containers, attachments, LED and cable parts,
+  fonts and fits come from `lib/`; projects add only what is specific to them.

@@ -1,0 +1,5 @@
+# pictures for README.md: python3 tools/make_screenshots.py scoreboard
+# image | parameters | camera tilt,turn
+scoreboard.png | | 50,10
+scoreboard_modern.png | style_preset = "modern" | 50,10
+scoreboard_back.png | attach_type = "slide" | 130,15

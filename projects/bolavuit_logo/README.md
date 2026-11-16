@@ -1,5 +1,9 @@
 # Bola Vuit logo
 
+<table><tr><td align="center"><img src="images/bolavuit_logo.png" width="250" alt="exact, from the SVG"><br><sub>exact, from the SVG</sub></td><td align="center"><img src="images/bolavuit_logo_rebuilt.png" width="250" alt="rebuilt from library elements with custom text"><br><sub>rebuilt from library elements with custom text</sub></td></tr></table>
+
+**[Open the online configurator](https://tamaygz.github.io/tg_3d_modelling/bolavuit_logo)** · or open `bolavuit_logo_configurator.html` from this folder · [model](bolavuit_logo.scad) · [print files](bolavuit_logo_print) · [design log](bolavuit_logo_log.md)
+
 The Bola Vuit logo (8-ball, laurel wreath, ribbon banner, lettering) as a printable 2-colour plaque.
 Open `bolavuit_logo_configurator.html` to set the size, background and style, and download the STLs.
 

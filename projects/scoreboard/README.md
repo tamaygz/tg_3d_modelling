@@ -1,5 +1,9 @@
 # Sliding-pin scoreboard (parametric)
 
+<table><tr><td align="center"><img src="images/scoreboard.png" width="250" alt="default"><br><sub>default</sub></td><td align="center"><img src="images/scoreboard_modern.png" width="250" alt="preset modern"><br><sub>preset modern</sub></td><td align="center"><img src="images/scoreboard_back.png" width="250" alt="back: slide plates on a track"><br><sub>back: slide plates on a track</sub></td></tr></table>
+
+**[Open the online configurator](https://tamaygz.github.io/tg_3d_modelling/scoreboard)** · or open `scoreboard_configurator.html` from this folder · [model](scoreboard.scad) · [print files](scoreboard_print) · [design log](scoreboard_log.md)
+
 Open `scoreboard.scad` in OpenSCAD from inside this repo: it uses the shared `../../lib` folder.
 The Customizer panel (Window → Customizer) shows every setting below with dropdowns.
 Set `part = "board_l"` (or any id below) and press F6 → Export STL to export a single part.

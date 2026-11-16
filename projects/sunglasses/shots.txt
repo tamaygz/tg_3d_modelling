@@ -1,0 +1,5 @@
+# pictures for README.md: python3 tools/make_screenshots.py sunglasses
+# image | parameters | camera tilt,turn
+sunglasses.png | | 58,20
+sunglasses_mount.png | attach_type = "wall"; attach_count = 2; rise_back = 16; wall_pattern = "flowing_waves" | 62,160
+sunglasses_nose.png | wall_mode = "solid"; wall_pattern = "hex_honeycomb"; hold = 0.3; grip = false; rise_back = 0 | 50,35

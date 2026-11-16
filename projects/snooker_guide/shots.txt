@@ -1,0 +1,4 @@
+# pictures for README.md: python3 tools/make_screenshots.py snooker_guide
+# image | parameters | camera tilt,turn
+snooker_guide.png | | 30,0
+snooker_guide_table.png | show_plate = false; title = "" | 45,15

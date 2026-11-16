@@ -1,0 +1,5 @@
+# pictures for README.md: python3 tools/make_screenshots.py earbuds
+# image | parameters | camera tilt,turn
+earbuds.png | | 60,25
+earbuds_mount.png | preset = "Bose QC Ultra Earbuds"; attach_type = "skadis"; rise_back = 20; wall_pattern = "triangular_lattice" | 62,150
+earbuds_dock.png | part = "holder"; preset = "Sony WF-1000XM5"; pose = "flat"; wall_pattern = "girih_star_cross"; wall_mode = "raised"; corners = "square"; corner_fill = "solid"; cable = "dock"; floor_t = 5; cable_slot = false | 55,25

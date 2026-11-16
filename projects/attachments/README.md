@@ -1,5 +1,9 @@
 # Attachment plates
 
+<table><tr><td align="center"><img src="images/attachments.png" width="250" alt="wall plate and test coupon"><br><sub>wall plate and test coupon</sub></td><td align="center"><img src="images/attachments_slide.png" width="250" alt="slide plate on its track"><br><sub>slide plate on its track</sub></td><td align="center"><img src="images/attachments_fin.png" width="250" alt="fin"><br><sub>fin</sub></td></tr><tr><td align="center"><img src="images/attachments_ball.png" width="250" alt="ball joint with a Skådis plate"><br><sub>ball joint with a Skådis plate</sub></td></tr></table>
+
+**[Open the online configurator](https://tamaygz.github.io/tg_3d_modelling/attachments)** · or open `attachments_configurator.html` from this folder · [model](attachments.scad) · [print files](attachments_print) · [design log](attachments_log.md)
+
 Interchangeable mounting plates for every project in this repo, from [`lib/attach.scad`](../../lib/README.md#attachment-plates).
 Any project with sockets in its back takes any of these plates.
 

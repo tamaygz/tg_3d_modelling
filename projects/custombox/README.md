@@ -1,5 +1,9 @@
 # Custom box
 
+<table><tr><td align="center"><img src="images/custombox.png" width="250" alt="default: honeycomb, pattern runs round the corners"><br><sub>default: honeycomb, pattern runs round the corners</sub></td><td align="center"><img src="images/custombox_sloped.png" width="250" alt="sloped rim, triangular lattice"><br><sub>sloped rim, triangular lattice</sub></td><td align="center"><img src="images/custombox_organic.png" width="250" alt="flowing outline, Voronoi, wavy rim"><br><sub>flowing outline, Voronoi, wavy rim</sub></td></tr><tr><td align="center"><img src="images/custombox_lid.png" width="250" alt="square, solid corners, inset lid with knob"><br><sub>square, solid corners, inset lid with knob</sub></td><td align="center"><img src="images/custombox_woven.png" width="250" alt="woven walls with solid corners"><br><sub>woven walls with solid corners</sub></td><td align="center"><img src="images/custombox_fin.png" width="250" alt="fin under the floor (sofa caddy)"><br><sub>fin under the floor (sofa caddy)</sub></td></tr><tr><td align="center"><img src="images/custombox_mount.png" width="250" alt="two wall plates in solid zones of the back wall; wave pattern with ties"><br><sub>two wall plates in solid zones of the back wall; wave pattern with ties</sub></td></tr></table>
+
+**[Open the online configurator](https://tamaygz.github.io/tg_3d_modelling/custombox)** · or open `custombox_configurator.html` from this folder · [model](custombox.scad) · [print files](custombox_print) · [design log](custombox_log.md)
+
 One model for any container: square and modern, round and flowing, or anything between. Outline, corners, rim,
 walls, floor and lid are all settings, and every surface takes any of the 12 patterns from
 [`lib/patterns.scad`](../../lib/README.md#patterns). Open `custombox_configurator.html` to design a box and download it.
@@ -47,7 +51,8 @@ walls, floor and lid are all settings, and every surface takes any of the 12 pat
 - **Mounting.** The back wall itself gets a solid zone for the sockets: the pattern stops at it and joins its
   sides, and the wall is thickened to 6 mm only there (no separate plate behind the wall). It runs into the rim or
   base band when they are close and has a 45° underside when it starts above the floor. It needs the box shape, a
-  straight back (`side_wave = 0`) and a back wall as high as the plate.
+  straight back (`side_wave = 0`) and a back wall as high as the plate. If the plates you ask for do not fit, fewer
+  or smaller ones are used, or none: the render log shows a WARNING and the report says what was fitted.
 - **Fin.** `attach_type = "fin"` puts the socket under the floor (any outline): the floor gets a solid zone, thickened
   upwards inside the box, and the slide plate under it rides on a track with a blade `fin_len` long. Slide the box
   onto the fin, push the blade between two sofa cushions. Print the fin standing on its end.

@@ -16,13 +16,20 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   (`/* [Section] */`, `// description` above each `name = value;`, trailing `// [a, b, c]` or `// [min:step:max]`),
   `/* [Hidden] */`, derived values, `parts` / `checks` / `report` tables, then 2D shapes, solids, assembly through
   `pick()`. Colours from the `COL_*` palette. Offer style choices as string options, plus a `style_preset`
-  where there are many (scoreboard's PRESETS).
-- **Mounting:** hanging or standing projects use the attachment host helpers (`attach_xs`, `attach_y`,
-  `attach_fits` assert, `attach_sockets`, `each attach_rows(...)` in the parts table, one `attach_all(part, ...)`
+  where there are many (scoreboard's PRESETS). Automatic sizes (a setting of 0) come from `pattern_sized()`.
+- **Mounting:** hanging or standing projects use the attachment host helpers (`attach_fit` + `attach_note`:
+  smaller plate or none with a WARNING, never an error; `attach_xs`, `attach_y`, `attach_sockets`, `each attach_rows(...)` in the parts table, one `attach_all(part, ...)`
   line to draw plates / track / ball joint) and expose `attach_type`, `attach_size`, `attach_count`,
   `attach_joint`, `slide_axis`. Plates snap into the host; types include `slide` (track on the wall) and `fin`
   (blade under the host: `attach_face(type) == "bottom"`, containers only). New plate types or joints go into
   `lib/attach.scad` so every project gets them; add them to each project's option list and tests.
+- **Fit, do not fail** (user request): a setting that does not fit is reduced or left out and reported
+  (WARNING echo + a `report` line). `assert` only when no printable part can result. Compare lengths with a
+  0.01 tolerance (a mount needing exactly the available 122.8 mm was once rejected).
+- **READMEs have pictures:** each project lists them in `shots.txt` (image | parameters | camera), rendered by
+  `python3 tools/make_screenshots.py <project>|lib|all` into `images/`; library pictures come from
+  `lib/examples/*.scad`. Re-render after a visible change. Each project README starts with its pictures and the
+  link to its online configurator (`https://tamaygz.github.io/tg_3d_modelling/<project>`).
 - **Lighting and wiring:** `lib/led.scad` and `lib/cable.scad`, not one-off parts.
 - **Patterns** (lattices, weaves, Voronoi, scales, Truchet, Girih, waves, ripples): `lib/patterns.scad`, never
   project code. Pick by name via `pattern_spec()`, apply with `pattern_panel(mode, ...)` or the single helpers
@@ -116,8 +123,8 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 | `projects/bolavuit_logo` | v2, not printed yet | logo plaque: exact (from SVG) or rebuilt from lib/emblem (0.90 overlap) |
 | `projects/led_kit` | v1, not printed yet | LED tracks, diffusers, corners, cable parts |
 | `projects/attachments` | v4, not printed yet | test coupon + every attachment plate, slide track, fin, ball joint; print first to check the fits |
-| `projects/pattern_gallery` | v1, not printed yet | catalogue + test bench of the 12 `lib/patterns.scad` patterns; views: gallery, sample, modes, box |
-| `projects/custombox` | v1.2, not printed yet | configurable box / basket / bin: outline, corners, sloped + wavy rim, patterned walls, floor, inset lid, mounting zone in the back wall |
-| `projects/earbuds` | v1, not printed yet | charging-case holder: presets (P31i …), poses, cable hole / dock / slot, grip cut-out, mounting zone |
-| `projects/sunglasses` | v1.2, not printed yet | folded-glasses tray: size presets, nose support, grip cut-out, mounting zone |
+| `projects/pattern_gallery` | v1.2, not printed yet | catalogue + test bench of the 12 `lib/patterns.scad` patterns; views: gallery, sample, modes, box |
+| `projects/custombox` | v1.3, not printed yet | configurable box / basket / bin: outline, corners, sloped + wavy rim, patterned walls, floor, inset lid, mounting zone in the back wall |
+| `projects/earbuds` | v1.2, not printed yet | charging-case holder: presets (P31i …), poses, cable hole / dock / slot, grip cut-out, mounting zone |
+| `projects/sunglasses` | v1.3, not printed yet | folded-glasses tray: size presets, nose support, grip cut-out, mounting zone |
 | `projects/_template` | – | starting point for new projects |
