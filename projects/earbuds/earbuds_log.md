@@ -11,6 +11,10 @@
 - Sizes: P31i, AirPods Pro 2, AirPods 4 and Sony XM5 checked against maker / review pages; the other presets
   are from memory of the makers' specifications and marked "verify" in the README.
 
+## v1.1 (2026-11-16) – mounting built into the wall
+- The mounting boss behind the back wall is gone: the back wall carries a solid zone with the sockets
+  (`container_mount()` in lib/container.scad). Pattern centred on the front wall (`anchor`).
+
 ## Prints and feedback
 - (none yet)
 

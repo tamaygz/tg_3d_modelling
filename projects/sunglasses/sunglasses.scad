@@ -68,7 +68,7 @@ floor_pattern = "hex_honeycomb"; // [hex_honeycomb, square_grid, diamond_lattice
 floor_mode = "solid"; // [solid, through_cut, raised, recessed]
 
 /* [Mounting] */
-// how it mounts: plates snap into a boss on the back wall (none = stands on a shelf)
+// how it mounts: plates snap into a solid zone of the back wall (none = stands on a shelf)
 attach_type = "none"; // [none, wall, keyhole, skadis, hook, magnet, flat, roof]
 attach_size = "S"; // [S, M, L]
 attach_count = 2; // [1:1:3]
@@ -114,18 +114,15 @@ assert(!nose || nose_setback + nose_len <= inner[1], str("nose support: setback 
 assert(!nose || nose_foot >= nose_w, "nose support: the foot must be at least as wide as the top");
 
 // ---------- mounting ----------
-has_att = attach_type != "none";
-back_len = size[0] - (corners == "square" ? 0 : 2*cr);
-a_x = has_att ? container_mount_xs(attach_count, back_len, attach_type, attach_size) : [];
+mount = container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [base_band + floor_t, rim_band]);   // solid zone + sockets in the back wall
+has_att = !is_undef(mount);
 h_back = height + rise_back;
-boss_z = container_boss_z(h_back, attach_size);
-assert(!has_att || container_mount_problem(a_x, attach_size, back_len, h_back) == "",
-       str(container_mount_problem(a_x, attach_size, back_len, h_back), " (rise_back makes the back wall higher)"));
+assert(container_mount_problem(mount) == "", str(container_mount_problem(mount), " (rise_back makes the back wall higher)"));
 
 // tables read by the tools
 parts = [
   ["holder", "Sunglasses holder", "PLA / PETG", [0,0,0], COL_GREY_DARK],
-  attach_parts_row(attach_type, len(a_x), [0, 40, 0])
+  attach_parts_row(attach_type, container_mount_count(mount), [0, 40, 0])
 ];
 checks = has_att ? [["attach", "holder", "clear"]] : [];
 report = [["glasses width", gs[0]], ["folded depth", gs[1]], ["lens height", gs[2]], ["outer width", size[0]], ["outer depth", size[1]],
@@ -144,14 +141,13 @@ module nose_support() {
 module holder() {
     container_floor(pts, floor_t, floor_spec, fmode, wall_t + 3, 0.5);
     container_walls(pts, wall_t, h_ref, rim, wall_spec, wmode, [base_band + floor_t, rim_band],
-                    wmode == "overlay" ? min(wall_relief, 0.4) : wall_relief, wall_relief, split ? run_edges : undef, 3);
+                    wmode == "overlay" ? min(wall_relief, 0.4) : wall_relief, wall_relief, split ? run_edges : undef, 3, mount=mount, anchor=[0, -size[1]/2]);
     if (nose) {
         nose_support();
         if (fmode == "through_cut") translate([0, nose_y, 0]) linear_extrude(floor_t) square([nose_foot + 4, nose_len + 8], center=true);   // solid ground under the ridge
     }
-    if (has_att) container_boss(attach_type, attach_size, a_x, size[1]/2, boss_z);
 }
 
 // ---------- assembly ----------
 pick("holder") holder();
-if (has_att) pick("attach") container_plates(attach_type, attach_size, a_x, size[1]/2, boss_z, attach_opts(roof_gap=10), 0, h_ref);
+if (has_att) pick("attach") container_plates(mount, attach_opts(roof_gap=10), 0, h_ref);

@@ -104,7 +104,7 @@ lid_drop = 1; // [0:0.5:20]
 lid_clearance = 0.3; // [0.1:0.05:1]
 
 /* [Mounting] */
-// hang the box: snap-in plates in a boss on the back wall (box shape only; none = free-standing)
+// hang the box: snap-in plates in a solid zone of the back wall (box shape only; none = free-standing)
 attach_type = "none"; // [none, wall, keyhole, skadis, hook, magnet, flat, roof]
 attach_size = "S"; // [S, M, L]
 attach_count = 1; // [1:1:4]
@@ -133,7 +133,8 @@ size = [width, depth];
 boxy = shape == "box";
 split = boxy && corner_fill == "solid";               // every wall its own panel, plain corners
 round_fn = max(3, ceil(corner_r*PI/2/facet));         // facets per round corner
-side_n = side_wave > 0 ? max(2, ceil(max(width, depth)/facet)) : (split ? 1 : 2);
+want_att = attach_type != "none" && boxy;             // mounting: the back wall must be one straight facet
+side_n = side_wave > 0 ? max(2, ceil(max(width, depth)/facet)) : (split || want_att ? 1 : 2);
 n_curve = max(24, ceil(PI*(width + depth)/2/facet/4)*4);
 
 // ---------- outline ----------
@@ -141,6 +142,8 @@ runs = shell_rect_runs(size, corners, corner_r, round_fn, side_n);
 run_edges = shell_runs_edges(runs);
 base_pts = !boxy ? (shape == "ellipse" ? shell_ellipse_pts(size, n_curve) : shell_squircle_pts(size, squareness, n_curve))
          : split ? shell_runs_pts(runs)
+         : want_att ? shell_start_at(shell_runs_pts(runs), corners == "square" ? shell_run(run_edges, "left")[1]
+                                                          : shell_run(run_edges, "corner_bl")[1] + floor(len(runs[5][1])/2))   // seam at the back left corner
          : shell_start_at(shell_runs_pts(runs), shell_run(run_edges, "back")[1] + floor(side_n/2));   // seam in the middle of the back
 pts = shell_wavy_pts(base_pts, side_wave, side_wave_count);
 perimeter = shell_len(pts);
@@ -193,20 +196,17 @@ ledge_w = 1.6;                                        // ledge the lid rests on 
 lid_z = height - lid_drop - lid_t;                    // underside of the lid
 
 // ---------- mounting ----------
-has_att = attach_type != "none" && boxy;
-back_len = width - (corners == "square" ? 0 : 2*min(corner_r, width/2 - 0.5)) - 2*side_wave;
-a_x = has_att ? container_mount_xs(attach_count, back_len, attach_type, attach_size) : [];
-h_back = height + rise_back + min(0, rise_right) - rim_wave_x - rim_wave_y;      // lowest point of the back wall
-boss_z = container_boss_z(h_back, attach_size);                                  // boss centre height
-assert(!has_att || container_mount_problem(a_x, attach_size, back_len, h_back) == "", container_mount_problem(a_x, attach_size, back_len, h_back));
-assert(!has_att || side_wave == 0, "mounting needs a straight back wall: set side_wave to 0");
+assert(!want_att || side_wave == 0, "mounting needs a straight back wall: set side_wave to 0");
+mount = want_att ? container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [base_band + floor_t, rim_band]) : undef;   // solid zone + sockets in the back wall
+has_att = !is_undef(mount);
+assert(container_mount_problem(mount) == "", container_mount_problem(mount));
 
 // tables read by the tools
 feat = pattern_features(split ? side_spec(wall_pattern) : wall_spec);
 parts = [
   ["box", "Box", "PLA / PETG", [0,0,0], COL_TAN],
   ["lid", "Lid", "PLA / PETG", [0,0,30], COL_BRASS],
-  attach_parts_row(attach_type, len(a_x), [0, 40, 0])
+  attach_parts_row(want_att ? attach_type : "none", container_mount_count(mount), [0, 40, 0])
 ];
 checks = concat(has_lid ? [["lid", "box", "clear"]] : [], has_att ? [["attach", "box", "clear"]] : []);
 report = [["perimeter", perimeter], ["wall cell used", is_list(wall_spec[1]) ? wall_spec[1][0] : wall_spec[1]],
@@ -226,7 +226,8 @@ module lid_2d() {
 module wall_run(e0, e1, spec, m, side_border) {
     mode = safe_mode(m, spec);
     container_wall(pts, e0, e1, wall_t, h_ref, rim, spec, mode, [side_border, base_band + floor_t, rim_band],
-                   mode == "overlay" ? min(wall_relief, 0.4) : wall_relief, wall_relief);
+                   mode == "overlay" ? min(wall_relief, 0.4) : wall_relief, wall_relief, mount=mount,
+                   anchor=!split && want_att ? [0, -depth/2] : undef);
 }
 module walls() {
     if (split) for (r=run_edges) {
@@ -243,7 +244,6 @@ module box_body() {
     floor_plate();
     walls();
     if (has_lid) container_ledge(pts, wall_t, lid_z - 0.03, ledge_w);
-    if (has_att) container_boss(attach_type, attach_size, a_x, depth/2, boss_z);
 }
 module box_lid() {
     m = safe_mode(lid_mode, lid_spec);
@@ -259,4 +259,4 @@ module box_lid() {
 // ---------- assembly ----------
 pick("box") box_body();
 if (has_lid) pick("lid") box_lid();
-if (has_att) pick("attach") container_plates(attach_type, attach_size, a_x, depth/2, boss_z, attach_opts(roof_gap=10), 0, h_ref);
+if (has_att) pick("attach") container_plates(mount, attach_opts(roof_gap=10), 0, h_ref);

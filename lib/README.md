@@ -17,10 +17,10 @@ Reusable OpenSCAD building blocks. Projects live in `projects/<name>/`, so they 
 | `emblems/bolavuit_rebuilt.scad` | `include` | fitted data that makes the generic elements reproduce the Bola Vuit logo: `BVR_LEAVES`, `BVR_BANNER`, `BVR_BALL`, `BVR_NUMERAL`, `BVR_LETTERS` |
 | `emblems/bolavuit.scad` | `use` | the Bola Vuit logo, exact (from the original SVG): `bv_ball()` (`bv_ball_ring`, `bv_ball_disc`, `bv_numeral`, `bv_crescent`), `bv_laurel()` / `bv_leaf(i)`, `bv_banner()`, `bv_text()` / `bv_letter(i)`, `bv_logo()`, `bv_frame_fill()`; px units, scale by `w_mm / bv_art_w()` |
 | `scale.scad` | `use` | number scales: `number_row_2d()` with dot, bar, diamond or no separators; `scale_plate_2d()`; `plate_body()` + `plate_art()` for 2-colour inlay, raised or engraved numbers |
-| `patterns.scad` | `use` | 12 parametric patterns for any flat surface, and the ways to apply them: `pattern_spec()`, `pattern_2d()`, `pattern_3d()`, `pattern_cutout_2d()`, `pattern_panel_2d()`, `pattern_relief()`, `pattern_cutter()`, `pattern_lining()`, `pattern_panel(mode, ...)`; checks `pattern_problem()`, `pattern_features()`, `pattern_is_connected()`. See [Patterns](#patterns) |
+| `patterns.scad` | `use` | 12 parametric patterns for any flat surface, and the ways to apply them: `pattern_spec()`, `pattern_2d()`, `pattern_3d()`, `pattern_cutout_2d()`, `pattern_panel_2d()`, `pattern_relief()`, `pattern_cutter()`, `pattern_lining()`, `pattern_panel(mode, ...)`; checks `pattern_problem()`, `pattern_features()`, `pattern_is_connected()`, `pattern_tied()`, `pattern_shift()`. See [Patterns](#patterns) |
 | `patterns/*.scad` | `use` (optional) | the single generators behind `patterns.scad`, if you want one directly: `geometric.scad` (`hex_honeycomb_2d`, `square_grid_2d`, `diamond_lattice_2d`, `triangular_lattice_2d` and their `*_holes()` point lists), `woven.scad` (`basket_weave_3d/_2d`, `tri_weave_3d/_2d`, `weave_strand()`), `organic.scad` (`voronoi_2d`, `voronoi_cell_pts()`), `decorative.scad` (`fish_scales_2d`, `truchet_arcs_2d`, `girih_star_cross_2d`), `relief.scad` (`flowing_waves_2d`, `concentric_ripples_2d`), `tiling.scad` (`pat_hash()`, `pat_clip_halfplane()`) |
 | `shell.scad` | `use` | thin walls that follow a closed outline (boxes, baskets, bins, lamp shades): outlines `shell_rect_runs()` (round / chamfer / square corners, named runs), `shell_ellipse_pts()`, `shell_squircle_pts()`, `shell_wavy_pts()`; measuring `shell_len()`, `shell_dists()`, `shell_bounds()`; rim height field `shell_rim_height()` and `shell_rim_dip()` (grip cut-out); `shell_dist_at()`; `shell_strip_pts()` (the unrolled wall with its top edge) and `shell_wrap()` which bends a flat panel round the outline. See [Shells](#shells) |
-| `container.scad` | `use` | the parts of an open box on a shell outline: `container_walls()` / `container_wall()` (patterned walls bent round the outline, with framed openings), `container_floor()` (with holes), `container_ledge()` (45° ledge for an inset lid), mounting on the back wall with the attachment plates: `container_mount_xs()`, `container_mount_problem()`, `container_boss()`, `container_plates()`; helpers `container_u()` / `container_v()` (place an opening on a wall from plan coordinates), `container_safe_mode()`. See [Containers](#containers) |
+| `container.scad` | `use` | the parts of an open box on a shell outline: `container_walls()` / `container_wall()` (patterned walls bent round the outline, with framed openings), `container_floor()` (with holes), `container_ledge()` (45° ledge for an inset lid), mounting built into the back wall for the attachment plates: `container_mount()` spec, `container_mount_problem()`, `container_plates()`, pattern-free `plain` areas; helpers `container_u()` / `container_v()` (place an opening on a wall from plan coordinates), `container_safe_mode()`. See [Containers](#containers) |
 
 Each style module also defines its option list (`PLAQUE_SHAPES`, `EDGE_PROFILES`, `MARKER_STYLES`…),
 so a model can copy them into its `// [a, b, c]` Customizer comment.
@@ -105,8 +105,8 @@ about `cell − strut` wide. Pattern-specific settings go into `opts=[["key", va
 | `fish_scales` | overlapping scales, tip down | [scale width, height] ([12, 12]) | line width of the scale edges (0.8) | `overlap` (0.4), `curvature` 0.2..1 (0.7), `stagger` (0.5), `shingle` (true: raised as stepped scales), `steps` (3) |
 | `truchet_arcs` | quarter-ring tiles that join into paths | tile size (12) | arc width (1.6) | `variation`: "random" / "alternate" / "rows" / "uniform", `bias` (0.5); uses `seed` |
 | `girih_star_cross` | eight-point stars touching at their tips, crosses between | repeat spacing (24) | strap width (1.6) | `star` diameter (= cell; smaller adds straight straps between the tips), `star_ratio` (0.765) |
-| `flowing_waves` | parallel sine ribs | rib pitch (8) | rib width (2.4) | `amplitude` (3), `wavelength` (30), `phase` (0°), `shift` per rib (0°) |
-| `concentric_ripples` | rings around one or more centres | ring spacing (6) | ring width (2) | `rings` (0 = fill), `first` radius, `centers` ([[0, 0]]), `spokes` (0), `falloff` 0..0.9 (0), `steps` (4) |
+| `flowing_waves` | parallel sine ribs | rib pitch (8) | rib width (2.4) | `amplitude` (3), `wavelength` (30), `phase` (0°), `shift` per rib (0°), `ties` (bars between ribs every n wavelengths; automatic when cut through) |
+| `concentric_ripples` | rings around one or more centres | ring spacing (6) | ring width (2) | `rings` (0 = fill), `first` radius, `centers` ([[0, 0]]), `spokes` (radial ties; automatic 6 when cut through), `falloff` 0..0.9 (0), `steps` (4) |
 
 Common settings of a spec, for every pattern:
 
@@ -196,8 +196,14 @@ translate([0, 0, 40]) pattern_panel("through_cut", roof, [70, 50], t=2, border=3
   off by the edge that would be narrower than `min_opening` stay closed instead of leaving slivers.
 - Keep a `border` (frame) on open lattices and through-cuts. With `border=0` the rib ends at the edge are free and a
   small fragment can come loose: use it only where the host itself closes the edge.
-- `pattern_is_connected(p)` is false for Truchet arcs and for ripples without `spokes`: those would fall apart
-  when cut through, so `through_cut` and `open_lattice` refuse them. Wave ribs only meet at the frame: keep a `border`.
+- **Ties.** Line patterns have no cross connections of their own: cut through, flowing waves would be long
+  unsupported bridges and ripples loose rings. So wherever the cells are cut out (`through_cut`, `open_lattice`,
+  perforated linings, `pattern_cutout_2d`), `pattern_tied(p)` is applied: waves get a bar between neighbouring ribs
+  every wavelength, placed where the ribs come closest (or alternately on crests and in troughs when they run
+  parallel, like brick bonds), and ripples get 6 spokes. Set `["ties", n]` / `["spokes", n]` yourself to choose,
+  or 0 to switch them off. Reliefs and engravings are not changed.
+- `pattern_is_connected(p)` is false for Truchet arcs and for ripples with `spokes` set to 0: those would fall
+  apart when cut through, so `through_cut` and `open_lattice` refuse them.
 - Weaves stand on z = 0 and need no supports. `lift` must stay at or below 85% of the strand thickness
   (`WEAVE_MIN_FUSE`), so crossing strands share material; total height h = strand thickness + lift.
 - Reliefs and linings overlap their host by 0.01 mm so the union is one clean solid.
@@ -276,7 +282,7 @@ container_floor(pts, 3, p, "solid") translate([0, 2]) circle(d=14);         // f
 container_walls(pts, t, H, rim, p, "through_cut", bands=[5, 3])             // walls; one opening in the back wall:
     translate([container_u(pts, [0, size[1]/2]), container_v(12, H)]) circle(d=10);
 // solid corners, every side its own panel:  container_walls(..., runs=shell_runs_edges(runs), post_w=3)
-// mounting:  xs = container_mount_xs(1, 48, "skadis", "S");  container_boss("skadis", "S", xs, size[1]/2, 21);
+// mounting:  m = container_mount(pts, "skadis", "S", 1, rim, t, [5, 3]);  container_walls(..., mount=m);  container_plates(m);
 ```
 
 - **Openings** are 2D children: for walls in the loop's unrolled frame (x from `container_u(pts, plan_point)`,
@@ -284,8 +290,17 @@ container_walls(pts, t, H, rim, p, "through_cut", bands=[5, 3])             // w
   so they cost nothing.
 - **Seam:** with one panel all round, start the outline where no opening is (`shell_start_at`); an opening must
   not straddle the two ends of the strip.
-- **Mounting:** walls are thinner than an attachment socket (4.5 mm), so a solid boss on the outside of the back
-  wall takes the sockets. `container_mount_problem()` returns "" or the reason it does not fit (assert it).
+- **Mounting** is part of the wall, not a plate behind it. `m = container_mount(pts, type, size, count, hf, t,
+  [bottom band, rim band])` describes it; pass `mount=m` to `container_walls()` / `container_wall()` and the back
+  wall (the straight wall at the largest y) gets a solid zone there: the pattern stops at it and joins its sides,
+  the wall is thickened outwards to 6 mm only in the zone, and the sockets are cut into it. A zone that starts
+  above the floor has a 45° underside (prints upright without support); if the rim band or the base band is
+  closer than 10 mm, the solid area runs on into it and follows a sloped or wavy rim. `container_mount_problem(m)`
+  returns "" or the reason it does not fit (assert it); `container_plates(m, opts, z_bottom, z_top)` draws the
+  plates; `container_mount_count(m)` goes into `attach_parts_row()`. The back wall must be one straight edge.
+- **Plain areas:** `plain=[[x, z, w, h], ...]` (centre x in the loop frame, bottom z, size) keeps rectangles of the
+  wall free of pattern and solid, e.g. for a label; the pattern joins their edges.
+- **Pattern anchor:** `anchor=[x, y]` (a plan point on a wall) centres the pattern there when one panel runs all round.
 
 ## Attachment plates
 

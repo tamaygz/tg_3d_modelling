@@ -50,3 +50,7 @@ view = "modes"; pattern = "concentric_ripples"; sample_w = 60 | ignore PIECES
 view = "box"
 view = "box"; wall_pattern = "diamond_lattice"; wall_mode = "open_lattice"; front_pattern = "fish_scales"; floor_pattern = "square_grid"; floor_mode = "recessed"; roof_pattern = "voronoi"; roof_mode = "open_lattice"
 view = "box"; wall_pattern = "flowing_waves"; wall_mode = "raised"; front_pattern = "truchet_arcs"; front_mode = "recessed"; floor_mode = "solid"; roof_pattern = "tri_weave"; roof_mode = "raised"; box_w = 83; box_d = 57; box_h = 41
+
+# --- ties: line patterns cut through get connectors between the lines ---
+view = "sample"; pattern = "flowing_waves"; mode = "through_cut"; wave_shift = 60; cell = 12; wave_amplitude = 4; border = 2
+view = "sample"; pattern = "flowing_waves"; mode = "open_lattice"; angle = 30; cell = 6; strut = 1.5

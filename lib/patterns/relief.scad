@@ -19,12 +19,25 @@ function wave_rib_pts(L, y0, strut, amplitude, wavelength, phase, n, xc=0) = let
     c = [for (i=[0:n]) let(x = xc - L/2 + i*L/n, s = amplitude*k*PI/180*cos(k*x + phase), u = [-s, 1]/norm([s, 1]))
         [[x, y0 + amplitude*sin(k*x + phase)], u*strut/2]])
     concat([for (p=c) p[0] + p[1]], [for (i=[n:-1:0]) c[i][0] - c[i][1]]);
-module flowing_waves_2d(size, cell=8, strut=2.4, amplitude=3, wavelength=30, phase=0, shift=0, center=[0, 0]) {
+// ties > 0 joins every rib to the next with a short bar, `ties` wavelengths apart, so the ribs form one network
+// that prints and stays stiff when the pattern is cut through. The bars sit where two ribs come closest
+// (shift != 0), or alternately on the crests and in the troughs (parallel ribs), like the bonds of brickwork.
+function wave_tie_x(j, wavelength, phase=0, shift=0) = let(
+    target = shift == 0 ? (abs(j)%2 == 0 ? 90 : 270) : (sin(shift/2) > 0 ? 180 : 0))
+    (target - phase - j*shift - shift/2)*wavelength/360;
+module flowing_waves_2d(size, cell=8, strut=2.4, amplitude=3, wavelength=30, phase=0, shift=0, center=[0, 0], ties=0) {
     assert(wave_min_radius(amplitude, wavelength) > strut/2, str("flowing_waves: the wave bends tighter (radius ",
         wave_min_radius(amplitude, wavelength), ") than half the rib width ", strut/2, ": lower the amplitude or raise the wavelength"));
     L = size[0] + 2*cell; n = max(8, ceil(L/wavelength*32));
     for (j=[pat_i0(size[1] + 2*amplitude, cell, center[1]):pat_i1(size[1] + 2*amplitude, cell, center[1])])
         polygon(wave_rib_pts(L, j*cell, strut, amplitude, wavelength, phase + j*shift, n, center[0]));
+    if (ties > 0) for (j=[pat_i0(size[1] + 2*amplitude, cell, center[1]):pat_i1(size[1] + 2*amplitude, cell, center[1])]) {
+        P = wavelength*ties; x0 = wave_tie_x(j, wavelength, phase, shift);
+        for (m=[floor((center[0] - L/2 - x0)/P):ceil((center[0] + L/2 - x0)/P)]) let(x = x0 + m*P,
+            ya = j*cell + amplitude*sin(360*x/wavelength + phase + j*shift),
+            yb = (j + 1)*cell + amplitude*sin(360*x/wavelength + phase + (j + 1)*shift))
+            translate([x - strut/2, ya]) square([strut, yb - ya]);
+    }
 }
 
 // ---------- concentric ripples ----------

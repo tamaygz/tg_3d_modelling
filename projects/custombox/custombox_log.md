@@ -26,6 +26,12 @@
   - the lid ledge poked 0.01 mm into the lid.
 - Checks: every variant in tests.txt gives one watertight box (and lid); lid and plates clear the box.
 
+## v1.1 (2026-11-16) – mounting built into the wall, ties
+- User feedback: the boss behind the patterned back wall printed twice (wall, then plate). Now the back wall has
+  a solid zone with the sockets (`container_mount()`): pattern joins its sides, thickened to 6 mm only there, 45°
+  underside when it floats, merges with rim / base band within 10 mm. Seam moves to the back left corner when mounted.
+- Flowing waves and ripples get ties automatically when cut through (lib/patterns.scad `pattern_tied()`).
+
 ## Prints and feedback
 - (none yet)
 

@@ -41,7 +41,8 @@ side by default), or use `custom`.
   `cable_slot` the opening continues to the edge (floor: out through the foot of the back wall; wall: up to the
   rim), so the cable can be laid in. Every opening gets a plain collar.
 - **Grip:** the front rim dips by `grip_depth` over `grip_width` with smooth shoulders; the rim band follows it.
-- **Mounting:** a boss on the back wall takes the plates. The back wall must be at least 41 mm high for an S plate:
+- **Mounting:** the back wall gets a solid zone with the sockets, built into the wall (the pattern joins its sides;
+  no separate plate behind it). The back wall must be at least 41 mm high for an S plate:
   raise `rise_back` if the model says so. A desk holder with a floor opening needs the cable to leave through the
   slot at the back.
 - **Patterns** scale with the holder (`wall_cell = 0`); patterns that cannot be cut through are raised instead (see the report).

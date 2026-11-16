@@ -18,6 +18,12 @@
 - Checks: every part of every variant in tests.txt is one watertight piece (lattices connected to their frame,
   reliefs fused to their panel), across all 12 patterns, all modes, rotations, odd sizes and outline shapes.
 
+## v1.1 (2026-11-16) – windows, ties
+- Library: `$pat_window` (build a panel piece by piece), generator `center`, frame widths per edge, `pattern_shift()`.
+- User feedback: line patterns cut through had no cross connections (unprintable, not rigid). `pattern_tied()` adds
+  bars between wave ribs at their closest points (brick-bond style for parallel ribs) and spokes to ripples,
+  automatically wherever cells are cut out. Two test variants added.
+
 ## Prints and feedback
 - (none yet)
 

@@ -34,3 +34,5 @@ attach_type = "keyhole"; rise_back = 25; corners = "square"; wall_pattern = "tri
 # --- limits ---
 width = 40; depth = 40; height = 25; corner_r = 6; wall_cell = 6; wall_strut = 1; base_band = 2; rim_band = 2
 wall_t = 1.2; floor_t = 0.8; wall_cell = 20; wall_strut = 3; facet = 3
+attach_type = "wall"; attach_size = "M"; attach_count = 2; width = 150; height = 95; rim_wave_x = 6; wall_pattern = "flowing_waves"
+attach_type = "skadis"; height = 110; rise_back = 30; wall_pattern = "voronoi"; corners = "square"

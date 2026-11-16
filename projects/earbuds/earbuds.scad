@@ -75,7 +75,7 @@ floor_pattern = "concentric_ripples"; // [hex_honeycomb, square_grid, diamond_la
 floor_mode = "solid"; // [solid, through_cut, recessed]
 
 /* [Mounting] */
-// how it mounts: plates snap into a boss on the back wall (none = stands on a desk)
+// how it mounts: plates snap into a solid zone of the back wall (none = stands on a desk)
 attach_type = "none"; // [none, wall, keyhole, skadis, hook, magnet, flat, roof]
 attach_size = "S"; // [S, M, L]
 attach_count = 1; // [1:1:2]
@@ -133,19 +133,15 @@ assert(!has_cable || on_floor || cable_z + hole[1]/2 < height - (cable_on == "fr
        "cable opening: too high for this wall; lower cable_y or use the slot");
 
 // ---------- mounting ----------
-has_att = attach_type != "none";
-back_len = size[0] - (corners == "square" ? 0 : 2*cr);
-a_x = has_att ? container_mount_xs(attach_count, back_len, attach_type, attach_size) : [];
-h_back = height + rise_back;
-boss_z = container_boss_z(h_back, attach_size);
-assert(!has_att || container_mount_problem(a_x, attach_size, back_len, h_back) == "",
-       str(container_mount_problem(a_x, attach_size, back_len, h_back), " (rise_back makes the back wall higher)"));
-assert(!(has_att && has_cable && cable_on == "back"), "the mounting boss covers the back wall: put the cable opening in the floor or a side wall");
+mount = container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [base_band + floor_t, rim_band]);   // solid zone + sockets in the back wall
+has_att = !is_undef(mount);
+assert(container_mount_problem(mount) == "", str(container_mount_problem(mount), " (rise_back makes the back wall higher)"));
+assert(!(has_att && has_cable && cable_on == "back"), "the mounting zone is in the back wall: put the cable opening in the floor or a side wall");
 
 // tables read by the tools
 parts = [
   ["holder", "Earbuds holder", "PLA / PETG", [0,0,0], COL_GREY_DARK],
-  attach_parts_row(attach_type, len(a_x), [0, 40, 0]),
+  attach_parts_row(attach_type, container_mount_count(mount), [0, 40, 0]),
   ["hw_case", "Charging case (reference)", "your earbuds", [0,0,40], COL_WHITE]
 ];
 checks = concat([["hw_case", "holder", ">=", 0]], has_att ? [["attach", "holder", "clear"]] : []);
@@ -177,9 +173,8 @@ module holder() {
     if (has_cable && on_floor) container_floor(pts, floor_t, floor_spec, fmode, wall_t + 2, 0.5) floor_hole_2d();
     else container_floor(pts, floor_t, floor_spec, fmode, wall_t + 2, 0.5);
     if (has_cable && (!on_floor || cable_slot))
-        container_walls(pts, wall_t, h_ref, rim, wall_spec, wmode, [base_band + floor_t, rim_band], relief, wall_relief, split ? run_edges : undef, 2.5) wall_holes_2d();
-    else container_walls(pts, wall_t, h_ref, rim, wall_spec, wmode, [base_band + floor_t, rim_band], relief, wall_relief, split ? run_edges : undef, 2.5);
-    if (has_att) container_boss(attach_type, attach_size, a_x, size[1]/2, boss_z);
+        container_walls(pts, wall_t, h_ref, rim, wall_spec, wmode, [base_band + floor_t, rim_band], relief, wall_relief, split ? run_edges : undef, 2.5, mount=mount, anchor=[0, -size[1]/2]) wall_holes_2d();
+    else container_walls(pts, wall_t, h_ref, rim, wall_spec, wmode, [base_band + floor_t, rim_band], relief, wall_relief, split ? run_edges : undef, 2.5, mount=mount, anchor=[0, -size[1]/2]);
 }
 // the charging case as a block, to check the fit
 module case_ref() {
@@ -189,5 +184,5 @@ module case_ref() {
 
 // ---------- assembly ----------
 pick("holder") holder();
-if (has_att) pick("attach") container_plates(attach_type, attach_size, a_x, size[1]/2, boss_z, attach_opts(roof_gap=10), 0, h_ref);
+if (has_att) pick("attach") container_plates(mount, attach_opts(roof_gap=10), 0, h_ref);
 pick("hw_case") case_ref();

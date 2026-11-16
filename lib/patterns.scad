@@ -78,7 +78,7 @@ function pattern_opt_keys(name) =
     name == "voronoi" ? ["irregularity", "min_cell", "round"] :
     name == "fish_scales" ? ["overlap", "curvature", "stagger", "shingle", "steps"] :
     name == "truchet_arcs" ? ["variation", "bias"] : name == "girih_star_cross" ? ["star", "star_ratio"] :
-    name == "flowing_waves" ? ["amplitude", "wavelength", "phase", "shift"] :
+    name == "flowing_waves" ? ["amplitude", "wavelength", "phase", "shift", "ties"] :
     name == "concentric_ripples" ? ["rings", "first", "centers", "spokes", "falloff", "steps"] : [];
 function pat_opt(opts, key, default) = let(r = [for (e=opts) if (e[0] == key) e[1]]) len(r) > 0 ? r[0] : default;
 
@@ -92,7 +92,17 @@ function pattern_is_3d(p) = let(n = is_string(p) ? p : p[0]) n == "basket_weave"
 // true if the pattern's material forms one network that reaches the edge of any outline (so it can stand
 // alone as an open lattice or stay in one piece when its cells are cut through)
 function pattern_is_connected(p) = let(s = _ps(p), n = s[0])
-    n == "truchet_arcs" ? false : n == "concentric_ripples" ? _po(s, "spokes", 0) > 0 : true;
+    n == "truchet_arcs" ? false : n == "concentric_ripples" ? let(sp = _po(s, "spokes", undef)) is_undef(sp) || sp > 0 : true;
+// Line patterns need ties when they are cut through: without them the lines only hang on the frame (they
+// would print as long bridges and flex). Wherever the cells are cut out, a spec that does not say otherwise gets
+// them: flowing_waves ties = 1 (a bar between neighbouring ribs every wavelength), concentric_ripples spokes = 6.
+// Set opts ["ties", 0] / ["spokes", 0] to switch them off, or a number to choose. Reliefs are left as they are.
+function pattern_tied(p) = let(s = _ps(p), add =
+    s[0] == "flowing_waves" && is_undef(_po(s, "ties", undef)) ? [["ties", 1]] :
+    s[0] == "concentric_ripples" && is_undef(_po(s, "spokes", undef)) ? [["spokes", 6]] : [])
+    len(add) == 0 ? s : [for (i=[0:len(s)-1]) i == 8 ? concat(s[8], add) : s[i]];
+// the same pattern moved by d = [x, y] on the surface (the anchor of the pattern goes to d)
+function pattern_shift(p, d) = let(s = _ps(p), q = pat_rot(d, -s[3])) [for (i=[0:len(s)-1]) i == 4 ? s[4] + q : s[i]];
 
 // ---------- printability ----------
 // [smallest rib width, smallest opening] of a spec
@@ -130,7 +140,7 @@ module _pat_gen_2d(s, cover, g=[0, 0]) {
     else if (n == "fish_scales") fish_scales_2d(cover, pat_xy(c), pat_xy(st)[0], _po(s, "overlap", 0.4), _po(s, "curvature", 0.7), _po(s, "stagger", 0.5), center=g);
     else if (n == "truchet_arcs") truchet_arcs_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "variation", "random"), s[6], _po(s, "bias", 0.5), center=g);
     else if (n == "girih_star_cross") girih_star_cross_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "star", undef), _po(s, "star_ratio", undef), center=g);
-    else if (n == "flowing_waves") flowing_waves_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "amplitude", 3), _po(s, "wavelength", 30), _po(s, "phase", 0), _po(s, "shift", 0), center=g);
+    else if (n == "flowing_waves") flowing_waves_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "amplitude", 3), _po(s, "wavelength", 30), _po(s, "phase", 0), _po(s, "shift", 0), center=g, ties=_po(s, "ties", 0));
     else if (n == "concentric_ripples") concentric_ripples_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "rings", 0), _po(s, "first", undef), _po(s, "centers", [[0, 0]]), _po(s, "spokes", 0), center=g);
 }
 // relief levels: most patterns are one flat level; fish scales rise towards their tips, ripples fall off outwards
@@ -250,7 +260,7 @@ module pattern_cutout_2d(p, size, cell, strut, angle, seed, opts, inset=0, cut="
 }
 module _pattern_cutout_2d(s, size, inset=0, cut="cells") {
     if (cut == "lines") _pat_wc() intersection() { _pat_inset(inset) _pat_outline(size) children(); _pat_field(s, size); }
-    else _pat_wc() _pat_open(s[10]) difference() { _pat_inset(inset) _pat_outline(size) children(); _pat_field(s, size); }
+    else _pat_wc() _pat_open(s[10]) difference() { _pat_inset(inset) _pat_outline(size) children(); _pat_field(pattern_tied(s), size); }
 }
 // 2D open lattice: the outline with the cells cut out, leaving the pattern and a closed frame `border` wide
 module pattern_panel_2d(p, size, cell, strut, angle, seed, opts, border=2, cut="cells") {

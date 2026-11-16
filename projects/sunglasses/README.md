@@ -30,7 +30,8 @@ These are typical values, not a standard: measure your glasses folded (widest po
   (lenses clear of the floor), or lower to just keep them centred. `nose_w` is the top width (the gap between the
   nose pads is usually 14–20 mm), `nose_foot` the width on the floor.
 - **Grip:** the front rim dips by `grip_depth` over `grip_width`; the rim band follows it.
-- **Mounting:** a boss on the back wall takes the plates; the back wall must be at least 41 mm high for an S plate
+- **Mounting:** the back wall gets a solid zone with the sockets, built into the wall (the pattern joins its sides;
+  no separate plate behind it); the back wall must be at least 41 mm high for an S plate
   (`rise_back` raises it; the model says how much is missing).
 - The largest presets are close to 165 mm wide: fine for a 250 mm bed.
 

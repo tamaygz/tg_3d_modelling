@@ -12,7 +12,7 @@ walls, floor and lid are all settings, and every surface takes any of the 12 pat
 | Walls | `wall_t`, `wall_pattern`, `wall_mode`, `wall_cell`, `wall_strut`, `wall_angle`, `wall_seed`, `wall_relief`, `rim_band`, `base_band`, `corner_fill`, `post_w`, `fit_cells`, `front_pattern/_mode`, `back_pattern/_mode` | pattern and how it is applied: solid, through-cut, open lattice, raised, recessed, overlay |
 | Floor | `floor_t`, `floor_pattern`, `floor_mode`, `floor_cell`, `floor_strut`, `floor_angle`, `floor_relief`, `floor_margin` | thickness (strength) and its own pattern |
 | Lid | `lid` (none / inset), `lid_t`, `lid_pattern`, `lid_mode`, `lid_grip` (hole / knob / none), `lid_drop`, `lid_clearance` | a lid that drops onto a ledge inside the box |
-| Mounting | `attach_type`, `attach_size`, `attach_count` | snap-in plates (wall screws, keyhole, Skådis, hook, magnet, glue, ceiling) in a boss on the back wall |
+| Mounting | `attach_type`, `attach_size`, `attach_count` | snap-in plates (wall screws, keyhole, Skådis, hook, magnet, glue, ceiling) in a solid zone built into the back wall |
 | Pattern details | strand style, Voronoi rounding, honeycomb orientation, wave size, ripple spokes, `min_strut`, `min_opening`, `facet` | fine tuning and printability limits |
 
 ## Recipes
@@ -41,8 +41,12 @@ walls, floor and lid are all settings, and every surface takes any of the 12 pat
   the report line "wall pattern cut as asked" shows 0 when that happened.
 - **Lid.** Only for a flat rim (no slope, no waves). It rests on a ledge that grows out of the wall at 45°, so the
   box still prints without supports. The report says whether the lid was fitted.
-- **Mounting.** A solid boss on the outside of the back wall takes the sockets; the plates snap in as everywhere
-  else in this repo. It needs the box shape, a straight back (`side_wave = 0`) and a back wall as high as the plate.
+- **Mounting.** The back wall itself gets a solid zone for the sockets: the pattern stops at it and joins its
+  sides, and the wall is thickened to 6 mm only there (no separate plate behind the wall). It runs into the rim or
+  base band when they are close and has a 45° underside when it starts above the floor. It needs the box shape, a
+  straight back (`side_wave = 0`) and a back wall as high as the plate.
+- **Line patterns** (flowing waves, ripples) get ties between their lines when they are cut through, so they
+  print and stay stiff.
 
 ## Printing
 
