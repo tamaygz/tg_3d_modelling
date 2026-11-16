@@ -1,5 +1,5 @@
 model snooker_guide.scad
-rev f45dd23
-made 2026-11-15 19:30
+rev cae1506
+made 2026-11-16 05:10
 Attachment_plate.stl
 guide.3mf
