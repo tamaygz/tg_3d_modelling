@@ -126,10 +126,26 @@ function attach_xs(count, span, type="wall", centre=0, avoid=undef, size=undef) 
     [for (x=x0) x + (len(sh) > 0 ? sh[0] : 0)];
 // plate centre y that centres socket + pry notch on a host whose middle is y_mid
 function attach_y(y_mid) = y_mid + ATTACH_NOTCH/2;
-// does a socket of this size fit a host `height` tall?  (use in an assert with attach_fit_msg)
+// does a socket of this size fit a host `height` tall?
 // thickness (optional) = host thickness behind the socket: needs the socket depth plus a 1 mm floor
 function attach_fits(size, height, margin=3, thickness=undef) =
     attach_socket_len(size) <= height - margin + 0.001 && (is_undef(thickness) || thickness >= ATTACH_T + 1 - 0.001);
+// What actually fits: the type and size asked for if the host is large enough, otherwise the next smaller plate
+// size, otherwise no attachment at all. Returns [type, size, note]; note is "" or a sentence saying what was
+// changed. Use the returned type and size everywhere, and show the note with attach_note(). A host should never
+// stop with an error because an attachment does not fit.
+function attach_smaller(size) = size == "L" ? "M" : size == "M" ? "S" : "";
+function attach_fit(type, size, height, margin=3, thickness=undef) =
+    type == "none" ? ["none", size, ""] :
+    !is_undef(thickness) && thickness < ATTACH_T + 1 - 0.001 ?
+        ["none", size, str("attachment left out: sockets need a host at least ", ATTACH_T + 1, " mm thick, this one is ", thickness, " mm")] :
+    attach_fits(size, height, margin) ? [type, size, ""] :
+    attach_smaller(size) == "" ?
+        ["none", size, str("attachment left out: even the smallest plate (S) needs ", attach_socket_len("S") + margin, " mm of height, this host has ", height, " mm")] :
+    let(r = attach_fit(type, attach_smaller(size), height, margin, thickness))
+        [r[0], r[1], r[0] == "none" ? r[2] : str("attachment plate size reduced from ", size, " to ", r[1], " to fit a height of ", height, " mm")];
+// prints a note as a warning in the render log (nothing if the note is empty)
+module attach_note(note) { if (note != "") echo(str("WARNING: ", note)); }
 // What actually fits: the type and size asked for if the host is large enough, otherwise the next smaller plate
 // size, otherwise no attachment at all. Returns [type, size, note]; note is "" or a sentence saying what was
 // changed. Use the returned type and size everywhere, and show the note with attach_note(). A host should never
@@ -152,9 +168,6 @@ function attach_fit_msg(size, height, thickness=undef) =
         : str("attach_size ", size, " needs ", attach_socket_len(size), " mm of height; this host has ", height, " mm. Choose a smaller size.");
 // row for the project's `parts` table
 function attach_print_tag(type) = (type == "skadis" || type == "hook" || type == "roof") ? "print=auto" : "print=x180";
-// (kept for older projects: the plates' row only; new projects use attach_rows())
-function attach_parts_row(type, count, pull=[0, 0, -50], colour="#4d6170") =
-    ["attach", "Attachment plate", "PLA", pull, colour, str("pieces=", count), attach_print_tag(type)];
 // cutter: all sockets of a host (subtract from the host; back face z=0)
 module attach_sockets(type, size, xs, y) { if (type != "none") for (x=xs) translate([x, y, 0]) attach_socket(size); }
 // all plates of a host, seated. y_bottom / y_top = the host's lowest / highest edge (for stand and roof plates)

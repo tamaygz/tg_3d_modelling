@@ -153,8 +153,7 @@ runs = shell_rect_runs(size, corners, corner_r, round_fn, side_n);
 run_edges = shell_runs_edges(runs);
 base_pts = !boxy ? (shape == "ellipse" ? shell_ellipse_pts(size, n_curve) : shell_squircle_pts(size, squareness, n_curve))
          : split ? shell_runs_pts(runs)
-         : want_att ? shell_start_at(shell_runs_pts(runs), corners == "square" ? shell_run(run_edges, "left")[1]
-                                                          : shell_run(run_edges, "corner_bl")[1] + floor(len(runs[5][1])/2))   // seam at the back left corner
+         : want_att ? container_box_pts(runs)                                                        // mounted: seam in the back left corner
          : shell_start_at(shell_runs_pts(runs), shell_run(run_edges, "back")[1] + floor(side_n/2));   // seam in the middle of the back
 pts = shell_wavy_pts(base_pts, side_wave, side_wave_count);
 perimeter = shell_len(pts);
@@ -169,18 +168,14 @@ assert(h_low >= floor_t + base_band + rim_band + 3, str("the rim dips to ", h_lo
     ") plus the bands (", base_band, " + ", rim_band, "). Raise the height or reduce the slope / waves."));
 
 // ---------- patterns ----------
-function scaled(v, k) = is_list(v) ? [for (x=v) x*k] : v*k;
 function opts_for(name, h) =
     name == "hex_honeycomb" ? [["orient", hex_orient]] :
     name == "basket_weave" || name == "tri_weave" ? [["style", strand_style]] :
     name == "voronoi" ? [["round", voronoi_round]] :
     name == "flowing_waves" ? [["amplitude", wave_amplitude], ["wavelength", wave_length]] :
     name == "concentric_ripples" ? [["spokes", ripple_spokes]] : [];
-// cell size: 0 = default; a number scales the default proportion
-function cell_for(name, c) = let(d = pattern_default(name)[0], d0 = is_list(d) ? d[0] : d) scaled(d, (c == 0 ? d0 : c)/d0);
 function spec_for(name, c, st, ang, seed, h) =
-    pattern_spec(name, cell_for(name, c), st == 0 ? undef : st, ang, seed=seed, opts=opts_for(name, h),
-                 min_strut=min_strut, min_opening=min_opening);
+    pattern_sized(name, 1, c, st, ang, seed, opts_for(name, h), min_strut=min_strut, min_opening=min_opening);
 function safe_mode(m, s) = container_safe_mode(m, s);     // a pattern that would fall apart when cut through is raised instead
 
 wall_spec0 = spec_for(wall_pattern, wall_cell, wall_strut, wall_angle, wall_seed, wall_t);

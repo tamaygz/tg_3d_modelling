@@ -100,19 +100,15 @@ round_fn = max(3, ceil(cr*PI/2/5));
 // ---------- outline and rim ----------
 runs = shell_rect_runs(size, corners, cr, round_fn, 1);
 run_edges = shell_runs_edges(runs);
-seam = corners == "square" ? shell_run(run_edges, "left")[1] : shell_run(run_edges, "corner_bl")[1] + floor(round_fn/2);
-pts = split ? shell_runs_pts(runs) : shell_start_at(shell_runs_pts(runs), seam);     // seam at the back left corner
+pts = container_box_pts(runs, split);                 // one loop with its seam in the back left corner, or separate sides
 grip_w = min(grip_width, (size[0] - 2*cr)/1.6);        // width at half depth; the shoulders need room on the straight front
 dip = grip ? shell_rim_dip_depth(min(grip_depth, height - floor_t - 2), grip_w) : 0;
 rim = function(p) shell_rim_height(p, size, height, [0, rise_back]) - shell_rim_dip(p, size, dip, grip_w, 0, "front", wall_t + 4);
 h_ref = height + rise_back;
 
 // ---------- patterns ----------
-function scaled(v, k) = is_list(v) ? [for (x=v) x*k] : v*k;
-k_auto = max(0.5, min(1, min(size[0], height)/50));
-function auto_cell(name) = let(d = pattern_default(name)[0]) wall_cell == 0 ? scaled(d, k_auto) : scaled(d, wall_cell/(is_list(d) ? d[0] : d));
-function auto_strut(name) = wall_strut > 0 ? wall_strut : name == "basket_weave" ? pattern_default(name)[1]*k_auto : max(1.2, pattern_default(name)[1]*k_auto);
-function spec_for(name, ang=0) = pattern_spec(name, auto_cell(name), auto_strut(name), ang, seed=wall_seed,
+k_auto = max(0.5, min(1, min(size[0], height)/50));      // automatic pattern size: a few cells across the smaller wall dimension
+function spec_for(name, ang=0) = pattern_sized(name, k_auto, wall_cell, wall_strut, ang, wall_seed, strut_min=1.2,
     opts=name == "concentric_ripples" ? [["spokes", 6]] : name == "voronoi" ? [["round", 0.8]] : []);
 wall_spec = spec_for(wall_pattern, wall_angle);
 floor_spec = spec_for(floor_pattern);

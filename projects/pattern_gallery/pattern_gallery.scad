@@ -170,9 +170,8 @@ function user_spec(m) = let(c = user_cell(pattern))
     pattern_spec(pattern, c, strut == 0 ? undef : strut, angle, [offset_x, offset_y], density, seed,
                  opts=concat(opts_for(pattern, weave_h(m)), girih_opts(pattern, c)), min_strut=min_strut, min_opening=min_opening);
 // library defaults, scaled, for the box surfaces
-function box_spec(name, h) = let(d = pattern_default(name))
-    pattern_spec(name, scaled(d[0], box_pattern_scale), name == "basket_weave" ? d[1]*box_pattern_scale : max(0.8, d[1]*box_pattern_scale),
-                 opts=name == "concentric_ripples" ? [["spokes", 6], ["falloff", 0.5]] : []);
+function box_spec(name, h) = pattern_sized(name, box_pattern_scale, strut_min=0.8,
+    opts=name == "concentric_ripples" ? [["spokes", 6], ["falloff", 0.5]] : []);
 
 front = front_pattern == "same" ? wall_pattern : front_pattern;
 front_m = front_pattern == "same" ? wall_mode : front_mode;
@@ -214,10 +213,9 @@ module sample_panel(m, lm0=lining_mode) {
                   lining_t=lining_t, lining_mode=lm, lining_edge=lining_edge) sample_2d();
 }
 module gallery_tile(i) {
-    n = NAMES[i]; m = GALLERY_MODES[i]; d = pattern_default(n);
+    n = NAMES[i]; m = GALLERY_MODES[i];
     k = tile/56*(n == "tri_weave" ? 0.7 : 1);          // patterns grow with the tile (tri-weave: more strands)
-    s = pattern_spec(n, scaled(d[0], k), d[1]*k, opts=
-        n == "concentric_ripples" ? [["falloff", 0.6]] : n == "voronoi" ? [["round", 0.8*k]] : []);
+    s = pattern_sized(n, k, opts=n == "concentric_ripples" ? [["falloff", 0.6]] : n == "voronoi" ? [["round", 0.8*k]] : []);
     pattern_panel(m, s, [tile, tile], t=m == "open_lattice" ? 2.4 : 2, depth=m == "recessed" ? 0.8 : 1.2, border=2.5,
                   profile=n == "flowing_waves" ? "round" : "flat", lining_t=0.8) plaque_2d([tile, tile], "rounded", r=4);
 }

@@ -18,6 +18,14 @@ use <attach.scad>
 function container_u(pts, q) = shell_dist_at(pts, q) - shell_len(pts)/2;
 function container_v(z, h) = z - h/2;
 
+// ---------- outline ----------
+// The outline of a box from its runs (shell_rect_runs). split = true: every side is its own panel, the outline
+// starts at the front. Otherwise the wall is one loop, and its seam is put in the back left corner, where no
+// opening, mount or grip ever sits.
+function container_box_pts(runs, split=false) = let(e = shell_runs_edges(runs), p = shell_runs_pts(runs),
+    c = [for (r=e) if (r[0] == "corner_bl") r])
+    split ? p : shell_start_at(p, len(c) > 0 ? c[0][1] + floor((c[0][2] - c[0][1] + 1)/2) : shell_run(e, "left")[1]);
+
 // ---------- walls ----------
 // One stretch of wall over outline edges e0..e1 as a patterned panel bent round the outline.
 // t = wall thickness, h = reference height (the highest point of the rim), hf = function (p) -> rim height,
@@ -224,7 +232,7 @@ function _container_mount_bottom(pts, type, size, count, t, floor_t) = let(
     apart = len(xs) > 1 && xs[1] - xs[0] - gw >= CONTAINER_MERGE)
     [type, size, xs, c, 0, zw, sl + 2*CONTAINER_ZONE_M, false, max(0, CONTAINER_BOSS_T - floor_t), floor_t, room[0], xm, room[1],
      false, false, apart ? [for (x=xs) [x, gw, [x]]] : [[xm, zw, xs]], "bottom"];
-function container_mount_face(m) = is_undef(m) ? "none" : m[16];
+
 function container_mount_count(m) = is_undef(m) ? 0 : len(m[2]);
 // "" if the mount fits, otherwise what is wrong
 function container_mount_problem(m) = is_undef(m) ? "" :

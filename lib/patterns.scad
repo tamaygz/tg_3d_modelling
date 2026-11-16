@@ -70,6 +70,15 @@ function pattern_spec(name, cell, strut, angle=0, offset=[0, 0], density=1, seed
     assert(density > 0, "pattern density must be above 0")
     [name, is_undef(cell) ? pattern_default(name)[0] : cell, is_undef(strut) ? pattern_default(name)[1] : strut,
      angle, offset, density, seed, pat_xy(scale), opts, min_strut, min_opening];
+// A spec sized from the pattern's defaults, for projects that let the user leave sizes at 0 ("automatic"):
+// k scales the default cell and rib together; cell > 0 sets the cell (two-size cells keep their proportion);
+// strut > 0 sets the rib width, otherwise it is the scaled default but not below strut_min.
+function pattern_sized(name, k=1, cell=0, strut=0, angle=0, seed=1, opts=[], strut_min=0,
+                       min_strut=PAT_MIN_STRUT, min_opening=PAT_MIN_OPENING) = let(
+    d = pattern_default(name), d0 = is_list(d[0]) ? d[0][0] : d[0], kc = cell > 0 ? cell/d0 : k)
+    pattern_spec(name, is_list(d[0]) ? [for (x=d[0]) x*kc] : d[0]*kc,
+                 strut > 0 ? strut : name == "basket_weave" ? d[1]*k : max(strut_min, d[1]*k),
+                 angle, seed=seed, opts=opts, min_strut=min_strut, min_opening=min_opening);
 // settings each pattern reads from opts (anything else is ignored)
 function pattern_opt_keys(name) =
     name == "hex_honeycomb" ? ["orient"] : name == "square_grid" ? ["stagger"] :
