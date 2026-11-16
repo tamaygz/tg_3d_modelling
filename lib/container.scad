@@ -119,6 +119,28 @@ module _container_floor(pts, t, p, mode, border, depth, lining_t, frame, holes, 
 }
 function container_plan(pts) = let(bb = shell_bounds(pts)) [2*max(abs(bb[0][0]), abs(bb[1][0])) + 2, 2*max(abs(bb[0][1]), abs(bb[1][1])) + 2];
 
+// ---------- ridge ----------
+// A rounded ridge standing on z = 0, centred on the origin, running along Y: a saddle that an item rests on or
+// is centred by (the bridge of a pair of glasses, a bottle neck, a cable). It only ever rises from the floor:
+// nothing reaches below z = 0, however wide and low it is.
+//   w = width of the rounded top, foot = width on the floor, h = height, len = length on the floor (along Y)
+//   run = [front, back]: how far the top is set in from the foot at the -Y and +Y end (0 = vertical face, more =
+//         a gentler slope, so things slide over the ridge instead of catching behind it)
+//   crown = 0..1: 0 = the top is a straight bar, 1 = fully domed along Y
+module container_ridge(w=13, foot=24, h=26, len=12, run=[2, 6], crown=0.5) {
+    r = min(w/2, h);                                       // top radius, never more than the height
+    top = max(0.02, len - run[0] - run[1]);                // length of the top
+    yc = (run[0] - run[1])/2;                              // the top sits towards the steeper end
+    intersection() {
+        hull() {
+            translate([-max(foot, w)/2, -len/2, 0]) cube([max(foot, w), len, 0.01]);
+            translate([0, yc, h - r]) rotate([90, 0, 0]) cylinder(r=r, h=max(0.02, top*(1 - crown)), center=true, $fn=48);
+            if (crown > 0) translate([0, yc, h - r]) scale([1, max(0.02, top/2)/r, 1]) sphere(r=r, $fn=48);
+        }
+        translate([-max(foot, w), -len, 0]) cube([2*max(foot, w), 2*len, h + 1]);     // nothing below the floor
+    }
+}
+
 // ---------- lid ledge ----------
 // ring inside the walls with its top at z, `w` wide, growing out of the wall at 45 degrees (prints without support)
 module container_ledge(pts, wall_t, z, w=1.6, steps=4) {

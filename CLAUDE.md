@@ -73,6 +73,8 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   (0.03–0.05 mm) or overlap by a real volume; `tools`-side check: every edge must have exactly 2 faces.
 - A pattern window must be tight: generators cover the whole window, and weave strands are as long as its diagonal.
 - No `rands()` for patterns: `pat_hash()` gives the same numbers in every OpenSCAD version and in the browser.
+- `hull()` with a sphere or cylinder whose radius exceeds its height above the floor pokes through the floor:
+  limit the radius to the height and clip with a half-space (see `container_ridge()`); test wide-and-low extremes.
 - Guard long-running Python scripts with `__main__` (an import once re-ran a 30-minute fit).
 
 ## Browser configurator
@@ -115,5 +117,5 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 | `projects/pattern_gallery` | v1, not printed yet | catalogue + test bench of the 12 `lib/patterns.scad` patterns; views: gallery, sample, modes, box |
 | `projects/custombox` | v1.2, not printed yet | configurable box / basket / bin: outline, corners, sloped + wavy rim, patterned walls, floor, inset lid, mounting zone in the back wall |
 | `projects/earbuds` | v1, not printed yet | charging-case holder: presets (P31i …), poses, cable hole / dock / slot, grip cut-out, mounting zone |
-| `projects/sunglasses` | v1, not printed yet | folded-glasses tray: size presets, nose support, grip cut-out, mounting zone |
+| `projects/sunglasses` | v1.2, not printed yet | folded-glasses tray: size presets, nose support, grip cut-out, mounting zone |
 | `projects/_template` | – | starting point for new projects |

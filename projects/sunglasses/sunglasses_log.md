@@ -8,6 +8,13 @@
 ## v1.1 (2026-11-16) – mounting built into the wall
 - Same change as earbuds: solid mounting zone in the back wall instead of a boss behind it; pattern centred on the front.
 
+## v1.2 (2026-11-16) – nose ridge
+- User report: a wide, low nose (34 wide, 22 high) showed a mirrored shape under the floor: the top radius was
+  larger than the height, so the hull reached below z = 0. The ridge is now `container_ridge()` in lib/container.scad:
+  top radius limited to the height, clipped at the floor and at the inside of the walls.
+- User request: front / back slope (`nose_run_front`, `nose_run_back`) and a domed top (`nose_crown`) so the
+  glasses do not hook behind the ridge. Defaults 2 / 8 mm and 0.6.
+
 ## Prints and feedback
 - (none yet)
 

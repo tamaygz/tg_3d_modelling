@@ -28,8 +28,14 @@ nose_foot = 24; // [8:1:60]
 // height above the floor: the bridge height carries the glasses, less only centres them
 nose_h = 26; // [5:1:80]
 // length front to back, and distance from the front wall
-nose_len = 12; // [4:1:40]
-nose_setback = 7; // [0:0.5:40]
+nose_len = 16; // [4:1:60]
+nose_setback = 5; // [0:0.5:40]
+// slope of the front and the back face: how far the top is set in from the foot (mm; 0 = vertical).
+// A sloped back lets the glasses slide up and off instead of hooking behind the ridge
+nose_run_front = 2; // [0:0.5:30]
+nose_run_back = 8; // [0:0.5:30]
+// roundness of the top along its length: 0 = straight bar, 1 = fully domed
+nose_crown = 0.6; // [0:0.05:1]
 
 /* [Walls] */
 // wall thickness (mm)
@@ -116,7 +122,6 @@ fmode = container_safe_mode(floor_mode, floor_spec);
 // ---------- nose support ----------
 nose_y = -inner[1]/2 + nose_setback + nose_len/2;     // centre of the ridge, behind the front wall
 assert(!nose || nose_setback + nose_len <= inner[1], str("nose support: setback ", nose_setback, " + length ", nose_len, " is more than the inside depth ", inner[1]));
-assert(!nose || nose_foot >= nose_w, "nose support: the foot must be at least as wide as the top");
 
 // ---------- mounting ----------
 a_opts = attach_opts(roof_gap=10, slide_axis=slide_axis);
@@ -136,12 +141,11 @@ report = [["glasses width", gs[0]], ["folded depth", gs[1]], ["lens height", gs[
           ["wall pattern cut as asked", wmode == wall_mode ? 1 : 0]];
 
 // ---------- solids ----------
-// rounded ridge: wide foot on the floor, a round top `nose_w` wide where the bridge rests
+// the nose ridge (lib/container.scad), kept inside the walls: it only grows up from the floor
 module nose_support() {
-    r = nose_w/2;
-    translate([0, nose_y, floor_t - 0.2]) hull() {
-        translate([-nose_foot/2, -nose_len/2 - 2, 0]) cube([nose_foot, nose_len + 4, 0.2]);
-        translate([0, 0, nose_h - r + 0.2]) rotate([90, 0, 0]) cylinder(r=r, h=nose_len, center=true);
+    intersection() {
+        translate([0, nose_y, floor_t - 0.2]) container_ridge(nose_w, nose_foot, nose_h + 0.2, nose_len, [nose_run_front, nose_run_back], nose_crown);
+        translate([0, 0, floor_t - 0.3]) linear_extrude(nose_h + 1) offset(delta=-wall_t + 0.3) polygon(pts);
     }
 }
 module holder() {
@@ -150,7 +154,8 @@ module holder() {
                     wmode == "overlay" ? min(wall_relief, 0.4) : wall_relief, wall_relief, split ? run_edges : undef, 3, mount=mount, anchor=[0, -size[1]/2]);
     if (nose) {
         nose_support();
-        if (fmode == "through_cut") translate([0, nose_y, 0]) linear_extrude(floor_t) square([nose_foot + 4, nose_len + 8], center=true);   // solid ground under the ridge
+        if (fmode == "through_cut") linear_extrude(floor_t) intersection() {                                     // solid ground under the ridge
+            translate([0, nose_y]) square([max(nose_foot, nose_w) + 4, nose_len + 4], center=true); offset(delta=-0.05) polygon(pts); }
     }
 }
 

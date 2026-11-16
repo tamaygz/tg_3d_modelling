@@ -10,7 +10,7 @@ preset = "custom"; custom_size = [140, 40, 45]; clearance = 4; hold = 0.8
 
 # --- nose support and grip ---
 nose = false; grip = false; rise_back = 0; wall_mode = "solid"
-nose_w = 18; nose_foot = 40; nose_h = 40; nose_len = 20; nose_setback = 12
+nose_w = 18; nose_foot = 40; nose_h = 40; nose_len = 20; nose_setback = 12; nose_run_front = 0; nose_run_back = 0; nose_crown = 0
 grip_width = 110; grip_depth = 24; hold = 0.9; nose_h = 12
 floor_mode = "through_cut"; floor_pattern = "square_grid"
 
@@ -29,3 +29,8 @@ attach_type = "roof"; rise_back = 14
 # --- slide track and ball joint ---
 attach_type = "slide"; rise_back = 14
 attach_type = "wall"; attach_joint = "ball"; attach_count = 1; rise_back = 14
+
+# --- nose ridge: wide and low (must stay above the floor and inside the walls), sloped, domed ---
+nose_w = 34; nose_foot = 244; nose_h = 22; nose_len = 14; nose_setback = 5
+nose_w = 30; nose_foot = 30; nose_h = 8; nose_len = 30; nose_run_front = 10; nose_run_back = 14; nose_crown = 1
+nose_run_front = 12; nose_run_back = 12; nose_len = 12; floor_mode = "through_cut"; floor_pattern = "hex_honeycomb"

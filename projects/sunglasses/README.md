@@ -7,7 +7,7 @@ same construction, without the cable opening. Open `sunglasses_configurator.html
 | Group | Settings |
 |---|---|
 | Glasses | `preset` (standard / small / aviator / oversized / sport wrap / custom), `custom_size`, `clearance`, `hold` |
-| Nose support | `nose`, `nose_w`, `nose_foot`, `nose_h`, `nose_len`, `nose_setback` |
+| Nose support | `nose`, `nose_w`, `nose_foot`, `nose_h`, `nose_len`, `nose_setback`, `nose_run_front`, `nose_run_back`, `nose_crown` |
 | Walls | `wall_t`, `corners`, `corner_r`, `wall_pattern`, `wall_mode`, `wall_cell`, `wall_strut`, `wall_angle`, `wall_seed`, `wall_relief`, `rim_band`, `base_band`, `corner_fill`, `rise_back` |
 | Front grip | `grip`, `grip_width`, `grip_depth` |
 | Floor | `floor_t`, `floor_pattern`, `floor_mode` |
@@ -28,7 +28,10 @@ These are typical values, not a standard: measure your glasses folded (widest po
 - **Nose support:** a rounded ridge behind the front wall. The glasses sit with the lenses to the front and the
   bridge over the ridge. Set `nose_h` to the height of the bridge above the lower lens edge to carry the glasses
   (lenses clear of the floor), or lower to just keep them centred. `nose_w` is the top width (the gap between the
-  nose pads is usually 14–20 mm), `nose_foot` the width on the floor.
+  nose pads is usually 14–20 mm), `nose_foot` the width on the floor. `nose_run_front` / `nose_run_back` slope the
+  front and back faces (how far the top is set in from the foot) and `nose_crown` domes the top along its length,
+  so the glasses slide up and off the ridge instead of hooking behind it. The ridge only rises from the floor and
+  stays inside the walls, however wide or low you make it.
 - **Grip:** the front rim dips by `grip_depth` over `grip_width`; the rim band follows it.
 - **Mounting:** the back wall gets a solid zone with the sockets, built into the wall (the pattern joins its sides;
   no separate plate behind it); the back wall must be at least 41 mm high for an S plate
