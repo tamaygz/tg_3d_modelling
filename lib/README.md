@@ -295,7 +295,8 @@ container_walls(pts, t, H, rim, p, "through_cut", bands=[5, 3])             // w
   wall (the straight wall at the largest y) gets a solid zone there: the pattern stops at it and joins its sides,
   the wall is thickened outwards to 6 mm only in the zone, and the sockets are cut into it. A zone that starts
   above the floor has a 45° underside (prints upright without support); if the rim band or the base band is
-  closer than 10 mm, the solid area runs on into it and follows a sloped or wavy rim. `container_mount_problem(m)`
+  closer than 10 mm, the solid area runs on into it and follows a sloped or wavy rim. Plates close together share one
+  zone; further apart each gets its own and the pattern continues between them. `container_mount_problem(m)`
   returns "" or the reason it does not fit (assert it); `container_plates(m, opts, z_bottom, z_top)` draws the
   plates; `container_mount_count(m)` goes into `attach_parts_row()`. The back wall must be one straight edge.
 - **Plain areas:** `plain=[[x, z, w, h], ...]` (centre x in the loop frame, bottom z, size) keeps rectangles of the

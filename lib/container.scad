@@ -52,7 +52,7 @@ module _container_wall(pts, e0, e1, t, h, hf, p, mode, border, depth, lining_t, 
         if (len(zones) > 0) linear_extrude(t) shell_window_2d() difference() {
             intersection() { polygon(strip); _container_plain_2d(zones, h); }
             if (holes) translate([dx, 0]) children();
-            if (has_m) offset(delta=-0.3) _container_plain_2d([_container_mount_zone(mount, mx)], h);
+            if (has_m) offset(delta=-0.3) _container_plain_2d(_container_mount_zones(mount, mx), h);
         }
         if (holes && frame > 0) linear_extrude(t) shell_window_2d() intersection() {
             polygon(strip);
@@ -119,6 +119,7 @@ module container_ledge(pts, wall_t, z, w=1.6, steps=4) {
 // it. Its back face is the mounting plane. Where the zone starts above the floor its underside rises at 45 degrees,
 // so the wall still prints upright without support; its other edges are chamfered. If the rim band or the base
 // band is close, the solid area runs on into it (following a sloped or wavy rim) instead of leaving a strip of pattern.
+// Plates that sit close together share one zone; further apart, each gets its own and the pattern continues between.
 //
 //   m = container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [bottom band, rim band]);
 //   assert(container_mount_problem(m) == "", container_mount_problem(m));
@@ -129,8 +130,9 @@ CONTAINER_BOSS_T = 6;        // wall thickness in the mounting zone: socket dept
 CONTAINER_ZONE_M = 4;        // solid wall around the sockets
 CONTAINER_MERGE  = 10;       // a strip of pattern narrower than this between the zone and a band is made solid too
 
-// mount spec: [type, size, xs, back centre [x, y], z0, zone width, zone height, floating, protrusion, t,
-//              straight back length, zone centre x offset, lowest rim over the zone, merge up, merge down]
+// mount spec: [type, size, xs, back centre [x, y], z0, total width, zone height, floating, protrusion, t,
+//              straight back length, centre x offset, lowest rim over the zones, merge up, merge down,
+//              zones [[centre x offset, width, its plates' x], ...]]
 // (undef for type "none"). hf = rim height function, t = wall thickness, bands = [bottom, top] plain bands.
 function container_mount(pts, type, size, count, hf, t, bands=[4, 4]) = type == "none" ? undef : let(
     bb = shell_bounds(pts), yb = bb[1][1],
@@ -145,9 +147,13 @@ function container_mount(pts, type, size, count, hf, t, bands=[4, 4]) = type == 
     z_mid = max(0, min(hmin - zh0, (hmin - zh0)/2)),                   // centred on the wall ...
     floating = z_mid - prot > bands[0] + 1,                            // ... unless that leaves it close to the floor
     zh = zh0 + (floating ? prot : 0),                                  // room for the 45 degree underside
-    z0 = floating ? max(0, min(hmin - zh, (hmin - zh)/2)) : 0)
+    z0 = floating ? max(0, min(hmin - zh, (hmin - zh)/2)) : 0,
+    // plates close together share one zone; plates further apart get a zone each, with pattern between them
+    gw = sw + 2*CONTAINER_ZONE_M,
+    apart = len(xs) > 1 && xs[1] - xs[0] - gw >= CONTAINER_MERGE,
+    groups = apart ? [for (x=xs) [x, gw, [x]]] : [[xm, zw, xs]])
     [type, size, xs, [cx, yb], z0, zw, zh, floating, prot, t, len, xm, hmin,
-     hmin - bands[1] - (z0 + zh) < CONTAINER_MERGE, floating && z0 - bands[0] < CONTAINER_MERGE];
+     hmin - bands[1] - (z0 + zh) < CONTAINER_MERGE, floating && z0 - bands[0] < CONTAINER_MERGE, groups];
 function container_mount_count(m) = is_undef(m) ? 0 : len(m[2]);
 // "" if the mount fits, otherwise what is wrong
 function container_mount_problem(m) = is_undef(m) ? "" :
@@ -156,25 +162,29 @@ function container_mount_problem(m) = is_undef(m) ? "" :
 // height of the plate centres above the floor plane
 function container_mount_z(m) = m[4] + (m[7] ? m[8] : 0) + CONTAINER_ZONE_M + ATTACH_NOTCH_ + attach_dims(m[1])[1]/2;
 ATTACH_NOTCH_ = attach_socket_len("S") - attach_dims("S")[1];          // pry notch below a plate
-// the zone and the plain (pattern-free) areas of the wall, in the strip frame (mx = strip x of the zone's middle)
-function _container_mount_zone(m, mx) = [mx, m[4], m[5], m[6]];
-function _container_mount_plain(m, mx, h) = concat(
-    [[mx, m[4] - 2, m[5] + 4, m[6] + 4]],
-    m[13] ? [[mx, m[4], m[5] + 4, 2*h]] : [],                          // on up to the rim
-    m[14] ? [[mx, -h, m[5] + 4, m[4] + h + 1]] : []);                  // on down to the floor
-// the thick part: wall layer + chamfered boss, with the sockets; built in the strip frame of its facet
+// the zones and the plain (pattern-free) areas of the wall, in the strip frame (mx = strip x of the mount's middle;
+// along the back wall the strip's x runs against the plates' x)
+function _container_mount_zones(m, mx) = [for (g=m[15]) [mx - (g[0] - m[11]), m[4], g[1], m[6]]];
+function _container_mount_plain(m, mx, h) = [for (z=_container_mount_zones(m, mx)) each concat(
+    [[z[0], z[1] - 2, z[2] + 4, z[3] + 4]],
+    m[13] ? [[z[0], z[1], z[2] + 4, 2*h]] : [],                        // on up to the rim
+    m[14] ? [[z[0], -h, z[2] + 4, z[1] + h + 1]] : [])];               // on down to the floor
+// the thick parts: wall layer + chamfered boss, with the sockets; built in the strip frame of their facet
 module _container_mount_block(m, mx, t, h) {
-    inside = is_undef($pat_window) || abs($pat_window[0][0] - mx) < $pat_window[1][0]/2;     // only on the facet that holds it
-    if (inside) translate([mx, 0, t + m[8]]) rotate([0, 180, 0]) difference() {           // now z = 0 is the back face, +z into the wall
-        c = min(1, m[8]);                                                                  // small chamfer at the sides and the top
-        union() {
-            if (m[8] > 0) hull() {
-                translate([-m[5]/2 + c, m[4] - h/2 + (m[7] ? m[8] : 0), 0]) cube([m[5] - 2*c, m[6] - (m[7] ? m[8] : 0) - c, 0.01]);
-                translate([-m[5]/2, m[4] - h/2, m[8] - 0.01]) cube([m[5], m[6], 0.01]);
+    for (g=m[15]) {
+        gx = mx - (g[0] - m[11]); w = g[1];
+        inside = is_undef($pat_window) || abs($pat_window[0][0] - gx) < $pat_window[1][0]/2;    // only on the facet that holds it
+        if (inside) translate([gx, 0, t + m[8]]) rotate([0, 180, 0]) difference() {          // now z = 0 is the back face, +z into the wall
+            c = min(1, m[8]);                                                                 // small chamfer at the sides and the top
+            union() {
+                if (m[8] > 0) hull() {
+                    translate([-w/2 + c, m[4] - h/2 + (m[7] ? m[8] : 0), 0]) cube([w - 2*c, m[6] - (m[7] ? m[8] : 0) - c, 0.01]);
+                    translate([-w/2, m[4] - h/2, m[8] - 0.01]) cube([w, m[6], 0.01]);
+                }
+                translate([-w/2, m[4] - h/2, m[8] - 0.01]) cube([w, m[6], t + 0.01]);
             }
-            translate([-m[5]/2, m[4] - h/2, m[8] - 0.01]) cube([m[5], m[6], t + 0.01]);
+            attach_sockets(m[0], m[1], [for (x=g[2]) x - g[0]], container_mount_z(m) - h/2);
         }
-        attach_sockets(m[0], m[1], [for (x=m[2]) x - m[11]], container_mount_z(m) - h/2);
     }
 }
 // the plates, seated (z_bottom / z_top = lowest and highest point of the container, for stand and roof plates)
