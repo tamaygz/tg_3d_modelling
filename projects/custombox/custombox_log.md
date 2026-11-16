@@ -17,6 +17,13 @@
     panel and allows different front / back patterns.
   - Inset lid on a 45° ledge instead of a lip: both lid faces stay flat, any pattern mode prints face up.
   - Mounting through a boss on the back wall, because walls are thinner than the 4.5 mm attachment socket.
+- Fixes during design (found by the watertight / one-piece checks):
+  - the two ends of a wrapped wall met face to face at the seam: strips now reach 0.3 mm past their ends;
+  - identical cut-outs of neighbouring facets nearly coincided at the joints (non-manifold slivers): every other
+    facet is pulled in and set back by 0.04 mm (`SHELL_SHRINK`); first attempt cancelled itself for cut-outs
+    (hole and material both moved), fixed with a clip-only helper for negative shapes;
+  - the floor edge lay exactly in the wall's outer faces: floor outline 0.05 mm inside;
+  - the lid ledge poked 0.01 mm into the lid.
 - Checks: every variant in tests.txt gives one watertight box (and lid); lid and plates clear the box.
 
 ## Prints and feedback

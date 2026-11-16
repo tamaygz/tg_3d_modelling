@@ -247,6 +247,11 @@ shell_wrap(pts, t, h=H)
 linear_extrude(2) polygon(pts);                                                                    // floor
 ```
 
+Joints: a facet reaches `SHELL_LAP` (0.1 mm) past each joint, and every other facet is pulled in and set back by
+`SHELL_SHRINK` (0.04 mm). Without that hair of difference, the identical cut-outs of two neighbouring facets almost
+coincide where they overlap, which leaves slivers and edge-touching faces in the exported mesh. For the same
+reason keep other solids (a floor, a ledge) a hair inside the outline rather than exactly on it.
+
 Limits: walls are vertical (no taper); curved parts are faceted; relief leaves hairline gaps between facets at
 outward corners; woven patterns wrapped over many facets are slow in OpenSCAD 2021 (minutes), fine on flat walls.
 

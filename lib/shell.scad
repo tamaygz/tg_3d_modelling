@@ -19,6 +19,9 @@
 // shell_strip_pts() turns it into the outline of the unrolled strip.
 
 SHELL_CORNERS = ["round", "chamfer", "square"];
+SHELL_LAP    = 0.1;     // mm a facet reaches past its joint, so neighbours overlap
+SHELL_SHRINK = 0.04;    // mm every other facet is pulled in: identical cut-outs of two facets then cross cleanly
+                        // at the joint instead of almost coinciding (which leaves slivers in the exported mesh)
 
 // ---------- outlines ----------
 // Box outline as named runs [[name, points], ...], counter-clockwise starting with the front side (y = -depth/2):
@@ -78,17 +81,21 @@ function shell_rim_height(p, size, base, rise=[0, 0], waves=[[0, 1], [0, 1]], ph
 // 2D outline of the wall strip over edges e0..e1 in the strip frame: bottom at y = -h/2, top edge at
 // hf(p) - h/2, sampled every `step` mm. hf = function (p) -> height above the floor (default: h everywhere).
 // h = the reference height (use the largest height of the wall); it only fixes where y = 0 is.
-function shell_strip_pts(pts, e0=0, e1, hf, h, step=2) = let(
+// The strip reaches `ext` beyond both ends, so neighbouring strips (and the two ends of a full loop) overlap
+// instead of meeting face to face.
+function shell_strip_pts(pts, e0=0, e1, hf, h, step=2, ext=0.3) = let(
     n = len(pts), b = is_undef(e1) ? n - 1 : e1, u = shell_dists(pts), uc = (u[e0] + u[b + 1])/2,
     top = [for (i=[e0:b]) let(A = pts[i], B = pts[(i+1)%n], m = max(1, ceil((u[i+1] - u[i])/step)))
-        for (k=[0:(i == b ? m : m - 1)]) let(q = A + (B - A)*k/m) [u[i] + (u[i+1] - u[i])*k/m - uc, (is_undef(hf) ? h : hf(q)) - h/2]])
-    concat([[u[e0] - uc, -h/2], [u[b + 1] - uc, -h/2]], [for (i=[len(top)-1:-1:0]) top[i]]);
+        for (k=[0:(i == b ? m : m - 1)]) let(q = A + (B - A)*k/m) [u[i] + (u[i+1] - u[i])*k/m - uc, (is_undef(hf) ? h : hf(q)) - h/2]],
+    m = len(top) - 1)
+    concat([[u[e0] - uc - ext, -h/2], [u[b + 1] - uc + ext, -h/2], [top[m][0] + ext, top[m][1]]],
+           [for (i=[m:-1:0]) top[i]], [[top[0][0] - ext, top[0][1]]]);
 
 // ---------- wrapping ----------
 // clip 2D content of a shell_wrap child to the facet being built (pattern modules do this themselves)
 module shell_window_2d() {
     if (is_undef($pat_window)) children();
-    else intersection() { translate($pat_window[0]) square($pat_window[1], center=true); children(); }
+    else offset(delta=is_undef($pat_shrink) ? 0 : -$pat_shrink) intersection() { translate($pat_window[0]) square($pat_window[1], center=true); children(); }
 }
 // Bend the child (a panel in the strip frame, see the top of this file) round the outline, over edges e0..e1
 // (default: all the way round). t = wall thickness, h = reference height used for the strip frame.
@@ -99,14 +106,17 @@ module shell_wrap(pts, t, e0=0, e1, h=50, above=0) {
     for (i=[e0:b]) {
         A = pts[i]; B = pts[(i+1)%n]; d = (B - A)/norm(B - A); nr = [d[1], -d[0]];
         dp = pts[i] - pts[(i + n - 1)%n]; dn = pts[(i+2)%n] - B;
-        // at an inward bend the facets part on the inside: lengthen them so they overlap; elsewhere a hair is enough
+        // at an inward bend the facets part on the inside: lengthen them so they overlap; elsewhere SHELL_LAP is enough
         ta = dp[0]*d[1] - dp[1]*d[0]; tb = d[0]*dn[1] - d[1]*dn[0];                 // > 0: outward (convex) corner
-        ea = 0.02 + (ta < 0 ? (t + above)*tan(acos(max(-1, min(1, dp*d/norm(dp))))/2) : 0);
-        eb = 0.02 + (tb < 0 ? (t + above)*tan(acos(max(-1, min(1, dn*d/norm(dn))))/2) : 0);
+        sh = SHELL_SHRINK*((i == n - 1 && n%2 == 1) ? 2 : i%2);                    // neighbouring facets differ
+        ea = SHELL_LAP + sh + (ta < 0 ? (t + above)*tan(acos(max(-1, min(1, dp*d/norm(dp))))/2) : 0);
+        eb = SHELL_LAP + sh + (tb < 0 ? (t + above)*tan(acos(max(-1, min(1, dn*d/norm(dn))))/2) : 0);
         xm = (u[i] + u[i+1])/2 - uc; M = (A + B)/2;
+        $pat_shrink = sh;
         $pat_window = [[xm + (eb - ea)/2, 0], [u[i+1] - u[i] + ea + eb, h + 2]];
-        multmatrix([[d[0], 0, nr[0], M[0] - d[0]*xm - nr[0]*t],
-                    [d[1], 0, nr[1], M[1] - d[1]*xm - nr[1]*t],
+        // the pulled-in facets also sit that much further in, so faces of nearly straight neighbours do not coincide
+        multmatrix([[d[0], 0, nr[0], M[0] - d[0]*xm - nr[0]*(t + sh)],
+                    [d[1], 0, nr[1], M[1] - d[1]*xm - nr[1]*(t + sh)],
                     [0, 1, 0, h/2], [0, 0, 0, 1]]) children();
     }
 }

@@ -63,6 +63,9 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   when it is empty, and `intersection()` with an empty child gives nothing.
 - Special variables (`$pat_window`) pass context down to children without threading parameters; test with
   `is_undef($x)` (no warning). Function literals (`f = function(p) ...`) work in 2021.01.
+- CGAL unions of pieces that overlap with nearly identical surfaces (same cut-outs rotated a few degrees, faces
+  exactly in line, solids ending face to face) export as non-manifold slivers. Make them differ by a real hair
+  (0.03–0.05 mm) or overlap by a real volume; `tools`-side check: every edge must have exactly 2 faces.
 - A pattern window must be tight: generators cover the whole window, and weave strands are as long as its diagonal.
 - No `rands()` for patterns: `pat_hash()` gives the same numbers in every OpenSCAD version and in the browser.
 - Guard long-running Python scripts with `__main__` (an import once re-ran a 30-minute fit).

@@ -196,7 +196,7 @@ lid_z = height - lid_drop - lid_t;                    // underside of the lid
 has_att = attach_type != "none" && boxy;
 boss_t = attach_depth() + 1.5;                        // solid boss behind the back wall that takes the sockets
 back_len = width - (corners == "square" ? 0 : 2*min(corner_r, width/2 - 0.5)) - 2*side_wave;
-a_x = has_att ? attach_xs(attach_count, back_len/0.6 - 12, attach_type, size=attach_size) : [];
+a_x = has_att ? attach_xs(attach_count, max(1, back_len - attach_socket_w(attach_size) - 8)/0.6, attach_type, size=attach_size) : [];   // attach_xs spreads over 60% of its span
 boss_w = has_att ? max(a_x) - min(a_x) + attach_socket_w(attach_size) + 8 : 0;
 boss_h = attach_socket_len(attach_size) + 8;
 h_back = height + rise_back + min(0, rise_right) - rim_wave_x - rim_wave_y;      // lowest point of the back wall
@@ -248,12 +248,12 @@ module walls() {
 }
 module floor_plate() {
     pattern_panel(safe_mode(floor_mode, floor_spec), floor_spec, plan, t=floor_t, depth=floor_mode == "overlay" ? min(floor_relief, 0.4) : floor_relief,
-                  border=wall_t + floor_margin, lining_t=floor_relief) plan_2d();
+                  border=wall_t + floor_margin, lining_t=floor_relief) offset(delta=-0.05) plan_2d();   // a hair inside the walls' outer faces
 }
 // ledge for the lid: a ring that grows out of the wall at 45 degrees, so it prints without support
 module lid_ledge() {
     K = 4;
-    for (k=[0:K-1]) translate([0, 0, lid_z - ledge_w*(k + 1)/K]) linear_extrude(ledge_w/K + 0.01)
+    for (k=[0:K-1]) translate([0, 0, lid_z - 0.03 - ledge_w*(k + 1)/K]) linear_extrude(ledge_w/K + 0.01)
         difference() { inner_2d(-0.1); inner_2d(ledge_w*(K - k)/K); }
 }
 // solid boss on the back wall with the sockets for the attachment plates (its back face is the mounting plane)

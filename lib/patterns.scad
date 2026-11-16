@@ -164,7 +164,17 @@ module _pat_rect(size) {
     else intersection() { square(size, center=true); translate($pat_window[0]) square($pat_window[1], center=true); }
 }
 // clip finished 2D geometry to the window (nothing to do without one)
+// $pat_shrink (optional, with a window) pulls the piece's material in by that much. Pieces that overlap at an
+// angle (facets of a bent wall) get different values, so their surfaces cross cleanly instead of almost coinciding.
 module _pat_w() {
+    if (is_undef($pat_window)) children();
+    else if (is_undef($pat_shrink) || $pat_shrink == 0) intersection() { translate($pat_window[0]) square($pat_window[1], center=true); children(); }
+    else offset(delta=-$pat_shrink) intersection() { translate($pat_window[0]) square($pat_window[1], center=true); children(); }
+}
+// shrink only (for 2D that is already cut to the window)
+module _pat_s() { if (is_undef($pat_window) || is_undef($pat_shrink) || $pat_shrink == 0) children(); else offset(delta=-$pat_shrink) children(); }
+// clip only, no shrink: for shapes that are cut OUT of the material (their edges move with the material's)
+module _pat_wc() {
     if (is_undef($pat_window)) children();
     else intersection() { translate($pat_window[0]) square($pat_window[1], center=true); children(); }
 }
@@ -217,11 +227,11 @@ module _pattern_3d(s, size, h, profile="flat", steps=3) {
     }
     else if (K == 1 && profile == "round") {
         r = min(h, pat_xy(s[2])[0]/2);                                // rounding radius of the rib tops
-        linear_extrude(h - r + PAT_EPS) _pattern_2d(s, size) children();
+        linear_extrude(h - r + PAT_EPS) _pat_s() _pattern_2d(s, size) children();
         for (i=[1:steps]) let(a = 90*i/steps, a0 = 90*(i - 1)/steps)
-            linear_extrude(h - r + r*sin(a)) offset(delta=-r*(1 - cos(a0)) - (i == 1 ? 0 : PAT_EPS)) _pattern_2d(s, size) children();
+            linear_extrude(h - r + r*sin(a)) offset(delta=-r*(1 - cos(a0)) - (i == 1 ? 0 : PAT_EPS)) _pat_s() _pattern_2d(s, size) children();
     }
-    else for (k=[1:K]) linear_extrude(h*_pat_level_top(s, k, K)) _pattern_level(s, size, k, K) children();
+    else for (k=[1:K]) linear_extrude(h*_pat_level_top(s, k, K)) _pat_s() _pattern_level(s, size, k, K) children();
 }
 
 // ---------- layer 2: surface application ----------
@@ -239,8 +249,8 @@ module pattern_cutout_2d(p, size, cell, strut, angle, seed, opts, inset=0, cut="
     else _pattern_cutout_2d(s, size, inset, cut) square(size, center=true);
 }
 module _pattern_cutout_2d(s, size, inset=0, cut="cells") {
-    if (cut == "lines") _pat_w() intersection() { _pat_inset(inset) _pat_outline(size) children(); _pat_field(s, size); }
-    else _pat_w() _pat_open(s[10]) difference() { _pat_inset(inset) _pat_outline(size) children(); _pat_field(s, size); }
+    if (cut == "lines") _pat_wc() intersection() { _pat_inset(inset) _pat_outline(size) children(); _pat_field(s, size); }
+    else _pat_wc() _pat_open(s[10]) difference() { _pat_inset(inset) _pat_outline(size) children(); _pat_field(s, size); }
 }
 // 2D open lattice: the outline with the cells cut out, leaving the pattern and a closed frame `border` wide
 module pattern_panel_2d(p, size, cell, strut, angle, seed, opts, border=2, cut="cells") {
