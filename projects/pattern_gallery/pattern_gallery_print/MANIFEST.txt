@@ -1,6 +1,6 @@
 model pattern_gallery.scad
-rev 5b04f57
-made 2026-11-16 07:11
+rev 77baa23
+made 2026-11-16 11:44
 Basket_weave.stl
 Concentric_ripples.stl
 Diamond_lattice.stl
