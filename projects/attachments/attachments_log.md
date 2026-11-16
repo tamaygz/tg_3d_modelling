@@ -25,6 +25,15 @@
 - lib/attach.scad gained host helpers (attach_xs with fit-to-span, attach_y, attach_fits incl. thickness,
   attach_sockets, attach_plates, attach_opts, attach_parts_row). 16 variants in tests.txt, all passing.
 
+## v4 (2026-11-16) – slide track, fin, ball joint
+- New types `slide` (dovetail track with rounded edges 16/10 x 4.5 mm, 0.25 mm play; horizontal through-channel or
+  vertical drop-on with a closed top) and `fin` (track + blade; mounts on the host's bottom: `attach_face()`).
+- Ball joint for every type: ball plate -> slotted cup on an adapter that carries a standard socket, so all plate
+  types work unchanged. 6 petals, 20° past the equator, 0.48 mm bend, strain 1.4% (asserted < 2%), tilt 37° each
+  way, tapered cup + lock ring to clamp. probe = 4 puts the ball at the cup's mouth.
+- One call per host: `attach_all(part, ...)` draws all parts, `attach_rows()` lists them.
+- Not printed: ring clamping force, track play, fin stiffness are untested.
+
 ## Prints and feedback
 - (none yet)
 

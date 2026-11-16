@@ -11,7 +11,7 @@ same construction, without the cable opening. Open `sunglasses_configurator.html
 | Walls | `wall_t`, `corners`, `corner_r`, `wall_pattern`, `wall_mode`, `wall_cell`, `wall_strut`, `wall_angle`, `wall_seed`, `wall_relief`, `rim_band`, `base_band`, `corner_fill`, `rise_back` |
 | Front grip | `grip`, `grip_width`, `grip_depth` |
 | Floor | `floor_t`, `floor_pattern`, `floor_mode` |
-| Mounting | `attach_type`, `attach_size`, `attach_count` |
+| Mounting | `attach_type` (incl. `slide` track), `attach_size`, `attach_count`, `attach_joint` (ball joint), `slide_axis` |
 
 | Preset | Width × folded depth × lens height (mm) |
 |---|---|

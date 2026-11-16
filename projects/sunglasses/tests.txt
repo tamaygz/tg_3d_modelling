@@ -25,3 +25,7 @@ wall_pattern = "concentric_ripples"; wall_mode = "overlay"
 attach_type = "skadis"; attach_size = "S"; attach_count = 3; rise_back = 14
 attach_type = "keyhole"; attach_count = 1; attach_size = "M"; rise_back = 26
 attach_type = "roof"; rise_back = 14
+
+# --- slide track and ball joint ---
+attach_type = "slide"; rise_back = 14
+attach_type = "wall"; attach_joint = "ball"; attach_count = 1; rise_back = 14

@@ -15,3 +15,11 @@ attach_type = "flat"; attach_size = "S"
 attach_type = "flat"; attach_size = "L"
 attach_type = "roof"; attach_size = "S"; roof_angle = 70
 attach_type = "roof"; attach_size = "L"; roof_angle = 110
+
+# --- slide track, fin, ball joint ---
+attach_type = "slide"; attach_size = "S"
+attach_type = "slide"; attach_size = "L"; slide_axis = "vertical"; track_len = 90
+attach_type = "fin"; attach_size = "M"; fin_len = 150; fin_w = 100; fin_t = 5
+attach_type = "wall"; attach_size = "M"; attach_joint = "ball"
+attach_type = "skadis"; attach_size = "S"; attach_joint = "ball"; ball_d = 14
+attach_type = "slide"; attach_size = "M"; attach_joint = "ball"; ball_d = 20

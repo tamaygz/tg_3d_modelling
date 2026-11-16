@@ -23,3 +23,7 @@ attach_type = "stand"
 attach_type = "flat"; attach_size = "S"; attach_count = 1
 attach_type = "roof"; roof_angle = 75
 base_min = 0; base_max = 3; steps = []; attach_count = 4
+
+# --- slide track and ball joint ---
+attach_type = "slide"
+attach_type = "wall"; attach_joint = "ball"; attach_count = 1

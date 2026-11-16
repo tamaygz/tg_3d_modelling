@@ -37,8 +37,8 @@ module _container_wall(pts, e0, e1, t, h, hf, p, mode, border, depth, lining_t, 
     dx = u[len(pts)]/2 - (u[e0] + u[e1 + 1])/2;                 // loop frame -> this strip's frame
     strip = shell_strip_pts(pts, e0, e1, hf, h);
     // the mount belongs to the strip that holds the middle of its zone
-    mx = is_undef(mount) ? undef : container_u(pts, mount[3] + [mount[11], 0]) + dx;
-    has_m = !is_undef(mx) && abs(mx) < L/2;
+    mx = is_undef(mount) || mount[16] != "back" ? undef : container_u(pts, mount[3] + [mount[11], 0]) + dx;
+    has_m = !is_undef(mx) && mount[16] == "back" && abs(mx) < L/2;
     zones = concat([for (z=plain) [z[0] + dx, z[1], z[2], z[3]]], has_m ? _container_mount_plain(mount, mx, h) : []);
     pp = is_undef(anchor) ? p : pattern_shift(p, [container_u(pts, anchor) + dx, 0]);
     shell_wrap(pts, t, e0, e1, h=h, above=depth) {
@@ -87,18 +87,34 @@ function container_safe_mode(mode, p) = (mode == "through_cut" || mode == "open_
 // ---------- floor ----------
 // Floor plate z = 0..t on the outline (a hair inside it, so its edge does not lie in the walls' outer faces).
 // border = plain margin from the outline to the pattern (wall thickness + what you want to see). Child: holes in plan.
-module container_floor(pts, t, p, mode="solid", border=5, depth=0.6, lining_t=0.6, frame=2) {
-    if ($children > 0) _container_floor(pts, t, p, mode, border, depth, lining_t, frame, true) children();
-    else _container_floor(pts, t, p, mode, border, depth, lining_t, frame, false) square(1);
+// mount = a container_mount() spec: if it mounts under the floor, its solid zone and sockets are built in here.
+module container_floor(pts, t, p, mode="solid", border=5, depth=0.6, lining_t=0.6, frame=2, mount) {
+    if ($children > 0) _container_floor(pts, t, p, mode, border, depth, lining_t, frame, true, mount) children();
+    else _container_floor(pts, t, p, mode, border, depth, lining_t, frame, false, mount) square(1);
 }
-module _container_floor(pts, t, p, mode, border, depth, lining_t, frame, holes) {
-    bb = shell_bounds(pts);
-    plan = [2*max(abs(bb[0][0]), abs(bb[1][0])) + 2, 2*max(abs(bb[0][1]), abs(bb[1][1])) + 2];
-    pattern_panel(mode, p, plan, t=t, depth=depth, border=border, lining_t=lining_t)
-        difference() { offset(delta=-0.05) polygon(pts); if (holes) children(); }
+module _container_floor_zones_2d(m, grow=0) { for (g=m[15]) translate(m[3] + [g[0], 0]) square([g[1] + 2*grow, m[6] + 2*grow], center=true); }
+module _container_floor(pts, t, p, mode, border, depth, lining_t, frame, holes, mount) {
+    has_m = !is_undef(mount) && mount[16] == "bottom";
+    pattern_panel(mode, p, container_plan(pts), t=t, depth=depth, border=border, lining_t=lining_t)
+        difference() {
+            offset(delta=-0.05) polygon(pts);
+            if (holes) children();
+            if (has_m) _container_floor_zones_2d(mount, -0.3);          // the pattern stops at the mounting zone
+        }
     if (holes && frame > 0) linear_extrude(t) intersection() {
         offset(delta=-0.05) polygon(pts);
         difference() { offset(delta=frame) children(); children(); }
+    }
+    // the zone itself: solid floor, thickened upwards (chamfered), sockets from below
+    if (has_m) for (g=mount[15]) difference() {
+        translate(concat(mount[3] + [g[0], 0], [0])) union() {
+            translate([-g[1]/2, -mount[6]/2, 0]) cube([g[1], mount[6], t]);
+            if (mount[8] > 0) hull() {
+                translate([-g[1]/2, -mount[6]/2, t - 0.01]) cube([g[1], mount[6], 0.01]);
+                translate([-g[1]/2 + mount[8], -mount[6]/2 + mount[8], t + mount[8] - 0.01]) cube([g[1] - 2*mount[8], mount[6] - 2*mount[8], 0.01]);
+            }
+        }
+        translate([mount[3][0], 0, 0]) attach_sockets(mount[0], mount[1], g[2], attach_y(mount[3][1]));
     }
 }
 function container_plan(pts) = let(bb = shell_bounds(pts)) [2*max(abs(bb[0][0]), abs(bb[1][0])) + 2, 2*max(abs(bb[0][1]), abs(bb[1][1])) + 2];
@@ -124,8 +140,9 @@ module container_ledge(pts, wall_t, z, w=1.6, steps=4) {
 //   m = container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [bottom band, rim band]);
 //   assert(container_mount_problem(m) == "", container_mount_problem(m));
 //   container_walls(..., mount=m);                       // or container_wall(..., mount=m) for every run
-//   pick("attach") container_plates(m, attach_opts(), 0, h_top);
-//   parts row: attach_parts_row(attach_type, container_mount_count(m))
+//   container_floor(..., mount=m);                       // builds it instead when the type mounts under the floor
+//   container_attach(part, m, attach_opts(), 0, h_top, attach_joint);     // plates, track / fin, ball joint parts
+//   parts rows: each container_attach_rows(attach_type, m, attach_joint)
 CONTAINER_BOSS_T = 6;        // wall thickness in the mounting zone: socket depth 4.5 + 1.5 behind it
 CONTAINER_ZONE_M = 4;        // solid wall around the sockets
 CONTAINER_MERGE  = 10;       // a strip of pattern narrower than this between the zone and a band is made solid too
@@ -134,7 +151,8 @@ CONTAINER_MERGE  = 10;       // a strip of pattern narrower than this between th
 //              straight back length, centre x offset, lowest rim over the zones, merge up, merge down,
 //              zones [[centre x offset, width, its plates' x], ...]]
 // (undef for type "none"). hf = rim height function, t = wall thickness, bands = [bottom, top] plain bands.
-function container_mount(pts, type, size, count, hf, t, bands=[4, 4]) = type == "none" ? undef : let(
+function container_mount(pts, type, size, count, hf, t, bands=[4, 4], floor_t=2) =
+    type == "none" ? undef : attach_face(type) == "bottom" ? _container_mount_bottom(pts, type, size, count, t, floor_t) : let(
     bb = shell_bounds(pts), yb = bb[1][1],
     bx = [for (q=pts) if (q[1] > yb - 0.01) q[0]],                      // the points of the straight back wall
     len = max(bx) - min(bx), cx = (max(bx) + min(bx))/2,
@@ -153,10 +171,25 @@ function container_mount(pts, type, size, count, hf, t, bands=[4, 4]) = type == 
     apart = len(xs) > 1 && xs[1] - xs[0] - gw >= CONTAINER_MERGE,
     groups = apart ? [for (x=xs) [x, gw, [x]]] : [[xm, zw, xs]])
     [type, size, xs, [cx, yb], z0, zw, zh, floating, prot, t, len, xm, hmin,
-     hmin - bands[1] - (z0 + zh) < CONTAINER_MERGE, floating && z0 - bands[0] < CONTAINER_MERGE, groups];
+     hmin - bands[1] - (z0 + zh) < CONTAINER_MERGE, floating && z0 - bands[0] < CONTAINER_MERGE, groups, "back"];
+// The same for a type that mounts under the host (attach_face(type) == "bottom", e.g. the fin): the zone is in
+// the floor, in the middle of the plan, thickened upwards into the container; the sockets open downwards.
+// Same layout; [3] = plan centre, [9] = floor thickness, [10] / [12] = room inside the walls in x / y.
+function _container_mount_bottom(pts, type, size, count, t, floor_t) = let(
+    bb = shell_bounds(pts), c = (bb[0] + bb[1])/2,
+    room = bb[1] - bb[0] - 2*[t + 2, t + 2],
+    sw = attach_socket_w(size), sl = attach_socket_len(size),
+    xs = attach_xs(count, max(1, room[0] - sw - 2*CONTAINER_ZONE_M)/0.6, type, size=size),
+    xm = (max(xs) + min(xs))/2, zw = max(xs) - min(xs) + sw + 2*CONTAINER_ZONE_M, gw = sw + 2*CONTAINER_ZONE_M,
+    apart = len(xs) > 1 && xs[1] - xs[0] - gw >= CONTAINER_MERGE)
+    [type, size, xs, c, 0, zw, sl + 2*CONTAINER_ZONE_M, false, max(0, CONTAINER_BOSS_T - floor_t), floor_t, room[0], xm, room[1],
+     false, false, apart ? [for (x=xs) [x, gw, [x]]] : [[xm, zw, xs]], "bottom"];
+function container_mount_face(m) = is_undef(m) ? "none" : m[16];
 function container_mount_count(m) = is_undef(m) ? 0 : len(m[2]);
 // "" if the mount fits, otherwise what is wrong
 function container_mount_problem(m) = is_undef(m) ? "" :
+    m[16] == "bottom" ? (m[5] > m[10] || m[6] > m[12] ? str("mounting under the floor: ", len(m[2]), " plate(s) of size ", m[1], " need ", m[5], " x ", m[6],
+        " mm of floor inside the walls, there is ", m[10], " x ", m[12], " mm.") : "") :
     m[12] < m[6] ? str("mounting: the back wall is ", m[12], " mm high at its lowest point, the ", m[1], " plate needs ", m[6], " mm. Use a smaller plate or a higher back.") :
     m[5] > m[10] ? str("mounting: ", len(m[2]), " plate(s) of size ", m[1], " need ", m[5], " mm of straight back wall, there is ", m[10], " mm.") : "";
 // height of the plate centres above the floor plane
@@ -187,8 +220,17 @@ module _container_mount_block(m, mx, t, h) {
         }
     }
 }
-// the plates, seated (z_bottom / z_top = lowest and highest point of the container, for stand and roof plates)
-module container_plates(m, opts, z_bottom=0, z_top=100) {
-    if (!is_undef(m)) translate([m[3][0], m[3][1] + m[8], container_mount_z(m)]) rotate([90, 0, 0])
-        attach_plates(m[0], m[1], m[2], 0, opts, z_bottom - container_mount_z(m), z_top - container_mount_z(m));
+// Everything that hangs on the mount, seated: plates, slide track or fin, ball joint parts. `part` = the project's
+// part variable: one line draws whichever of them is selected (see attach_all). z_bottom / z_top = lowest and
+// highest point of the container (for roof plates).
+module container_attach(part, m, opts, z_bottom=0, z_top=100, joint="none") {
+    if (!is_undef(m)) {
+        if (m[16] == "bottom") translate([m[3][0], 0, 0]) attach_all(part, m[0], m[1], m[2], attach_y(m[3][1]), opts, joint=joint);
+        else translate([m[3][0], m[3][1] + m[8], container_mount_z(m)]) rotate([90, 0, 0])
+            attach_all(part, m[0], m[1], m[2], 0, opts, z_bottom - container_mount_z(m), z_top - container_mount_z(m), joint);
+    }
 }
+// rows for the project's `parts` table:  parts = [ ..., each container_attach_rows(attach_type, m, attach_joint) ];
+function container_attach_rows(type, m, joint="none", pull=[0, 40, 0], opts=undef) =
+    attach_rows(is_undef(m) ? "none" : type, container_mount_count(m), joint, is_undef(m) || m[16] == "back" ? pull : [0, 0, -40],
+                frame=is_undef(m) || m[16] == "back" ? "back" : "flat", opts=opts);

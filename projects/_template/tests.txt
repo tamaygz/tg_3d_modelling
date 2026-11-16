@@ -4,3 +4,5 @@ shape = "wave"; edge = "ogee"; groove = "double"
 attach_type = "none"; thickness = 3
 attach_type = "roof"; attach_size = "M"; height = 80
 title = "A B"; font_style = "sans bold"
+attach_type = "slide"; attach_count = 2
+attach_type = "wall"; attach_joint = "ball"; attach_count = 1; attach_size = "M"; thickness = 6

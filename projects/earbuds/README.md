@@ -10,7 +10,7 @@ grab the case, and mounts with the snap-in attachment plates. Open `earbuds_conf
 | Front grip | `grip`, `grip_width`, `grip_depth` |
 | Charging cable | `cable` (none / hole / dock), `cable_on` (floor / back / front / left / right), `cable_x`, `cable_y`, `plug_size`, `cable_d`, `cable_slot` |
 | Floor | `floor_t`, `floor_pattern`, `floor_mode` |
-| Mounting | `attach_type`, `attach_size`, `attach_count` |
+| Mounting | `attach_type` (incl. `slide` track), `attach_size`, `attach_count`, `attach_joint` (ball joint), `slide_axis` |
 
 ## Case sizes
 

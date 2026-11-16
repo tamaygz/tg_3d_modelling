@@ -23,3 +23,14 @@ Skådis sizes (5 × 15 mm slots, 40 mm pitch, 5 mm board) are community measurem
 Check them against your board.
 
 Rebuild and check with `python3 tools/build.py attachments --test` (variants in `tests.txt`).
+
+## Slide track, fin and ball joint
+
+- `attach_type = "slide"`: the plate has a dovetail channel, and the extra part `attach_track` is the track to screw
+  to the wall. `slide_axis` horizontal = slide the host along one long track; vertical = drop it onto a short one.
+- `attach_type = "fin"`: the same plate rides on a track with a long blade (`fin_len`, `fin_w`, `fin_t`), for hosts
+  with the socket underneath (see `projects/custombox`): the blade anchors the host between two sofa cushions.
+- `attach_joint = "ball"` (with any type): parts `attach_ball` (plate with ball, goes into the host), `attach_joint`
+  (adapter: slotted cup + a standard socket for the plate) and `attach_ring` (lock ring). The report shows the cup
+  strain (1.4% for the 16 mm ball, limit 2%), the tilt range and the stand-off. Print the coupon, a ball plate, an
+  adapter and a ring first to check how firmly the ring clamps.

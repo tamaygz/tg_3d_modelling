@@ -17,3 +17,7 @@ title = "" | inside plate: title labels wood cloth cushions pockets rims marking
 show_legend = false; title = "" | inside plate: title labels wood cloth cushions pockets rims markings ball_red ball_yellow ball_green ball_brown ball_blue ball_pink ball_black ball_white
 show_legend = false; plate_shape = "wave"; plate_margin = 14 | inside plate: title labels wood cloth cushions pockets rims markings ball_red ball_yellow ball_green ball_brown ball_blue ball_pink ball_black ball_white
 title_size = 14; points_size = 9 | inside plate: title labels wood cloth cushions pockets rims markings ball_red ball_yellow ball_green ball_brown ball_blue ball_pink ball_black ball_white
+
+# --- slide track and ball joint ---
+attach_type = "slide"; slide_axis = "vertical"
+attach_type = "keyhole"; attach_joint = "ball"; attach_count = 1

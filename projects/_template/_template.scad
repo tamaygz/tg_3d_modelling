@@ -30,9 +30,13 @@ font_style = "serif bold"; // [serif, serif bold, sans, sans bold, book serif bo
 
 /* [Attachment] */
 // how it mounts: plates snap into sockets in the back (none = plain back)
-attach_type = "keyhole"; // [none, wall, keyhole, skadis, hook, magnet, stand, flat, roof]
+attach_type = "keyhole"; // [none, wall, keyhole, skadis, hook, magnet, stand, flat, roof, slide]
 attach_size = "S"; // [S, M, L]
 attach_count = 2; // [1:1:4]
+// ball joint between the host and the plate: turn and tilt it freely, the lock ring clamps it
+attach_joint = "none"; // [none, ball]
+// slide: the track runs horizontally (slide the host along it) or vertically (drop the host onto it)
+slide_axis = "horizontal"; // [horizontal, vertical]
 
 /* [Hidden] */
 $fn = 48;
@@ -40,13 +44,14 @@ $fn = 48;
 text_size = min(height*0.35, width/max(1, len(title))*1.1);   // title cap height
 a_x = attach_xs(attach_count, width, attach_type, size=attach_size);   // socket x positions (fewer if they don't fit)
 a_y = attach_y(0);                                            // plate centre y
+a_opts = attach_opts(slide_axis=slide_axis);                  // per-type options, passed on to the plates
 assert(attach_type == "none" || attach_fits(attach_size, height, thickness=thickness), attach_fit_msg(attach_size, height, thickness));
 
 // tables read by the tools: parts (id, label, note, pull-apart, colour, tags), checks, report
 parts = [
   ["plaque", "Plaque", "PLA", [0,0,-10], COL_WOOD],
   ["title",  "Title",  "PLA", [0,0,10],  COL_TAN, str("pieces=", len([for (c=title) if (c != " ") c])), "plate=plaque", "mat=PLA tan"],
-  attach_parts_row(attach_type, len(a_x))
+  each attach_rows(attach_type, len(a_x), attach_joint, opts=a_opts)
 ];
 checks = attach_type == "none" ? [] : [["attach", "plaque", "clear"]];
 report = [["width", width], ["height", height], ["text size", text_size]];
@@ -61,4 +66,4 @@ pick("plaque") difference() {
 }
 pick("title") slab(thickness, thickness + 0.8)
   text(title, size=text_size, font=font_for(font_style), halign="center", valign="center");
-pick("attach") attach_plates(attach_type, attach_size, a_x, a_y, y_bottom=-height/2, y_top=height/2);
+attach_all(part, attach_type, attach_size, a_x, a_y, a_opts, -height/2, height/2, attach_joint);     // plates, tracks, ball joint: every attachment part

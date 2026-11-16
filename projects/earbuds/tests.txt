@@ -26,3 +26,7 @@ wall_mode = "overlay"; wall_pattern = "girih_star_cross"; wall_t = 2.4
 attach_type = "wall"; rise_back = 12
 attach_type = "magnet"; rise_back = 10; cable_on = "left"; corner_fill = "solid"
 wall_t = 1.2; floor_t = 1; clearance = 0.3; rim_band = 1.5; base_band = 1
+
+# --- slide track and ball joint ---
+attach_type = "slide"; slide_axis = "vertical"; rise_back = 12
+attach_type = "magnet"; attach_joint = "ball"; rise_back = 12

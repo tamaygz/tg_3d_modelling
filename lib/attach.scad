@@ -11,7 +11,9 @@
 // centred on the origin; it fills z=0..ATTACH_T and its features point to -z (the wall). +Y is up when the
 // host hangs. The socket reaches from y=-l/2-ATTACH_NOTCH (pry notch) to y=+l/2.
 
-ATTACH_TYPES = ["none", "wall", "keyhole", "skadis", "hook", "magnet", "stand", "flat", "roof"];
+ATTACH_TYPES = ["none", "wall", "keyhole", "skadis", "hook", "magnet", "stand", "flat", "roof", "slide", "fin"];
+ATTACH_JOINTS = ["none", "ball"];        // optional ball joint between the host and the plate (any type)
+SLIDE_AXES    = ["horizontal", "vertical"];
 ATTACH_SIZES = ["S", "M", "L"];
 ATTACH_T     = 4.5;   // socket depth = plate core thickness
 ATTACH_CLR   = 0.2;   // plate-to-socket clearance per face
@@ -73,9 +75,10 @@ module attach_core(size="M") {
 //   roof_depth         roof: ceiling flange depth (front to back)
 module attach_plate(type="wall", size="M", screw_d=4.5, head_d=8.5, magnet=[10, 3], magnet_clr=0.15,
                     hook_gap=6, stand_reach=40, stand_angle=15, stand_depth=40, skadis_t=5,
-                    roof_reach=60, roof_angle=90, roof_depth=40) {
+                    roof_reach=60, roof_angle=90, roof_depth=40, slide_axis="horizontal") {
     w = attach_dims(size)[0]; l = attach_dims(size)[1]; c = ATTACH_CLR;
-    difference() {
+    if (type == "slide" || type == "fin") slide_plate(size, type == "fin" ? "horizontal" : slide_axis);
+    else difference() {
         union() {
             attach_core(size);
             if (type == "skadis") for (x=skadis_x(w)) translate([x, 0, 0]) skadis_hook(skadis_t);
@@ -103,8 +106,12 @@ module attach_plate(type="wall", size="M", screw_d=4.5, head_d=8.5, magnet=[10, 
 // ---------- host helpers (use these in a project instead of placing sockets by hand) ----------
 // per-type options as one list, so hosts can pass them on: build it with attach_opts(...)
 function attach_opts(screw_d=4.5, head_d=8.5, magnet=[10, 3], hook_gap=6, stand_angle=15, stand_depth=40,
-                     roof_gap=10, roof_angle=90, roof_depth=40) =
-    [screw_d, head_d, magnet, hook_gap, stand_angle, stand_depth, roof_gap, roof_angle, roof_depth];
+                     roof_gap=10, roof_angle=90, roof_depth=40,
+                     slide_axis="horizontal", track_len=0, fin_len=120, fin_w=80, fin_t=4, ball_d=16) =
+    [screw_d, head_d, magnet, hook_gap, stand_angle, stand_depth, roof_gap, roof_angle, roof_depth,
+     slide_axis, track_len, fin_len, fin_w, fin_t, ball_d];
+// which face of the host a type mounts on: the fin hangs under the host, everything else is on its back
+function attach_face(type) = type == "fin" ? "bottom" : "back";
 // x positions for up to `count` sockets spread over 60% of `span` around `centre`. Skådis plates stay on the 40 mm
 // grid. With `size` given, sockets keep 6 mm between them and the count drops to what fits the span, so use
 // len(attach_xs(...)) as the real count. avoid = [x, half width]: shift the row so no socket centre lies in that zone.
@@ -129,6 +136,7 @@ function attach_fit_msg(size, height, thickness=undef) =
         : str("attach_size ", size, " needs ", attach_socket_len(size), " mm of height; this host has ", height, " mm. Choose a smaller size.");
 // row for the project's `parts` table
 function attach_print_tag(type) = (type == "skadis" || type == "hook" || type == "roof") ? "print=auto" : "print=x180";
+// (kept for older projects: the plates' row only; new projects use attach_rows())
 function attach_parts_row(type, count, pull=[0, 0, -50], colour="#4d6170") =
     ["attach", "Attachment plate", "PLA", pull, colour, str("pieces=", count), attach_print_tag(type)];
 // cutter: all sockets of a host (subtract from the host; back face z=0)
@@ -139,7 +147,183 @@ module attach_plates(type, size, xs, y, opts=undef, y_bottom=undef, y_top=undef)
     if (type != "none") for (x=xs) translate([x, y, 0])
         attach_plate(type, size, screw_d=o[0], head_d=o[1], magnet=o[2], hook_gap=o[3],
                      stand_reach=is_undef(y_bottom) ? 40 : y - y_bottom, stand_angle=o[4], stand_depth=o[5],
-                     roof_reach=is_undef(y_top) ? 60 : y_top - y + o[6], roof_angle=o[7], roof_depth=o[8]);
+                     roof_reach=is_undef(y_top) ? 60 : y_top - y + o[6], roof_angle=o[7], roof_depth=o[8], slide_axis=o[9]);
+}
+
+// ---------- everything that hangs on the sockets, in one call ----------
+// Part ids (all optional except "attach"): "attach" plates, "attach_track" slide track or fin, and with a ball
+// joint "attach_ball" ball plates, "attach_joint" cup adapters, "attach_ring" lock rings.
+// attach_rows() gives their rows for the `parts` table: use  parts = concat([... your rows ...], attach_rows(...));
+// frame = "flat" for a host modelled lying on its back (plaques; also a socket under a floor), "back" for a host
+// modelled upright with the sockets in a vertical back wall (containers): it only sets the print orientation.
+function attach_rows(type, count, joint="none", pull=[0, 0, -50], colour="#4d6170", frame="flat", opts=undef) = let(
+    o = is_undef(opts) ? attach_opts() : opts,
+    up = frame == "back" ? "print=x90" : "print=x180",                  // wall side up
+    down = frame == "back" ? "print=x270" : "print=x0",                 // wall side on the bed
+    plate_tag = (type == "skadis" || type == "hook" || type == "roof") ? "print=auto" : up,
+    n_track = type == "fin" || (type == "slide" && o[9] == "horizontal") ? 1 : count)
+    concat(
+        [["attach", "Attachment plate", "PLA", pull, colour, str("pieces=", count), plate_tag]],
+        type == "slide" ? [["attach_track", "Slide track", "PLA / PETG", pull*1.5, "#6f8494", str("pieces=", n_track), down]] : [],
+        type == "fin" ? [["attach_track", "Fin with slide track", "PETG", pull*1.5, "#6f8494", "pieces=1", "print=auto"]] : [],
+        type != "none" && joint == "ball" ? [
+            ["attach_ball", "Ball plate", "PETG", pull*0.3, "#8fa3b0", str("pieces=", count), up],
+            ["attach_joint", "Ball joint adapter", "PETG", pull*0.6, "#5b7282", str("pieces=", count), down],
+            ["attach_ring", "Ball joint lock ring", "PETG", pull*0.45, "#c9a13b", str("pieces=", count), "print=auto"]] : []);
+// Draws all of it, seated on a host whose back face is z = 0 (sockets at xs, y). `part` = the project's part
+// variable ("all" or one id): only that part is drawn, so a project needs just this one line.
+module attach_all(part, type, size, xs, y, opts=undef, y_bottom=undef, y_top=undef, joint="none", skip_plates=false) {
+    o = is_undef(opts) ? attach_opts() : opts;
+    ball = joint == "ball" && type != "none";
+    zj = ball ? ball_joint_back(size, o[14]) : 0;                       // the plates sit on the adapters instead of the host
+    module sel(id, col) { if (part == "all" || part == id) color(col) children(); }
+    if (type != "none") {
+        if (!skip_plates) sel("attach", "#4d6170") translate([0, 0, zj]) attach_plates(type, size, xs, y, o, y_bottom, y_top);
+        if (type == "slide") sel("attach_track", "#6f8494") translate([0, 0, zj]) slide_tracks(size, xs, y, o[9], o[10], o[0], o[1]);
+        if (type == "fin") sel("attach_track", "#6f8494") translate([(min(xs) + max(xs))/2, y, zj]) slide_fin(o[12], o[11], o[13]);
+        if (ball) for (x=xs) translate([x, y, 0]) {
+            sel("attach_ball", "#8fa3b0") ball_plate(size, o[14]);
+            sel("attach_joint", "#5b7282") ball_adapter(size, o[14]);
+            sel("attach_ring", "#c9a13b") ball_ring(size, o[14]);
+        }
+    }
+}
+
+// ---------- slide track ----------
+// A dovetail track with rounded edges is screwed to the wall; the plate has the matching channel and the host
+// slides onto the track. horizontal: the channel runs through the plate from side to side, one long track carries
+// all plates and the host can be slid along it. vertical: the channel is open at the bottom and closed at the top,
+// the host is dropped onto a short track per plate and hangs on its upper end.
+// The same plate rides on the fin (type "fin"): a track with a long blade, for a host that is anchored from below
+// (the blade goes between two sofa cushions, into a slot, into the ground).
+SLIDE_W   = 16;      // track width on the host side (the wide side of the dovetail)
+SLIDE_N   = 10;      // track width on the wall
+SLIDE_H   = 4.5;     // track height
+SLIDE_R   = 0.8;     // rounding of the track's edges
+SLIDE_CLR = 0.25;    // play between track and channel, per side
+SLIDE_GAP = 0.5;     // air between the plate and the wall
+function slide_standoff() = SLIDE_H + SLIDE_GAP;                         // wall plane below the host's back face
+// cross-section, wall on y = 0, track up to y = SLIDE_H; grow = play (for the channel)
+module slide_profile_2d(grow=0) {
+    offset(r=SLIDE_R, $fn=24) offset(delta=-SLIDE_R + grow)
+        polygon([[-SLIDE_N/2, 0], [SLIDE_N/2, 0], [SLIDE_W/2, SLIDE_H], [-SLIDE_W/2, SLIDE_H]]);
+}
+module slide_plate(size="M", axis="horizontal") {
+    w = attach_dims(size)[0]; l = attach_dims(size)[1]; c = ATTACH_CLR; sp = attach_strip();
+    zw = -slide_standoff();                                              // wall plane
+    bw = w - 2*c; bl = l - 2*sp - 1;                                     // carriage block, clear of the snap arms
+    assert(axis == "horizontal" ? bl >= SLIDE_W + 2*SLIDE_CLR + 5 : bw >= SLIDE_W + 2*SLIDE_CLR + 5, "slide plate: this plate size is too small for the track");
+    attach_core(size);
+    difference() {
+        translate([-bw/2, -bl/2, zw + 0.2]) cube([bw, bl, -zw - 0.2 + 0.01]);
+        if (axis == "horizontal") translate([0, 0, zw]) rotate([90, 0, 90]) linear_extrude(w + 2, center=true) union() {
+            slide_profile_2d(SLIDE_CLR); translate([-SLIDE_N/2 - SLIDE_CLR, -1]) square([SLIDE_N + 2*SLIDE_CLR, 1 + SLIDE_R]);
+        }
+        else translate([0, slide_stop_y(size), zw]) rotate([90, 0, 0]) linear_extrude(l) union() {     // open at the bottom, closed at the top
+            slide_profile_2d(SLIDE_CLR); translate([-SLIDE_N/2 - SLIDE_CLR, -1]) square([SLIDE_N + 2*SLIDE_CLR, 1 + SLIDE_R]);
+        }
+    }
+}
+function slide_stop_y(size) = attach_dims(size)[1]/2 - attach_strip() - 4;        // upper end of a vertical channel
+// a track of length L along X, wall face on z = 0, with countersunk screw holes
+module slide_track(L, screw_d=4.5, head_d=8.5) {
+    n = max(2, floor(L/60) + 1); e = min(12, L/4);
+    difference() {
+        intersection() {
+            rotate([90, 0, 90]) linear_extrude(L, center=true) slide_profile_2d();
+            linear_extrude(SLIDE_H + 1) offset(r=2.5, $fn=24) square([L - 5, SLIDE_W - 5], center=true);     // rounded ends
+        }
+        for (i=[0:n-1]) translate([-L/2 + e + i*(L - 2*e)/(n - 1), 0, 0]) {
+            translate([0, 0, -1]) cylinder(d=screw_d, h=SLIDE_H + 2, $fn=32);
+            translate([0, 0, SLIDE_H - (head_d - screw_d)/2]) cylinder(d1=screw_d, d2=head_d + 0.4, h=(head_d - screw_d)/2 + 0.01, $fn=48);
+        }
+    }
+}
+function slide_track_len(size, xs, axis, track_len) = track_len > 0 ? track_len :
+    axis == "horizontal" ? max(xs) - min(xs) + attach_dims(size)[0] + 60 : attach_dims(size)[1] + 20;
+// the track(s) of a host, seated in its plates (host back face z = 0)
+module slide_tracks(size, xs, y, axis="horizontal", track_len=0, screw_d=4.5, head_d=8.5) {
+    L = slide_track_len(size, xs, axis, track_len);
+    if (axis == "horizontal") translate([(min(xs) + max(xs))/2, y, -slide_standoff()]) slide_track(L, screw_d, head_d);
+    else for (x=xs) translate([x, y + slide_stop_y(size) - SLIDE_CLR - L/2, -slide_standoff()]) rotate(90) slide_track(L, screw_d, head_d);
+}
+// fin: a track of length w with a blade `len` long and t thick standing on its wall side. Drawn seated: the
+// track's wall plane at z = -slide_standoff(), the blade pointing to -z (away from the host).
+module slide_fin(w=80, len=120, t=4, base=3) {
+    z0 = -slide_standoff();
+    translate([0, 0, z0]) slide_track_plain(w);
+    translate([-w/2, -(SLIDE_N + 8)/2, z0 - base]) cube([w, SLIDE_N + 8, base + 0.01]);                 // the host rests on this
+    hull() {                                                                                          // blade with rounded lower corners
+        translate([-w/2, -t/2, z0 - base - 1]) cube([w, t, 1]);
+        for (s=[-1, 1]) translate([s*(w/2 - 8), 0, z0 - base - len + 8]) rotate([90, 0, 0]) cylinder(r=8, h=t, center=true, $fn=32);
+    }
+    for (s=[-1, 1]) hull() {                                                                          // fillets blade / base
+        translate([-w/2, s*(SLIDE_N + 8)/2 - (s > 0 ? 0.5 : 0), z0 - base]) cube([w, 0.5, 0.01]);
+        translate([-w/2, -0.25, z0 - base - (SLIDE_N + 8)/2 + t/2]) cube([w, 0.5, 0.01]);
+    }
+}
+module slide_track_plain(L) {
+    intersection() {
+        rotate([90, 0, 90]) linear_extrude(L, center=true) slide_profile_2d();
+        linear_extrude(SLIDE_H + 1) offset(r=2.5, $fn=24) square([L - 5, SLIDE_W - 5], center=true);
+    }
+}
+
+// ---------- ball joint ----------
+// For any attachment type: the host carries a ball (a plate with a ball on a neck in its socket), the plate of
+// the chosen type snaps into an adapter that grips the ball with a slotted cup. The host can be turned and tilted
+// freely; pushing the lock ring down the tapered cup clamps it in place.
+// Assembly: ring over the ball onto the neck, press the ball into the cup, push the ring towards the adapter.
+BALL_LAT    = 20;      // the cup closes this many degrees past the ball's equator (what holds the ball)
+BALL_WALL   = 1.5;     // cup wall at the equator
+BALL_PETALS = 6;       // slots in the cup
+BALL_SLOT   = 1.2;     // slot width
+BALL_TAPER  = 0.6;     // the cup's outside grows by this much from its mouth to its foot (the ring wedges on it)
+BALL_MAX_STRAIN = 0.02;
+function ball_neck_d(d) = d*0.5;
+function ball_centre_z(d) = -(d/2 + 6);                                   // ball centre below the host's back face
+function ball_cup_foot_z(d) = ball_centre_z(d) - d/2 - 1.5;               // top of the adapter block (z)
+function ball_joint_back(size, d) = ball_cup_foot_z(d) - (ATTACH_T + 1.5); // the adapter's back face = new mounting plane
+// how far the petals bend when the ball is pressed in, their length and the strain that causes (must stay under 2%)
+function ball_petal_bend(d) = d/2*(1 - cos(BALL_LAT));
+function ball_petal_len(d) = d/2*(sin(BALL_LAT) + 0.85);                  // from the mouth down to the end of the slots
+function ball_strain(d) = 1.5*(BALL_WALL + 0.25)*ball_petal_bend(d)/pow(ball_petal_len(d), 2);
+// largest tilt from straight before the neck touches the cup's mouth
+function ball_tilt(d) = 90 - BALL_LAT - asin(ball_neck_d(d)/d) - 3;
+module ball_plate(size="M", d=16) {
+    w = attach_dims(size)[0]; l = attach_dims(size)[1]; nd = ball_neck_d(d); zc = ball_centre_z(d);
+    root = min(w, l) - 2*attach_strip() - 6;                              // foot of the neck, clear of the snap arms
+    attach_core(size);
+    hull() { translate([0, 0, -0.6]) cylinder(d=root, h=0.61, $fn=48); translate([0, 0, -3]) cylinder(d=nd, h=0.1, $fn=48); }
+    translate([0, 0, zc]) cylinder(d=nd, h=-zc - 2.9, $fn=48);
+    translate([0, 0, zc]) sphere(d=d, $fn=64);
+    translate([0, 0, zc]) cylinder(d1=d*cos(45), d2=nd, h=d/2*sin(45) + (d*cos(45) - nd)/2, $fn=48);   // 45 degree shoulder: prints ball-up
+}
+function _ball_cup_r(d, z) = let(zm = ball_centre_z(d) + d/2*sin(BALL_LAT), zf = ball_cup_foot_z(d))          // outside radius of the cup at z
+    d/2 + BALL_WALL + 0.4 + BALL_TAPER*(zm - z)/(zm - zf);
+module ball_adapter(size="M", d=16) {
+    assert(ball_strain(d) <= BALL_MAX_STRAIN, str("ball joint: a ", d, " mm ball would bend the cup by ", ball_strain(d)*100, "% (limit 2%)"));
+    w = attach_dims(size)[0]; l = attach_dims(size)[1];
+    zc = ball_centre_z(d); zf = ball_cup_foot_z(d); zm = zc + d/2*sin(BALL_LAT); zb = ball_joint_back(size, d);
+    difference() {
+        union() {
+            translate([-w/2 - 4, -l/2 - ATTACH_NOTCH - 4, zb]) cube([w + 8, l + ATTACH_NOTCH + 8, zf - zb]);    // block with the socket
+            translate([0, 0, zf - 0.01]) cylinder(r1=_ball_cup_r(d, zf), r2=_ball_cup_r(d, zm), h=zm - zf + 0.01, $fn=72);
+        }
+        translate([0, 0, zc]) sphere(d=d + 0.1, $fn=64);
+        for (i=[0:BALL_PETALS-1]) rotate(i*360/BALL_PETALS + 30) translate([0, -BALL_SLOT/2, zc - 0.85*d/2]) cube([d, BALL_SLOT, d]);
+        translate([0, 0, zb]) attach_socket(size);
+    }
+}
+// lock ring, drawn resting on the cup near its mouth, where it just touches: pushing it towards the adapter
+// wedges it onto the taper and squeezes the cup (about 0.05 mm per mm of travel)
+module ball_ring(size="M", d=16, h=5) {
+    zc = ball_centre_z(d); zm = zc + d/2*sin(BALL_LAT); z1 = zm - 1; z0 = z1 - h;
+    translate([0, 0, z0]) difference() {
+        cylinder(r=_ball_cup_r(d, z0) + 2.4, h=h, $fn=72);
+        translate([0, 0, -0.01]) cylinder(r1=_ball_cup_r(d, z0 - 0.01) + 0.02, r2=_ball_cup_r(d, z1 + 0.01) + 0.02, h=h + 0.02, $fn=72);
+        for (i=[0:11]) rotate(i*30) translate([_ball_cup_r(d, z0) + 2.4, 0, -1]) cylinder(d=2, h=h + 2, $fn=16);   // grip
+    }
 }
 
 // ---------- plate features ----------

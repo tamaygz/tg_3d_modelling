@@ -104,10 +104,19 @@ lid_drop = 1; // [0:0.5:20]
 lid_clearance = 0.3; // [0.1:0.05:1]
 
 /* [Mounting] */
-// hang the box: snap-in plates in a solid zone of the back wall (box shape only; none = free-standing)
-attach_type = "none"; // [none, wall, keyhole, skadis, hook, magnet, flat, roof]
+// mount the box: snap-in plates in a solid zone of the back wall (box shape only), or fin = a blade under the
+// floor (any shape); none = free-standing
+attach_type = "none"; // [none, wall, keyhole, skadis, hook, magnet, flat, roof, slide, fin]
 attach_size = "S"; // [S, M, L]
 attach_count = 1; // [1:1:4]
+// ball joint between the box and the plate: turn and tilt it freely, the lock ring clamps it
+attach_joint = "none"; // [none, ball]
+// slide: the track runs horizontally (slide the box along it) or vertically (drop it onto the track)
+slide_axis = "horizontal"; // [horizontal, vertical]
+// fin: a blade under the box that anchors it, e.g. between two sofa cushions: how far down, how wide, how thick (mm)
+fin_len = 120; // [30:5:250]
+fin_w = 80; // [30:5:240]
+fin_t = 4; // [2:0.5:10]
 
 /* [Pattern details] */
 // weaves: strand cross-section
@@ -133,7 +142,8 @@ size = [width, depth];
 boxy = shape == "box";
 split = boxy && corner_fill == "solid";               // every wall its own panel, plain corners
 round_fn = max(3, ceil(corner_r*PI/2/facet));         // facets per round corner
-want_att = attach_type != "none" && boxy;             // mounting: the back wall must be one straight facet
+on_back = attach_face(attach_type) == "back";
+want_att = attach_type != "none" && boxy && on_back;  // mounting on the back: the back wall must be one straight facet
 side_n = side_wave > 0 ? max(2, ceil(max(width, depth)/facet)) : (split || want_att ? 1 : 2);
 n_curve = max(24, ceil(PI*(width + depth)/2/facet/4)*4);
 
@@ -197,7 +207,8 @@ lid_z = height - lid_drop - lid_t;                    // underside of the lid
 
 // ---------- mounting ----------
 assert(!want_att || side_wave == 0, "mounting needs a straight back wall: set side_wave to 0");
-mount = want_att ? container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [base_band + floor_t, rim_band]) : undef;   // solid zone + sockets in the back wall
+a_opts = attach_opts(roof_gap=10, slide_axis=slide_axis, fin_len=fin_len, fin_w=fin_w, fin_t=fin_t);
+mount = want_att || (attach_type != "none" && !on_back) ? container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [base_band + floor_t, rim_band], floor_t) : undef;   // solid zone + sockets in the back wall
 has_att = !is_undef(mount);
 assert(container_mount_problem(mount) == "", container_mount_problem(mount));
 
@@ -206,7 +217,7 @@ feat = pattern_features(split ? side_spec(wall_pattern) : wall_spec);
 parts = [
   ["box", "Box", "PLA / PETG", [0,0,0], COL_TAN],
   ["lid", "Lid", "PLA / PETG", [0,0,30], COL_BRASS],
-  attach_parts_row(want_att ? attach_type : "none", container_mount_count(mount), [0, 40, 0])
+  each container_attach_rows(attach_type, mount, attach_joint, opts=a_opts)
 ];
 checks = concat(has_lid ? [["lid", "box", "clear"]] : [], has_att ? [["attach", "box", "clear"]] : []);
 report = [["perimeter", perimeter], ["wall cell used", is_list(wall_spec[1]) ? wall_spec[1][0] : wall_spec[1]],
@@ -238,7 +249,7 @@ module walls() {
 }
 module floor_plate() {
     container_floor(pts, floor_t, floor_spec, safe_mode(floor_mode, floor_spec), wall_t + floor_margin,
-                    floor_mode == "overlay" ? min(floor_relief, 0.4) : floor_relief, floor_relief);
+                    floor_mode == "overlay" ? min(floor_relief, 0.4) : floor_relief, floor_relief, mount=mount);
 }
 module box_body() {
     floor_plate();
@@ -259,4 +270,4 @@ module box_lid() {
 // ---------- assembly ----------
 pick("box") box_body();
 if (has_lid) pick("lid") box_lid();
-if (has_att) pick("attach") container_plates(mount, attach_opts(roof_gap=10), 0, h_ref);
+container_attach(part, mount, a_opts, 0, h_ref, attach_joint);

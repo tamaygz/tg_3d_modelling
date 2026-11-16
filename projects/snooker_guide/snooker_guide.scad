@@ -88,10 +88,14 @@ plate_groove = "single"; // [none, single, double]
 plate_wave = 4;
 
 /* [Attachment] */
-// how it mounts (plates snap into sockets in the back): none, wall, keyhole, skadis, hook, magnet, stand, flat, roof
-attach_type = "keyhole"; // [none, wall, keyhole, skadis, hook, magnet, stand, flat, roof]
+// how it mounts (plates snap into sockets in the back): none, wall, keyhole, skadis, hook, magnet, stand, flat, roof, slide
+attach_type = "keyhole"; // [none, wall, keyhole, skadis, hook, magnet, stand, flat, roof, slide]
 attach_size = "M"; // [S, M, L]
 attach_count = 2; // [1:1:4]
+// ball joint between the host and the plate: turn and tilt it freely, the lock ring clamps it
+attach_joint = "none"; // [none, ball]
+// slide: the track runs horizontally (slide the host along it) or vertically (drop the host onto it)
+slide_axis = "horizontal"; // [horizontal, vertical]
 // roof: gap between the guide's top edge and the ceiling, and the angle between guide and ceiling (90 = straight down)
 roof_gap = 10;
 roof_angle = 90; // [45:5:135]
@@ -149,7 +153,7 @@ H_TOP  = show_plate ? PC[1] + PH/2 + wave : TH/2;      // guide's top edge (y)
 H_BOT  = show_plate ? PC[1] - PH/2 - wave : -TH/2;     // bottom edge
 A_Y = attach_y(show_plate ? PC[1] : 0);
 A_X = attach_xs(attach_count, TW, attach_type, size=attach_size);   // fewer if they don't fit
-A_OPTS = attach_opts(stand_angle=stand_angle, roof_gap=roof_gap, roof_angle=roof_angle);
+A_OPTS = attach_opts(stand_angle=stand_angle, roof_gap=roof_gap, roof_angle=roof_angle, slide_axis=slide_axis);
 HOST_T = show_plate ? plate_t : zb;             // material behind the sockets
 assert(!has_att || attach_fits(attach_size, HOST_H, 4, HOST_T), attach_fit_msg(attach_size, HOST_H, HOST_T));
 
@@ -168,7 +172,7 @@ parts = concat([
                   "plate=guide", str("mat=PLA ", b[0])]],
   [["labels",   "Point numbers",  "PLA",           [0,0,20],  LABEL_COL, str("pieces=", n_lbl + (legend ? 7 : 0)), "plate=guide", "mat=PLA label"],
    ["title",    "Title",          "PLA",           [0,0,20],  COL_TAN, str("pieces=", len([for (c=title) if (c != " ") c])), "plate=guide", "mat=PLA tan"],
-   attach_parts_row(attach_type, len(A_X), [0,0,-45])]
+   each attach_rows(attach_type, len(A_X), attach_joint, [0,0,-45], opts=A_OPTS)]
 );
 report = [ ["guide width", show_plate ? PW : TW], ["guide height", show_plate ? PH : TH], ["ball diameter", bd], ["total height", zr] ];
 
@@ -264,4 +268,4 @@ if (points_color != "ball colour") pick("labels") {
 }
 if (ttl && show_plate) pick("title") slab(plate_t, plate_t + 0.8)
   translate([0, TH/2 + plate_margin/2 + TITLE_H/2]) text(title, size=title_size, font=font_for("serif bold"), halign="center", valign="center", spacing=1.15);
-pick("attach") attach_plates(attach_type, attach_size, A_X, A_Y, A_OPTS, H_BOT, H_TOP);
+attach_all(part, attach_type, attach_size, A_X, A_Y, A_OPTS, H_BOT, H_TOP, attach_joint);

@@ -76,9 +76,13 @@ floor_mode = "solid"; // [solid, through_cut, recessed]
 
 /* [Mounting] */
 // how it mounts: plates snap into a solid zone of the back wall (none = stands on a desk)
-attach_type = "none"; // [none, wall, keyhole, skadis, hook, magnet, flat, roof]
+attach_type = "none"; // [none, wall, keyhole, skadis, hook, magnet, flat, roof, slide]
 attach_size = "S"; // [S, M, L]
 attach_count = 1; // [1:1:2]
+// ball joint between the holder and the plate: turn and tilt it freely, the lock ring clamps it
+attach_joint = "none"; // [none, ball]
+// slide: the track runs horizontally (slide the holder along it) or vertically (drop it onto the track)
+slide_axis = "horizontal"; // [horizontal, vertical]
 
 /* [Hidden] */
 $fn = 48;
@@ -134,6 +138,7 @@ assert(!has_cable || on_floor || cable_z + hole[1]/2 < height - (cable_on == "fr
        "cable opening: too high for this wall; lower cable_y or use the slot");
 
 // ---------- mounting ----------
+a_opts = attach_opts(roof_gap=10, slide_axis=slide_axis);
 mount = container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [base_band + floor_t, rim_band]);   // solid zone + sockets in the back wall
 has_att = !is_undef(mount);
 assert(container_mount_problem(mount) == "", str(container_mount_problem(mount), " (rise_back makes the back wall higher)"));
@@ -142,7 +147,7 @@ assert(!(has_att && has_cable && cable_on == "back"), "the mounting zone is in t
 // tables read by the tools
 parts = [
   ["holder", "Earbuds holder", "PLA / PETG", [0,0,0], COL_GREY_DARK],
-  attach_parts_row(attach_type, container_mount_count(mount), [0, 40, 0]),
+  each container_attach_rows(attach_type, mount, attach_joint, opts=a_opts),
   ["hw_case", "Charging case (reference)", "your earbuds", [0,0,40], COL_WHITE]
 ];
 checks = concat([["hw_case", "holder", ">=", 0]], has_att ? [["attach", "holder", "clear"]] : []);
@@ -185,5 +190,5 @@ module case_ref() {
 
 // ---------- assembly ----------
 pick("holder") holder();
-if (has_att) pick("attach") container_plates(mount, attach_opts(roof_gap=10), 0, h_ref);
+container_attach(part, mount, a_opts, 0, h_ref, attach_joint);
 pick("hw_case") case_ref();

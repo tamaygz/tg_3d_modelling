@@ -36,3 +36,10 @@ width = 40; depth = 40; height = 25; corner_r = 6; wall_cell = 6; wall_strut = 1
 wall_t = 1.2; floor_t = 0.8; wall_cell = 20; wall_strut = 3; facet = 3
 attach_type = "wall"; attach_size = "M"; attach_count = 2; width = 150; height = 95; rim_wave_x = 6; wall_pattern = "flowing_waves"
 attach_type = "skadis"; height = 110; rise_back = 30; wall_pattern = "voronoi"; corners = "square"
+
+# --- fin under the floor, slide track, ball joint ---
+attach_type = "fin"
+attach_type = "fin"; shape = "ellipse"; floor_mode = "through_cut"; floor_pattern = "hex_honeycomb"; fin_len = 180; fin_w = 60; attach_size = "M"
+attach_type = "fin"; attach_count = 2; width = 160; fin_w = 140; floor_t = 3
+attach_type = "slide"; attach_count = 2; width = 150
+attach_type = "wall"; attach_joint = "ball"

@@ -97,11 +97,15 @@ dowel_l = 20;
 
 /* [Attachment] */
 // how the board mounts: plates snap into sockets in its back (none = plain back)
-attach_type = "keyhole"; // [none, wall, keyhole, skadis, hook, magnet, stand, flat, roof]
+attach_type = "keyhole"; // [none, wall, keyhole, skadis, hook, magnet, stand, flat, roof, slide]
 // plate size: S 30x30, M 45x40, L 60x50 mm
 attach_size = "M"; // [S, M, L]
 // number of sockets / plates across the back
 attach_count = 2; // [1:1:4]
+// ball joint between the host and the plate: turn and tilt it freely, the lock ring clamps it
+attach_joint = "none"; // [none, ball]
+// slide: the track runs horizontally (slide the host along it) or vertically (drop the host onto it)
+slide_axis = "horizontal"; // [horizontal, vertical]
 // wall: wood screw hole diameter
 screw_d = 4.5;
 // wall: countersunk screw head diameter
@@ -243,7 +247,7 @@ has_att = attach_type != "none";                      // any sockets at all
 a_y     = attach_y((by0 + by1)/2);                    // plate centre y (socket + pry notch centred on the board)
 a_keep  = do_split ? attach_socket_w(attach_size)/2 + dowel_l/2 + 2 : 0;   // keep sockets clear of the split dowels
 a_x     = attach_xs(attach_count, bx1 - bx0, attach_type, (bx0 + bx1)/2, do_split ? [x_split, a_keep] : undef, attach_size);   // socket x positions (fewer if they don't fit)
-a_opts  = attach_opts(screw_d, screw_head_d, magnet, hook_gap, stand_angle, stand_depth, roof_gap, roof_angle);
+a_opts  = attach_opts(screw_d, screw_head_d, magnet, hook_gap, stand_angle, stand_depth, roof_gap, roof_angle, slide_axis=slide_axis);
 assert(!has_att || attach_fits(attach_size, by1 - by0, thickness=board_t), attach_fit_msg(attach_size, by1 - by0, board_t));
 function art_pieces(labels) = len(labels) == 0 ? 0 :   // separate solids in one plate's artwork
   sum([for (v=labels) len(str(v))]) + (s_sep == "none" ? 0 : len(labels) - 1) + (plate_border ? 1 : 0);
@@ -264,7 +268,7 @@ parts = [
   ["stop_end",  "End stopper",        "PLA silver",       [0,0,45],  COL_SILVER, str("pieces=",2*players), "print=x180"],
   ["stop_div",  "Column divider",     "PLA silver",       [0,0,45],  COL_SILVER, str("pieces=",players), "print=x180"],
   ["dowel",     "Alignment dowel",    "PLA",              [0,0,-30], "#555555", str("pieces=",nStrip), "print=x90"],
-  attach_parts_row(attach_type, len(a_x), [0,0,-55])
+  each attach_rows(attach_type, len(a_x), attach_joint, [0,0,-55], opts=a_opts)
 ];
 // only check parts this variant has (no step rail or divider without steps, no right half when unsplit)
 checks = concat([
@@ -348,5 +352,5 @@ for (p=[0:players-1]) {
     if (has_steps) translate([tx(p, xs[min(sc[1], nS-1)]), 0, 0]) marker();
   }
 }
-pick("attach") attach_plates(attach_type, attach_size, a_x, a_y, a_opts, by0 - edge_amp, by1 + edge_amp);
+attach_all(part, attach_type, attach_size, a_x, a_y, a_opts, by0 - edge_amp, by1 + edge_amp, attach_joint);
 pick("dowel") if (do_split) for (y=strip_y) translate([x_split, y, dz]) rotate([0,90,0]) cylinder(d=dw_d, h=dowel_l - 1, center=true, $fn=32);

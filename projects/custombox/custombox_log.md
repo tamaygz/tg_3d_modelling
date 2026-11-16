@@ -32,6 +32,10 @@
   underside when it floats, merges with rim / base band within 10 mm. Seam moves to the back left corner when mounted.
 - Flowing waves and ripples get ties automatically when cut through (lib/patterns.scad `pattern_tied()`).
 
+## v1.2 (2026-11-16) – fin, slide track, ball joint
+- `attach_type = "fin"`: socket under the floor in a solid floor zone (thickened upwards), slide plate + fin with a
+  blade for anchoring between sofa cushions (user's snack and drinks box). `slide` track and `attach_joint = "ball"` too.
+
 ## Prints and feedback
 - (none yet)
 

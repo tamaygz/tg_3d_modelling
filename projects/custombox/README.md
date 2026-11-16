@@ -12,7 +12,7 @@ walls, floor and lid are all settings, and every surface takes any of the 12 pat
 | Walls | `wall_t`, `wall_pattern`, `wall_mode`, `wall_cell`, `wall_strut`, `wall_angle`, `wall_seed`, `wall_relief`, `rim_band`, `base_band`, `corner_fill`, `post_w`, `fit_cells`, `front_pattern/_mode`, `back_pattern/_mode` | pattern and how it is applied: solid, through-cut, open lattice, raised, recessed, overlay |
 | Floor | `floor_t`, `floor_pattern`, `floor_mode`, `floor_cell`, `floor_strut`, `floor_angle`, `floor_relief`, `floor_margin` | thickness (strength) and its own pattern |
 | Lid | `lid` (none / inset), `lid_t`, `lid_pattern`, `lid_mode`, `lid_grip` (hole / knob / none), `lid_drop`, `lid_clearance` | a lid that drops onto a ledge inside the box |
-| Mounting | `attach_type`, `attach_size`, `attach_count` | snap-in plates (wall screws, keyhole, Skådis, hook, magnet, glue, ceiling) in a solid zone built into the back wall |
+| Mounting | `attach_type`, `attach_size`, `attach_count`, `attach_joint`, `slide_axis`, `fin_len`, `fin_w`, `fin_t` | snap-in plates (wall screws, keyhole, Skådis, hook, magnet, glue, ceiling, slide track) in a solid zone built into the back wall; a fin under the floor; optional ball joint |
 | Pattern details | strand style, Voronoi rounding, honeycomb orientation, wave size, ripple spokes, `min_strut`, `min_opening`, `facet` | fine tuning and printability limits |
 
 ## Recipes
@@ -27,6 +27,9 @@ walls, floor and lid are all settings, and every surface takes any of the 12 pat
 | Woven basket | `corner_fill = "solid"; wall_pattern = "basket_weave"; wall_mode = "open_lattice"; corner_r = 10` |
 | Round can with a lining | `width = 80; depth = 80; corner_r = 40; wall_mode = "overlay"; wall_pattern = "girih_star_cross"` |
 | Pegboard bin | `attach_type = "skadis"; corner_fill = "solid"; back_pattern = "hex_honeycomb"` |
+| Sofa caddy for snacks and drinks | `attach_type = "fin"; fin_len = 150; fin_w = 100` (the blade goes down between two cushions) |
+| Box on a rail | `attach_type = "slide"; attach_count = 2` |
+| Tiltable box | `attach_type = "wall"; attach_joint = "ball"` |
 
 ## How it works
 
@@ -45,6 +48,13 @@ walls, floor and lid are all settings, and every surface takes any of the 12 pat
   sides, and the wall is thickened to 6 mm only there (no separate plate behind the wall). It runs into the rim or
   base band when they are close and has a 45° underside when it starts above the floor. It needs the box shape, a
   straight back (`side_wave = 0`) and a back wall as high as the plate.
+- **Fin.** `attach_type = "fin"` puts the socket under the floor (any outline): the floor gets a solid zone, thickened
+  upwards inside the box, and the slide plate under it rides on a track with a blade `fin_len` long. Slide the box
+  onto the fin, push the blade between two sofa cushions. Print the fin standing on its end.
+- **Slide track.** `attach_type = "slide"`: screw the track to the wall and slide the box on (horizontal), or drop it
+  onto short vertical tracks.
+- **Ball joint.** `attach_joint = "ball"` puts a lockable ball joint between the box and any plate type (about 37°
+  tilt each way, 30 mm stand-off). Light loads only.
 - **Line patterns** (flowing waves, ripples) get ties between their lines when they are cut through, so they
   print and stay stiff.
 

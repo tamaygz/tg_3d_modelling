@@ -18,8 +18,11 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   `pick()`. Colours from the `COL_*` palette. Offer style choices as string options, plus a `style_preset`
   where there are many (scoreboard's PRESETS).
 - **Mounting:** hanging or standing projects use the attachment host helpers (`attach_xs`, `attach_y`,
-  `attach_fits` assert, `attach_sockets`, `attach_plates`, `attach_parts_row`) and expose `attach_type`,
-  `attach_size`, `attach_count`. Plates snap in (the user wants snap fits, not slides or keys).
+  `attach_fits` assert, `attach_sockets`, `each attach_rows(...)` in the parts table, one `attach_all(part, ...)`
+  line to draw plates / track / ball joint) and expose `attach_type`, `attach_size`, `attach_count`,
+  `attach_joint`, `slide_axis`. Plates snap into the host; types include `slide` (track on the wall) and `fin`
+  (blade under the host: `attach_face(type) == "bottom"`, containers only). New plate types or joints go into
+  `lib/attach.scad` so every project gets them; add them to each project's option list and tests.
 - **Lighting and wiring:** `lib/led.scad` and `lib/cable.scad`, not one-off parts.
 - **Patterns** (lattices, weaves, Voronoi, scales, Truchet, Girih, waves, ripples): `lib/patterns.scad`, never
   project code. Pick by name via `pattern_spec()`, apply with `pattern_panel(mode, ...)` or the single helpers
@@ -108,9 +111,9 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 | `projects/snooker_guide` | v1, not printed yet | multi-colour relief plaque of the snooker setup with points |
 | `projects/bolavuit_logo` | v2, not printed yet | logo plaque: exact (from SVG) or rebuilt from lib/emblem (0.90 overlap) |
 | `projects/led_kit` | v1, not printed yet | LED tracks, diffusers, corners, cable parts |
-| `projects/attachments` | v3, not printed yet | test coupon + every attachment plate; print first to check the snap fit |
+| `projects/attachments` | v4, not printed yet | test coupon + every attachment plate, slide track, fin, ball joint; print first to check the fits |
 | `projects/pattern_gallery` | v1, not printed yet | catalogue + test bench of the 12 `lib/patterns.scad` patterns; views: gallery, sample, modes, box |
-| `projects/custombox` | v1.1, not printed yet | configurable box / basket / bin: outline, corners, sloped + wavy rim, patterned walls, floor, inset lid, mounting zone in the back wall |
+| `projects/custombox` | v1.2, not printed yet | configurable box / basket / bin: outline, corners, sloped + wavy rim, patterned walls, floor, inset lid, mounting zone in the back wall |
 | `projects/earbuds` | v1, not printed yet | charging-case holder: presets (P31i …), poses, cable hole / dock / slot, grip cut-out, mounting zone |
 | `projects/sunglasses` | v1, not printed yet | folded-glasses tray: size presets, nose support, grip cut-out, mounting zone |
 | `projects/_template` | – | starting point for new projects |
