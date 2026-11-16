@@ -77,6 +77,22 @@ function shell_rim_height(p, size, base, rise=[0, 0], waves=[[0, 1], [0, 1]], ph
     base + rise[0]*(p[0]/size[0] + 0.5) + rise[1]*(p[1]/size[1] + 0.5)
          + waves[0][0]*cos(360*waves[0][1]*p[0]/size[0] + phase) + waves[1][0]*cos(360*waves[1][1]*p[1]/size[1] + phase);
 
+// A dip in the rim (a grip cut-out, a pouring lip): subtract it from a rim height. The rim drops by `depth` over
+// `width` in the middle of one side (side = "front" / "back" / "left" / "right", center = shift along that side)
+// with smooth shoulders, and fades out over `fade` mm away from that wall, so the other walls are not affected.
+function _sh_ramp(x) = x <= 0 ? 1 : x >= 1 ? 0 : (1 + cos(180*x))/2;
+function shell_rim_dip(p, size, depth=10, width=30, center=0, side="front", fade=8) = let(
+    along = side == "front" || side == "back" ? p[0] : p[1],
+    away = side == "front" ? p[1] + size[1]/2 : side == "back" ? size[1]/2 - p[1] : side == "left" ? p[0] + size[0]/2 : size[0]/2 - p[0],
+    shoulder = min(width/2, max(depth, 4)))
+    depth*_sh_ramp((abs(along - center) - (width/2 - shoulder))/shoulder)*_sh_ramp(away/fade - 0.5);
+
+// distance along the outline of the point on it that is nearest to q (to place things on a wall from plan coordinates)
+function shell_dist_at(pts, q) = let(u = shell_dists(pts), n = len(pts),
+    c = [for (i=[0:n-1]) let(A = pts[i], d = pts[(i+1)%n] - A, t = max(0, min(1, (q - A)*d/(d*d)))) [norm(q - A - t*d), u[i] + t*norm(d)]],
+    m = min([for (x=c) x[0]]))
+    [for (x=c) if (x[0] == m) x[1]][0];
+
 // ---------- unrolled strip ----------
 // 2D outline of the wall strip over edges e0..e1 in the strip frame: bottom at y = -h/2, top edge at
 // hf(p) - h/2, sampled every `step` mm. hf = function (p) -> height above the floor (default: h everywhere).

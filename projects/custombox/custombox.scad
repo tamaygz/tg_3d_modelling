@@ -5,6 +5,7 @@ include <../../lib/core.scad>
 use <../../lib/shell.scad>
 use <../../lib/patterns.scad>
 use <../../lib/attach.scad>
+use <../../lib/container.scad>
 
 part = "all";                    // which part to export ("all" = assembly); set by the build tools
 
@@ -172,8 +173,7 @@ function cell_for(name, c, fit_len=0) = let(d = pattern_default(name)[0], d0 = i
 function spec_for(name, c, st, ang, seed, h, fit_len=0) =
     pattern_spec(name, cell_for(name, c, fit_len), st == 0 ? undef : st, ang, seed=seed, opts=opts_for(name, h),
                  min_strut=min_strut, min_opening=min_opening);
-// a pattern that would fall apart when cut through is raised instead (the report says so)
-function safe_mode(m, s) = (m == "through_cut" || m == "open_lattice") && !pattern_is_connected(s) ? "raised" : m;
+function safe_mode(m, s) = container_safe_mode(m, s);     // a pattern that would fall apart when cut through is raised instead
 
 wrap_fit = !split && fit_cells && wall_angle == 0 ? perimeter : 0;
 wall_spec = spec_for(wall_pattern, wall_cell, wall_strut, wall_angle, wall_seed, wall_t, wrap_fit);
@@ -194,18 +194,11 @@ lid_z = height - lid_drop - lid_t;                    // underside of the lid
 
 // ---------- mounting ----------
 has_att = attach_type != "none" && boxy;
-boss_t = attach_depth() + 1.5;                        // solid boss behind the back wall that takes the sockets
 back_len = width - (corners == "square" ? 0 : 2*min(corner_r, width/2 - 0.5)) - 2*side_wave;
-a_x = has_att ? attach_xs(attach_count, max(1, back_len - attach_socket_w(attach_size) - 8)/0.6, attach_type, size=attach_size) : [];   // attach_xs spreads over 60% of its span
-boss_w = has_att ? max(a_x) - min(a_x) + attach_socket_w(attach_size) + 8 : 0;
-boss_h = attach_socket_len(attach_size) + 8;
+a_x = has_att ? container_mount_xs(attach_count, back_len, attach_type, attach_size) : [];
 h_back = height + rise_back + min(0, rise_right) - rim_wave_x - rim_wave_y;      // lowest point of the back wall
-boss_z = max(boss_h/2, min(h_back - boss_h/2, h_back/2));                        // boss centre height
-a_y = attach_y(0);                                    // plate centre in the boss frame
-assert(!has_att || h_back >= boss_h, str("mounting: the back wall is ", h_back, " mm high at its lowest point, the ", attach_size,
-    " plate needs ", boss_h, " mm. Use a smaller plate or a higher back."));
-assert(!has_att || boss_w <= back_len, str("mounting: ", len(a_x), " plate(s) of size ", attach_size, " need ", boss_w,
-    " mm of straight back wall, there is ", back_len, " mm."));
+boss_z = container_boss_z(h_back, attach_size);                                  // boss centre height
+assert(!has_att || container_mount_problem(a_x, attach_size, back_len, h_back) == "", container_mount_problem(a_x, attach_size, back_len, h_back));
 assert(!has_att || side_wave == 0, "mounting needs a straight back wall: set side_wave to 0");
 
 // tables read by the tools
@@ -231,44 +224,26 @@ module lid_2d() {
 // ---------- solids ----------
 // one stretch of wall (edges e0..e1 of the outline) as a patterned panel bent round the outline
 module wall_run(e0, e1, spec, m, side_border) {
-    L = shell_len(pts, e0, e1);
     mode = safe_mode(m, spec);
-    shell_wrap(pts, wall_t, e0, e1, h=h_ref, above=wall_relief)
-        pattern_panel(mode, spec, [L + 1, h_ref], t=wall_t, depth=mode == "overlay" ? min(wall_relief, 0.4) : wall_relief,
-                      border=[side_border, base_band + floor_t, rim_band], lining_t=wall_relief, pad=0)
-            polygon(shell_strip_pts(pts, e0, e1, rim, h_ref));
+    container_wall(pts, e0, e1, wall_t, h_ref, rim, spec, mode, [side_border, base_band + floor_t, rim_band],
+                   mode == "overlay" ? min(wall_relief, 0.4) : wall_relief, wall_relief);
 }
 module walls() {
     if (split) for (r=run_edges) {
-        corner = len(r[0]) > 6 && r[0][0] == "c" && r[0][6] == "_";
-        if (corner) wall_run(r[1], r[2], side_spec(wall_pattern), "solid", 0);
+        if (container_is_corner(r[0])) wall_run(r[1], r[2], side_spec(wall_pattern), "solid", 0);
         else wall_run(r[1], r[2], side_spec(side_name(r[0])), side_mode(r[0]), post_w);
     }
     else wall_run(0, len(pts) - 1, wall_spec, wall_mode, 0);
 }
 module floor_plate() {
-    pattern_panel(safe_mode(floor_mode, floor_spec), floor_spec, plan, t=floor_t, depth=floor_mode == "overlay" ? min(floor_relief, 0.4) : floor_relief,
-                  border=wall_t + floor_margin, lining_t=floor_relief) offset(delta=-0.05) plan_2d();   // a hair inside the walls' outer faces
-}
-// ledge for the lid: a ring that grows out of the wall at 45 degrees, so it prints without support
-module lid_ledge() {
-    K = 4;
-    for (k=[0:K-1]) translate([0, 0, lid_z - 0.03 - ledge_w*(k + 1)/K]) linear_extrude(ledge_w/K + 0.01)
-        difference() { inner_2d(-0.1); inner_2d(ledge_w*(K - k)/K); }
-}
-// solid boss on the back wall with the sockets for the attachment plates (its back face is the mounting plane)
-module to_back() { translate([0, depth/2 + boss_t - 0.2, boss_z]) rotate([90, 0, 0]) children(); }
-module mount_boss() {
-    to_back() difference() {
-        translate([(min(a_x) + max(a_x))/2 - boss_w/2, -boss_h/2, 0]) cube([boss_w, boss_h, boss_t]);
-        attach_sockets(attach_type, attach_size, a_x, a_y);
-    }
+    container_floor(pts, floor_t, floor_spec, safe_mode(floor_mode, floor_spec), wall_t + floor_margin,
+                    floor_mode == "overlay" ? min(floor_relief, 0.4) : floor_relief, floor_relief);
 }
 module box_body() {
     floor_plate();
     walls();
-    if (has_lid) lid_ledge();
-    if (has_att) mount_boss();
+    if (has_lid) container_ledge(pts, wall_t, lid_z - 0.03, ledge_w);
+    if (has_att) container_boss(attach_type, attach_size, a_x, depth/2, boss_z);
 }
 module box_lid() {
     m = safe_mode(lid_mode, lid_spec);
@@ -284,4 +259,4 @@ module box_lid() {
 // ---------- assembly ----------
 pick("box") box_body();
 if (has_lid) pick("lid") box_lid();
-if (has_att) pick("attach") to_back() attach_plates(attach_type, attach_size, a_x, a_y, attach_opts(roof_gap=10), -boss_z, h_ref - boss_z);
+if (has_att) pick("attach") container_plates(attach_type, attach_size, a_x, depth/2, boss_z, attach_opts(roof_gap=10), 0, h_ref);
