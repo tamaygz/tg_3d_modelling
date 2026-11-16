@@ -10,7 +10,7 @@ preset = "Galaxy Buds3 Pro"; wall_pattern = "basket_weave"; wall_mode = "open_la
 preset = "Sony WF-1000XM5"; pose = "flat"; wall_pattern = "girih_star_cross"; wall_mode = "raised"; corners = "square"; corner_fill = "solid"; cable = "dock"; floor_t = 5; cable_slot = false
 preset = "Bose QC Ultra Earbuds"; attach_type = "skadis"; rise_back = 20; wall_pattern = "triangular_lattice"; grip_depth = 22
 preset = "Pixel Buds Pro 2"; wall_pattern = "fish_scales"; wall_mode = "raised"; cable_on = "right"; cable_x = 3
-preset = "Nothing Ear"; wall_pattern = "truchet_arcs"; wall_mode = "recessed"; grip = false; floor_mode = "raised"
+preset = "Nothing Ear"; wall_pattern = "truchet_arcs"; wall_mode = "recessed"; grip = false; floor_mode = "recessed"
 preset = "custom"; custom_size = [70, 35, 50]; clearance = 1.5; wall_pattern = "diamond_lattice"; wall_cell = 7; wall_strut = 1.2
 
 # --- cable: positions, slot, dock ---
@@ -25,4 +25,4 @@ grip_width = 40; grip_depth = 30; hold = 1; wall_pattern = "flowing_waves"; wall
 wall_mode = "overlay"; wall_pattern = "girih_star_cross"; wall_t = 2.4
 attach_type = "wall"; rise_back = 12
 attach_type = "magnet"; rise_back = 10; cable_on = "left"; corner_fill = "solid"
-wall_t = 1.2; floor_t = 1; clearance = 0.2; rim_band = 1.5; base_band = 1
+wall_t = 1.2; floor_t = 1; clearance = 0.3; rim_band = 1.5; base_band = 1

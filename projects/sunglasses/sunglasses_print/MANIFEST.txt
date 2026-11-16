@@ -1,0 +1,4 @@
+model sunglasses.scad
+rev c90ebdb
+made 2026-11-16 02:21
+Sunglasses_holder.stl

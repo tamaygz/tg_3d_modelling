@@ -305,8 +305,8 @@ module _pattern_lining(s, size, t, mode, depth, inset, border, edge, profile) {
     zc = t - cut_d; zh = t - ch;                         // where the cut and the chamfer start
     zs = [0, min(zc, zh), max(zc, zh), t];               // layers: plain / cut and / or stepped in
     translate([0, 0, -PAT_EPS]) for (i=[0:2]) if (zs[i+1] - zs[i] > 0.001)
-        translate([0, 0, zs[i]]) linear_extrude(zs[i+1] - zs[i] + PAT_EPS) difference() {
-            _pat_w() offset(delta=-inset - (ch > 0 && zs[i] >= zh - 0.001 ? ch : 0)) _pat_outline(size) children();
+        translate([0, 0, zs[i]]) linear_extrude(zs[i+1] - zs[i] + PAT_EPS) _pat_w() difference() {
+            offset(delta=-inset - (ch > 0 && zs[i] >= zh - 0.001 ? ch : 0)) _pat_outline(size) children();
             if (cut_d > 0 && zs[i] >= zc - 0.001) _pattern_cutout_2d(s, size, _pat_badd(border, inset), mode == "through_cut" ? "cells" : "lines") children();
         }
     if (mode == "raised") translate([0, 0, t]) _pattern_relief(s, size, depth, _pat_badd(border, inset), profile) children();

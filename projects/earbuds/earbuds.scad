@@ -72,7 +72,7 @@ cable_slot = true;
 // floor thickness (5 or more for a dock, so the plug is held straight)
 floor_t = 3; // [1:0.2:12]
 floor_pattern = "concentric_ripples"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
-floor_mode = "solid"; // [solid, through_cut, raised, recessed]
+floor_mode = "solid"; // [solid, through_cut, recessed]
 
 /* [Mounting] */
 // how it mounts: plates snap into a boss on the back wall (none = stands on a desk)
@@ -182,7 +182,10 @@ module holder() {
     if (has_att) container_boss(attach_type, attach_size, a_x, size[1]/2, boss_z);
 }
 // the charging case as a block, to check the fit
-module case_ref() { translate([0, 0, floor_t + item[2]/2]) hull() for (sx=[-1, 1], sy=[-1, 1]) translate([sx*(item[0]/2 - 6), sy*(item[1]/2 - 6), 0]) cylinder(r=6, h=item[2], center=true); }
+module case_ref() {
+    r = min(item[0], item[1])*0.4;                    // cases are well rounded
+    translate([0, 0, floor_t + item[2]/2]) hull() for (sx=[-1, 1], sy=[-1, 1]) translate([sx*(item[0]/2 - r), sy*(item[1]/2 - r), 0]) cylinder(r=r, h=item[2], center=true);
+}
 
 // ---------- assembly ----------
 pick("holder") holder();
