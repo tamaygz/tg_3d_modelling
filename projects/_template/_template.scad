@@ -42,18 +42,19 @@ slide_axis = "horizontal"; // [horizontal, vertical]
 $fn = 48;
 // derived values, one comment each
 text_size = min(height*0.35, width/max(1, len(title))*1.1);   // title cap height
-a_x = attach_xs(attach_count, width, attach_type, size=attach_size);   // socket x positions (fewer if they don't fit)
+a_fit = attach_fit(attach_type, attach_size, height, thickness=thickness);   // what fits: [type, size, note] (smaller plate or none, with a note)
+a_type = a_fit[0]; a_size = a_fit[1];
+a_x = attach_xs(attach_count, width, a_type, size=a_size);   // socket x positions (fewer if they don't fit)
 a_y = attach_y(0);                                            // plate centre y
 a_opts = attach_opts(slide_axis=slide_axis);                  // per-type options, passed on to the plates
-assert(attach_type == "none" || attach_fits(attach_size, height, thickness=thickness), attach_fit_msg(attach_size, height, thickness));
 
 // tables read by the tools: parts (id, label, note, pull-apart, colour, tags), checks, report
 parts = [
   ["plaque", "Plaque", "PLA", [0,0,-10], COL_WOOD],
   ["title",  "Title",  "PLA", [0,0,10],  COL_TAN, str("pieces=", len([for (c=title) if (c != " ") c])), "plate=plaque", "mat=PLA tan"],
-  each attach_rows(attach_type, len(a_x), attach_joint, opts=a_opts)
+  each attach_rows(a_type, len(a_x), attach_joint, opts=a_opts)
 ];
-checks = attach_type == "none" ? [] : [["attach", "plaque", "clear"]];
+checks = a_type == "none" ? [] : [["attach", "plaque", "clear"]];
 report = [["width", width], ["height", height], ["text size", text_size]];
 
 // 2D shapes first, then solids, then the assembly at the bottom
@@ -62,8 +63,9 @@ module outline_2d() { plaque_2d([width, height], shape, r=6); }
 pick("plaque") difference() {
   profiled_slab(thickness, edge, 2) outline_2d();
   outline_groove(thickness, 4, 0.6, 0.6, groove) outline_2d();
-  attach_sockets(attach_type, attach_size, a_x, a_y);
+  attach_sockets(a_type, a_size, a_x, a_y);
 }
 pick("title") slab(thickness, thickness + 0.8)
   text(title, size=text_size, font=font_for(font_style), halign="center", valign="center");
-attach_all(part, attach_type, attach_size, a_x, a_y, a_opts, -height/2, height/2, attach_joint);     // plates, tracks, ball joint: every attachment part
+attach_note(a_fit[2]);                                         // warn if the attachment was reduced or left out
+attach_all(part, a_type, a_size, a_x, a_y, a_opts, -height/2, height/2, attach_joint);     // plates, tracks, ball joint: every attachment part

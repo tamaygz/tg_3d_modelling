@@ -129,7 +129,23 @@ function attach_y(y_mid) = y_mid + ATTACH_NOTCH/2;
 // does a socket of this size fit a host `height` tall?  (use in an assert with attach_fit_msg)
 // thickness (optional) = host thickness behind the socket: needs the socket depth plus a 1 mm floor
 function attach_fits(size, height, margin=3, thickness=undef) =
-    attach_socket_len(size) <= height - margin && (is_undef(thickness) || thickness >= ATTACH_T + 1);
+    attach_socket_len(size) <= height - margin + 0.001 && (is_undef(thickness) || thickness >= ATTACH_T + 1 - 0.001);
+// What actually fits: the type and size asked for if the host is large enough, otherwise the next smaller plate
+// size, otherwise no attachment at all. Returns [type, size, note]; note is "" or a sentence saying what was
+// changed. Use the returned type and size everywhere, and show the note with attach_note(). A host should never
+// stop with an error because an attachment does not fit.
+function attach_smaller(size) = size == "L" ? "M" : size == "M" ? "S" : "";
+function attach_fit(type, size, height, margin=3, thickness=undef) =
+    type == "none" ? ["none", size, ""] :
+    !is_undef(thickness) && thickness < ATTACH_T + 1 - 0.001 ?
+        ["none", size, str("attachment left out: sockets need a host at least ", ATTACH_T + 1, " mm thick, this one is ", thickness, " mm")] :
+    attach_fits(size, height, margin) ? [type, size, ""] :
+    attach_smaller(size) == "" ?
+        ["none", size, str("attachment left out: even the smallest plate (S) needs ", attach_socket_len("S") + margin, " mm of height, this host has ", height, " mm")] :
+    let(r = attach_fit(type, attach_smaller(size), height, margin, thickness))
+        [r[0], r[1], r[0] == "none" ? r[2] : str("attachment plate size reduced from ", size, " to ", r[1], " to fit a height of ", height, " mm")];
+// prints a note as a warning in the render log (nothing if the note is empty)
+module attach_note(note) { if (note != "") echo(str("WARNING: ", note)); }
 function attach_fit_msg(size, height, thickness=undef) =
     !is_undef(thickness) && thickness < ATTACH_T + 1
         ? str("attachment sockets need a host at least ", ATTACH_T + 1, " mm thick; this one is ", thickness, " mm. Make it thicker or set attach_type to none.")

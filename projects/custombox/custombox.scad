@@ -144,7 +144,7 @@ boxy = shape == "box";
 split = boxy && corner_fill == "solid";               // every wall its own panel, plain corners
 round_fn = max(3, ceil(corner_r*PI/2/facet));         // facets per round corner
 on_back = attach_face(attach_type) == "back";
-want_att = attach_type != "none" && boxy && on_back;  // mounting on the back: the back wall must be one straight facet
+want_att = attach_type != "none" && boxy && on_back && side_wave == 0;  // mounting on the back needs one straight back facet
 side_n = side_wave > 0 ? max(2, ceil(max(width, depth)/facet)) : (split || want_att ? 1 : 2);
 n_curve = max(24, ceil(PI*(width + depth)/2/facet/4)*4);
 
@@ -201,11 +201,11 @@ ledge_w = 1.6;                                        // ledge the lid rests on 
 lid_z = height - lid_drop - lid_t;                    // underside of the lid
 
 // ---------- mounting ----------
-assert(!want_att || side_wave == 0, "mounting needs a straight back wall: set side_wave to 0");
 a_opts = attach_opts(roof_gap=10, slide_axis=slide_axis, fin_len=fin_len, fin_w=fin_w, fin_t=fin_t);
 mount = want_att || (attach_type != "none" && !on_back) ? container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [base_band + floor_t, rim_band], floor_t) : undef;   // solid zone + sockets in the back wall
 has_att = !is_undef(mount);
-assert(container_mount_problem(mount) == "", container_mount_problem(mount));
+mount_note = attach_type != "none" && on_back && !boxy ? "mounting left out: plates on the back need the box shape (use fin, or shape = box)"
+           : container_mount_note(mount, attach_type, attach_size, attach_count);    // "" or what had to be reduced / left out
 
 // tables read by the tools
 feat = pattern_features(split ? side_spec(wall_pattern) : wall_spec);
@@ -218,7 +218,8 @@ checks = concat(has_lid ? [["lid", "box", "clear"]] : [], has_att ? [["attach", 
 report = [["perimeter", perimeter], ["wall cell used", is_list(wall_spec[1]) ? wall_spec[1][0] : wall_spec[1]],
           ["wall rib width", feat[0]], ["wall opening", feat[1]], ["lowest rim", h_low], ["highest rim", h_ref],
           ["lid fitted", has_lid ? 1 : 0],
-          ["wall pattern cut as asked", safe_mode(wall_mode, wall_spec) == wall_mode ? 1 : 0]];
+          ["wall pattern cut as asked", safe_mode(wall_mode, wall_spec) == wall_mode ? 1 : 0],
+          ["mounting plates fitted", container_mount_count(mount)], ["mounting as asked", mount_note == "" ? 1 : 0]];
 
 // ---------- 2D shapes ----------
 module plan_2d() { polygon(pts); }
@@ -263,6 +264,7 @@ module box_lid() {
 }
 
 // ---------- assembly ----------
+attach_note(mount_note);
 pick("box") box_body();
 if (has_lid) pick("lid") box_lid();
 container_attach(part, mount, a_opts, 0, h_ref, attach_joint);

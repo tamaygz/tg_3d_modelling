@@ -141,7 +141,7 @@ assert(!has_cable || on_floor || cable_z + hole[1]/2 < height - (cable_on == "fr
 a_opts = attach_opts(roof_gap=10, slide_axis=slide_axis);
 mount = container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [base_band + floor_t, rim_band]);   // solid zone + sockets in the back wall
 has_att = !is_undef(mount);
-assert(container_mount_problem(mount) == "", str(container_mount_problem(mount), " (rise_back makes the back wall higher)"));
+mount_note = container_mount_note(mount, attach_type, attach_size, attach_count);    // "" or what had to be reduced / left out
 assert(!(has_att && has_cable && cable_on == "back"), "the mounting zone is in the back wall: put the cable opening in the floor or a side wall");
 
 // tables read by the tools
@@ -153,7 +153,8 @@ parts = [
 checks = concat([["hw_case", "holder", ">=", 0]], has_att ? [["attach", "holder", "clear"]] : []);
 report = [["case width", cs[0]], ["case thickness", cs[1]], ["case height", cs[2]], ["outer width", size[0]], ["outer depth", size[1]],
           ["rim height", height], ["grip cut-out depth", dip], ["case stands out above the rim", item[2] + floor_t - height],
-          ["wall pattern cut as asked", wmode == wall_mode ? 1 : 0]];
+          ["wall pattern cut as asked", wmode == wall_mode ? 1 : 0],
+          ["mounting plates fitted", container_mount_count(mount)], ["mounting as asked", mount_note == "" ? 1 : 0]];
 
 // ---------- 2D shapes ----------
 module slot_2d(w, h) { hull() for (s=[-1, 1]) translate([s*max(0, w - h)/2, 0]) circle(d=min(w, h), $fn=32); }
@@ -189,6 +190,7 @@ module case_ref() {
 }
 
 // ---------- assembly ----------
+attach_note(mount_note);
 pick("holder") holder();
 container_attach(part, mount, a_opts, 0, h_ref, attach_joint);
 pick("hw_case") case_ref();

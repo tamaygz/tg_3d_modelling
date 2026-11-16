@@ -243,12 +243,13 @@ title_right = (do_split ? x_split : bx1) - max(corner_r, groove_in + groove_w + 
 title_width = max(1, title_right - title_left);
 title_font = font_for("serif bold");
 title_scale = len(title) > 0 ? min(1, title_width / (1.15 * text_len(title, title_size, title_font))) : 1;
-has_att = attach_type != "none";                      // any sockets at all
+a_fit   = attach_fit(attach_type, attach_size, by1 - by0, thickness=board_t);   // what fits: [type, size, note]
+a_type  = a_fit[0]; a_size = a_fit[1];
+has_att = a_type != "none";                           // any sockets at all
 a_y     = attach_y((by0 + by1)/2);                    // plate centre y (socket + pry notch centred on the board)
-a_keep  = do_split ? attach_socket_w(attach_size)/2 + dowel_l/2 + 2 : 0;   // keep sockets clear of the split dowels
-a_x     = attach_xs(attach_count, bx1 - bx0, attach_type, (bx0 + bx1)/2, do_split ? [x_split, a_keep] : undef, attach_size);   // socket x positions (fewer if they don't fit)
+a_keep  = do_split ? attach_socket_w(a_size)/2 + dowel_l/2 + 2 : 0;   // keep sockets clear of the split dowels
+a_x     = attach_xs(attach_count, bx1 - bx0, a_type, (bx0 + bx1)/2, do_split ? [x_split, a_keep] : undef, a_size);   // socket x positions (fewer if they don't fit)
 a_opts  = attach_opts(screw_d, screw_head_d, magnet, hook_gap, stand_angle, stand_depth, roof_gap, roof_angle, slide_axis=slide_axis);
-assert(!has_att || attach_fits(attach_size, by1 - by0, thickness=board_t), attach_fit_msg(attach_size, by1 - by0, board_t));
 function art_pieces(labels) = len(labels) == 0 ? 0 :   // separate solids in one plate's artwork
   sum([for (v=labels) len(str(v))]) + (s_sep == "none" ? 0 : len(labels) - 1) + (plate_border ? 1 : 0);
 n_txt_u = nStrip * art_pieces(ulabels);               // artwork pieces, main plates
@@ -268,7 +269,7 @@ parts = [
   ["stop_end",  "End stopper",        "PLA silver",       [0,0,45],  COL_SILVER, str("pieces=",2*players), "print=x180"],
   ["stop_div",  "Column divider",     "PLA silver",       [0,0,45],  COL_SILVER, str("pieces=",players), "print=x180"],
   ["dowel",     "Alignment dowel",    "PLA",              [0,0,-30], "#555555", str("pieces=",nStrip), "print=x90"],
-  each attach_rows(attach_type, len(a_x), attach_joint, [0,0,-55], opts=a_opts)
+  each attach_rows(a_type, len(a_x), attach_joint, [0,0,-55], opts=a_opts)
 ];
 // only check parts this variant has (no step rail or divider without steps, no right half when unsplit)
 checks = concat([
@@ -302,7 +303,7 @@ module board() {
     }
     for (y=track_y, x=peg_x()) translate([x,y,board_t - peg_depth]) cylinder(d=hole_b, h=peg_depth + 1, $fn=32);
     if (do_split) for (y=strip_y) translate([x_split,y,dz]) rotate([0,90,0]) cylinder(d=dw_hole, h=dowel_l + 1, center=true, $fn=32);
-    attach_sockets(attach_type, attach_size, a_x, a_y);
+    attach_sockets(a_type, a_size, a_x, a_y);
   }
 }
 module board_half(right) {
@@ -352,5 +353,6 @@ for (p=[0:players-1]) {
     if (has_steps) translate([tx(p, xs[min(sc[1], nS-1)]), 0, 0]) marker();
   }
 }
-attach_all(part, attach_type, attach_size, a_x, a_y, a_opts, by0 - edge_amp, by1 + edge_amp, attach_joint);
+attach_note(a_fit[2]);
+attach_all(part, a_type, a_size, a_x, a_y, a_opts, by0 - edge_amp, by1 + edge_amp, attach_joint);
 pick("dowel") if (do_split) for (y=strip_y) translate([x_split, y, dz]) rotate([0,90,0]) cylinder(d=dw_d, h=dowel_l - 1, center=true, $fn=32);

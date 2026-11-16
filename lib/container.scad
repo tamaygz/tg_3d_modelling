@@ -162,7 +162,7 @@ module container_ledge(pts, wall_t, z, w=1.6, steps=4) {
 // Plates that sit close together share one zone; further apart, each gets its own and the pattern continues between.
 //
 //   m = container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [bottom band, rim band]);
-//   assert(container_mount_problem(m) == "", container_mount_problem(m));
+//   attach_note(container_mount_note(m, attach_type, attach_size, attach_count));   // warns if it had to be reduced or left out
 //   container_walls(..., mount=m);                       // or container_wall(..., mount=m) for every run
 //   container_floor(..., mount=m);                       // builds it instead when the type mounts under the floor
 //   container_attach(part, m, attach_opts(), 0, h_top, attach_joint);     // plates, track / fin, ball joint parts
@@ -175,8 +175,24 @@ CONTAINER_MERGE  = 10;       // a strip of pattern narrower than this between th
 //              straight back length, centre x offset, lowest rim over the zones, merge up, merge down,
 //              zones [[centre x offset, width, its plates' x], ...]]
 // (undef for type "none"). hf = rim height function, t = wall thickness, bands = [bottom, top] plain bands.
+// The mount is fitted to the container: if the plates asked for do not fit, fewer plates and then the next
+// smaller plate size are tried; if nothing fits there is no mount (undef). container_mount_note() says what was
+// changed, so a project can warn instead of stopping:  attach_note(container_mount_note(m, type, size, count));
 function container_mount(pts, type, size, count, hf, t, bands=[4, 4], floor_t=2) =
-    type == "none" ? undef : attach_face(type) == "bottom" ? _container_mount_bottom(pts, type, size, count, t, floor_t) : let(
+    type == "none" ? undef : _container_mount_fit(pts, type, size, count, count, hf, t, bands, floor_t);
+function _container_mount_fit(pts, type, size, count, count0, hf, t, bands, floor_t) =
+    let(m = _container_mount_try(pts, type, size, count, hf, t, bands, floor_t))
+    container_mount_problem(m) == "" ? m :
+    count > 1 ? _container_mount_fit(pts, type, size, count - 1, count0, hf, t, bands, floor_t) :
+    attach_smaller(size) != "" ? _container_mount_fit(pts, type, attach_smaller(size), count0, count0, hf, t, bands, floor_t) : undef;
+function container_mount_note(m, type, size, count) =
+    type == "none" ? "" :
+    is_undef(m) ? str("mounting left out: not even one S plate fits this ", attach_face(type) == "bottom" ? "floor" : "back wall",
+                      attach_face(type) == "bottom" ? "" : " (it needs 41 mm of height and 38 mm of straight width: raise the back or the height)") :
+    m[1] != size ? str("mounting: plate size reduced from ", size, " to ", m[1], ", ", len(m[2]), " plate(s), to fit the ", m[16] == "bottom" ? "floor" : "back wall") :
+    len(m[2]) < count ? str("mounting: ", len(m[2]), " plate(s) instead of ", count, " fit the ", m[16] == "bottom" ? "floor" : "back wall") : "";
+function _container_mount_try(pts, type, size, count, hf, t, bands, floor_t) =
+    attach_face(type) == "bottom" ? _container_mount_bottom(pts, type, size, count, t, floor_t) : let(
     bb = shell_bounds(pts), yb = bb[1][1],
     bx = [for (q=pts) if (q[1] > yb - 0.01) q[0]],                      // the points of the straight back wall
     len = max(bx) - min(bx), cx = (max(bx) + min(bx))/2,
@@ -212,10 +228,10 @@ function container_mount_face(m) = is_undef(m) ? "none" : m[16];
 function container_mount_count(m) = is_undef(m) ? 0 : len(m[2]);
 // "" if the mount fits, otherwise what is wrong
 function container_mount_problem(m) = is_undef(m) ? "" :
-    m[16] == "bottom" ? (m[5] > m[10] || m[6] > m[12] ? str("mounting under the floor: ", len(m[2]), " plate(s) of size ", m[1], " need ", m[5], " x ", m[6],
+    m[16] == "bottom" ? (m[5] > m[10] + 0.01 || m[6] > m[12] + 0.01 ? str("mounting under the floor: ", len(m[2]), " plate(s) of size ", m[1], " need ", m[5], " x ", m[6],
         " mm of floor inside the walls, there is ", m[10], " x ", m[12], " mm.") : "") :
-    m[12] < m[6] ? str("mounting: the back wall is ", m[12], " mm high at its lowest point, the ", m[1], " plate needs ", m[6], " mm. Use a smaller plate or a higher back.") :
-    m[5] > m[10] ? str("mounting: ", len(m[2]), " plate(s) of size ", m[1], " need ", m[5], " mm of straight back wall, there is ", m[10], " mm.") : "";
+    m[12] < m[6] - 0.01 ? str("mounting: the back wall is ", m[12], " mm high at its lowest point, the ", m[1], " plate needs ", m[6], " mm. Use a smaller plate or a higher back.") :
+    m[5] > m[10] + 0.01 ? str("mounting: ", len(m[2]), " plate(s) of size ", m[1], " need ", m[5], " mm of straight back wall, there is ", m[10], " mm.") : "";
 // height of the plate centres above the floor plane
 function container_mount_z(m) = m[4] + (m[7] ? m[8] : 0) + CONTAINER_ZONE_M + ATTACH_NOTCH_ + attach_dims(m[1])[1]/2;
 ATTACH_NOTCH_ = attach_socket_len("S") - attach_dims("S")[1];          // pry notch below a plate

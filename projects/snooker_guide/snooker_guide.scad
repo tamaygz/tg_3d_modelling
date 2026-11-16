@@ -146,16 +146,17 @@ function lbl_off(d) = points_pos == "left" ? [-(d/2 + 1.2), 0] : points_pos == "
                     : points_pos == "below" ? [0, -(d/2 + 1.2 + points_size/2)] : [d/2 + 1.2, 0];
 function lbl_align() = points_pos == "left" ? "right" : points_pos == "right" ? "left" : "center";
 n_lbl = show_points ? 6 + (points_reds ? 1 : 0) + (show_cue && points_cue ? 1 : 0) : 0;   // labels on the table
-has_att = attach_type != "none";
 HOST_H = show_plate ? PH : TH;                  // height available for sockets
+HOST_T = show_plate ? plate_t : zb;             // material behind the sockets
+A_FIT = attach_fit(attach_type, attach_size, HOST_H, 4, HOST_T);   // what fits: [type, size, note]
+A_TYPE = A_FIT[0]; A_SIZE = A_FIT[1];
+has_att = A_TYPE != "none";
 wave   = show_plate && has_edge_wave(plate_shape) ? plate_wave : 0;
 H_TOP  = show_plate ? PC[1] + PH/2 + wave : TH/2;      // guide's top edge (y)
 H_BOT  = show_plate ? PC[1] - PH/2 - wave : -TH/2;     // bottom edge
 A_Y = attach_y(show_plate ? PC[1] : 0);
-A_X = attach_xs(attach_count, TW, attach_type, size=attach_size);   // fewer if they don't fit
+A_X = attach_xs(attach_count, TW, A_TYPE, size=A_SIZE);   // fewer if they don't fit
 A_OPTS = attach_opts(stand_angle=stand_angle, roof_gap=roof_gap, roof_angle=roof_angle, slide_axis=slide_axis);
-HOST_T = show_plate ? plate_t : zb;             // material behind the sockets
-assert(!has_att || attach_fits(attach_size, HOST_H, 4, HOST_T), attach_fit_msg(attach_size, HOST_H, HOST_T));
 
 parts = concat([
   ["plate",    "Surround plate", "PLA",           [0,0,-25], COL_WOOD_DARK, "plate=guide", "mat=PLA dark wood"],
@@ -172,7 +173,7 @@ parts = concat([
                   "plate=guide", str("mat=PLA ", b[0])]],
   [["labels",   "Point numbers",  "PLA",           [0,0,20],  LABEL_COL, str("pieces=", n_lbl + (legend ? 7 : 0)), "plate=guide", "mat=PLA label"],
    ["title",    "Title",          "PLA",           [0,0,20],  COL_TAN, str("pieces=", len([for (c=title) if (c != " ") c])), "plate=guide", "mat=PLA tan"],
-   each attach_rows(attach_type, len(A_X), attach_joint, [0,0,-45], opts=A_OPTS)]
+   each attach_rows(A_TYPE, len(A_X), attach_joint, [0,0,-45], opts=A_OPTS)]
 );
 report = [ ["guide width", show_plate ? PW : TW], ["guide height", show_plate ? PH : TH], ["ball diameter", bd], ["total height", zr] ];
 
@@ -220,7 +221,7 @@ module ball(at) {
 module legend_ball(at) { translate([0, 0, (show_plate ? plate_t : 0) - zc]) ball(at); }    // legend balls sit on the plate
 module inlay_labels() { if (points_style == "inlay") slab(zc - 0.6, zc + 1) labels_2d(); }
 
-module sockets() { attach_sockets(attach_type, attach_size, A_X, A_Y); }
+module sockets() { attach_sockets(A_TYPE, A_SIZE, A_X, A_Y); }
 
 if (show_plate) pick("plate") difference() {
   union() {
@@ -268,4 +269,5 @@ if (points_color != "ball colour") pick("labels") {
 }
 if (ttl && show_plate) pick("title") slab(plate_t, plate_t + 0.8)
   translate([0, TH/2 + plate_margin/2 + TITLE_H/2]) text(title, size=title_size, font=font_for("serif bold"), halign="center", valign="center", spacing=1.15);
-attach_all(part, attach_type, attach_size, A_X, A_Y, A_OPTS, H_BOT, H_TOP, attach_joint);
+attach_note(A_FIT[2]);
+attach_all(part, A_TYPE, A_SIZE, A_X, A_Y, A_OPTS, H_BOT, H_TOP, attach_joint);

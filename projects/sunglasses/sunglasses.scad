@@ -128,7 +128,7 @@ a_opts = attach_opts(roof_gap=10, slide_axis=slide_axis);
 mount = container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [base_band + floor_t, rim_band]);   // solid zone + sockets in the back wall
 has_att = !is_undef(mount);
 h_back = height + rise_back;
-assert(container_mount_problem(mount) == "", str(container_mount_problem(mount), " (rise_back makes the back wall higher)"));
+mount_note = container_mount_note(mount, attach_type, attach_size, attach_count);    // "" or what had to be reduced / left out
 
 // tables read by the tools
 parts = [
@@ -138,7 +138,8 @@ parts = [
 checks = has_att ? [["attach", "holder", "clear"]] : [];
 report = [["glasses width", gs[0]], ["folded depth", gs[1]], ["lens height", gs[2]], ["outer width", size[0]], ["outer depth", size[1]],
           ["rim height front", height], ["rim height back", h_back], ["grip cut-out depth", dip],
-          ["wall pattern cut as asked", wmode == wall_mode ? 1 : 0]];
+          ["wall pattern cut as asked", wmode == wall_mode ? 1 : 0],
+          ["mounting plates fitted", container_mount_count(mount)], ["mounting as asked", mount_note == "" ? 1 : 0]];
 
 // ---------- solids ----------
 // the nose ridge (lib/container.scad), kept inside the walls: it only grows up from the floor
@@ -160,5 +161,6 @@ module holder() {
 }
 
 // ---------- assembly ----------
+attach_note(mount_note);
 pick("holder") holder();
 container_attach(part, mount, a_opts, 0, h_ref, attach_joint);
