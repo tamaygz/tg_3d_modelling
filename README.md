@@ -13,6 +13,8 @@ Parametric 3D models (OpenSCAD) for 3D printing, built from a shared library of 
 | [attachments](projects/attachments) | Universal snap-in mounting plates (wall, keyhole, Skådis, hook, magnet, stand, glue, ceiling) and a test coupon |
 | [pattern_gallery](projects/pattern_gallery) | Catalogue of the 12 library patterns (lattices, weaves, Voronoi, scales, Truchet, Girih, waves, ripples) in every application mode, plus a box with independent wall, floor and lid patterns |
 | [custombox](projects/custombox) | Fully configurable container: any outline from square to flowing, sloped and wavy rims, patterned walls / floor / lid, solid or patterned corners, inset lid, snap-in wall mounting |
+| [earbuds](projects/earbuds) | Holder / dock for an earbuds charging case: presets (Soundcore P31i, AirPods, Galaxy Buds, Sony, Bose, Pixel, Nothing), cable opening or plug dock, front grip cut-out, patterned walls, snap-in mounting |
+| [sunglasses](projects/sunglasses) | Tray for folded glasses with nose support, front grip cut-out, patterned walls and snap-in mounting |
 
 Every project folder has the same contents:
 

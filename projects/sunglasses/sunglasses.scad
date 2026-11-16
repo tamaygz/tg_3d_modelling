@@ -1,0 +1,157 @@
+// Sunglasses holder: a tray for folded glasses with nose support, grip cut-out and mounting
+// Size presets (or your own), patterned walls from lib/patterns.scad, snap-in attachment plates from lib/attach.scad.
+// Built with lib/container.scad on lib/shell.scad. Sister project of projects/earbuds.
+include <../../lib/core.scad>
+use <../../lib/shell.scad>
+use <../../lib/patterns.scad>
+use <../../lib/attach.scad>
+use <../../lib/container.scad>
+
+part = "all";                    // which part to export ("all" = assembly); set by the build tools
+
+/* [Glasses] */
+// size of the folded glasses (typical values: measure yours, or use custom)
+preset = "standard"; // [standard, small, aviator, oversized, sport wrap, custom]
+// custom: width, depth when folded, lens height (mm)
+custom_size = [148, 48, 50];
+// play around the glasses on every side (mm)
+clearance = 2; // [0.5:0.5:10]
+// how much of the lens height the walls cover
+hold = 0.55; // [0.2:0.05:1.1]
+
+/* [Nose support] */
+// a ridge the bridge of the glasses rests on: keeps them centred and the lenses off the walls
+nose = true;
+// width at the top (the gap between the nose pads is 14-20 mm) and at the foot
+nose_w = 13; // [6:0.5:30]
+nose_foot = 24; // [8:1:60]
+// height above the floor: the bridge height carries the glasses, less only centres them
+nose_h = 26; // [5:1:80]
+// length front to back, and distance from the front wall
+nose_len = 12; // [4:1:40]
+nose_setback = 7; // [0:0.5:40]
+
+/* [Walls] */
+// wall thickness (mm)
+wall_t = 2.4; // [1.2:0.2:6]
+// corners of the holder
+corners = "round"; // [round, chamfer, square]
+corner_r = 14; // [1:0.5:40]
+// pattern on the walls and how it is applied
+wall_pattern = "diamond_lattice"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
+wall_mode = "through_cut"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
+// pattern repeat size and rib width in mm (0 = a size that suits the holder)
+wall_cell = 0; // [0:0.5:40]
+wall_strut = 0; // [0:0.1:8]
+wall_angle = 0; // [-90:5:90]
+wall_seed = 1; // [1:1:999]
+// relief height / engraving depth / lining thickness
+wall_relief = 0.6; // [0.2:0.1:2]
+// plain band under the rim and above the floor (mm)
+rim_band = 3; // [0:0.5:20]
+base_band = 2; // [0:0.5:20]
+// corners: pattern = the pattern runs round the corners; solid = plain corners
+corner_fill = "pattern"; // [pattern, solid]
+// how much higher the back wall is than the front (mm)
+rise_back = 12; // [0:1:80]
+
+/* [Front grip] */
+// lower the front rim so the glasses are easy to take out
+grip = true;
+// width of the cut-out and how far down it goes (mm)
+grip_width = 70; // [10:1:200]
+grip_depth = 14; // [2:1:80]
+
+/* [Floor] */
+floor_t = 2; // [1:0.2:8]
+floor_pattern = "hex_honeycomb"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
+floor_mode = "solid"; // [solid, through_cut, raised, recessed]
+
+/* [Mounting] */
+// how it mounts: plates snap into a boss on the back wall (none = stands on a shelf)
+attach_type = "none"; // [none, wall, keyhole, skadis, hook, magnet, flat, roof]
+attach_size = "S"; // [S, M, L]
+attach_count = 2; // [1:1:3]
+
+/* [Hidden] */
+$fn = 48;
+// typical folded sizes [width, depth, lens height]
+function preset_size(n) =
+    n == "standard" ? [148, 48, 50] : n == "small" ? [130, 42, 42] : n == "aviator" ? [142, 46, 56] :
+    n == "oversized" ? [156, 54, 62] : n == "sport wrap" ? [152, 64, 48] : custom_size;
+gs = preset_size(preset);
+inner = [gs[0] + 2*clearance, gs[1] + 2*clearance];
+size = inner + [2*wall_t, 2*wall_t];
+height = floor_t + max(8, gs[2]*hold);                // rim height at the front corners
+split = corner_fill == "solid";
+cr = min(corner_r, min(size)/2 - 0.5);
+round_fn = max(3, ceil(cr*PI/2/5));
+
+// ---------- outline and rim ----------
+runs = shell_rect_runs(size, corners, cr, round_fn, 1);
+run_edges = shell_runs_edges(runs);
+seam = corners == "square" ? shell_run(run_edges, "left")[1] : shell_run(run_edges, "corner_bl")[1] + floor(round_fn/2);
+pts = split ? shell_runs_pts(runs) : shell_start_at(shell_runs_pts(runs), seam);     // seam at the back left corner
+dip = grip ? min(grip_depth, height - floor_t - 2) : 0;
+rim = function(p) shell_rim_height(p, size, height, [0, rise_back]) - shell_rim_dip(p, size, dip, min(grip_width, size[0] - 2*cr), 0, "front", wall_t + 4);
+h_ref = height + rise_back;
+
+// ---------- patterns ----------
+function scaled(v, k) = is_list(v) ? [for (x=v) x*k] : v*k;
+k_auto = max(0.5, min(1, min(size[0], height)/50));
+function auto_cell(name) = let(d = pattern_default(name)[0]) wall_cell == 0 ? scaled(d, k_auto) : scaled(d, wall_cell/(is_list(d) ? d[0] : d));
+function auto_strut(name) = wall_strut > 0 ? wall_strut : name == "basket_weave" ? pattern_default(name)[1]*k_auto : max(1.2, pattern_default(name)[1]*k_auto);
+function spec_for(name, ang=0) = pattern_spec(name, auto_cell(name), auto_strut(name), ang, seed=wall_seed,
+    opts=name == "concentric_ripples" ? [["spokes", 6]] : name == "voronoi" ? [["round", 0.8]] : []);
+wall_spec = spec_for(wall_pattern, wall_angle);
+floor_spec = spec_for(floor_pattern);
+wmode = container_safe_mode(wall_mode, wall_spec);
+fmode = container_safe_mode(floor_mode, floor_spec);
+
+// ---------- nose support ----------
+nose_y = -inner[1]/2 + nose_setback + nose_len/2;     // centre of the ridge, behind the front wall
+assert(!nose || nose_setback + nose_len <= inner[1], str("nose support: setback ", nose_setback, " + length ", nose_len, " is more than the inside depth ", inner[1]));
+assert(!nose || nose_foot >= nose_w, "nose support: the foot must be at least as wide as the top");
+
+// ---------- mounting ----------
+has_att = attach_type != "none";
+back_len = size[0] - (corners == "square" ? 0 : 2*cr);
+a_x = has_att ? container_mount_xs(attach_count, back_len, attach_type, attach_size) : [];
+h_back = height + rise_back;
+boss_z = container_boss_z(h_back, attach_size);
+assert(!has_att || container_mount_problem(a_x, attach_size, back_len, h_back) == "",
+       str(container_mount_problem(a_x, attach_size, back_len, h_back), " (rise_back makes the back wall higher)"));
+
+// tables read by the tools
+parts = [
+  ["holder", "Sunglasses holder", "PLA / PETG", [0,0,0], COL_GREY_DARK],
+  attach_parts_row(attach_type, len(a_x), [0, 40, 0])
+];
+checks = has_att ? [["attach", "holder", "clear"]] : [];
+report = [["glasses width", gs[0]], ["folded depth", gs[1]], ["lens height", gs[2]], ["outer width", size[0]], ["outer depth", size[1]],
+          ["rim height front", height], ["rim height back", h_back], ["grip cut-out depth", dip],
+          ["wall pattern cut as asked", wmode == wall_mode ? 1 : 0]];
+
+// ---------- solids ----------
+// rounded ridge: wide foot on the floor, a round top `nose_w` wide where the bridge rests
+module nose_support() {
+    r = nose_w/2;
+    translate([0, nose_y, floor_t - 0.2]) hull() {
+        translate([-nose_foot/2, -nose_len/2 - 2, 0]) cube([nose_foot, nose_len + 4, 0.2]);
+        translate([0, 0, nose_h - r + 0.2]) rotate([90, 0, 0]) cylinder(r=r, h=nose_len, center=true);
+    }
+}
+module holder() {
+    container_floor(pts, floor_t, floor_spec, fmode, wall_t + 3, 0.5);
+    container_walls(pts, wall_t, h_ref, rim, wall_spec, wmode, [base_band + floor_t, rim_band],
+                    wmode == "overlay" ? min(wall_relief, 0.4) : wall_relief, wall_relief, split ? run_edges : undef, 3);
+    if (nose) {
+        nose_support();
+        if (fmode == "through_cut") translate([0, nose_y, 0]) linear_extrude(floor_t) square([nose_foot + 4, nose_len + 8], center=true);   // solid ground under the ridge
+    }
+    if (has_att) container_boss(attach_type, attach_size, a_x, size[1]/2, boss_z);
+}
+
+// ---------- assembly ----------
+pick("holder") holder();
+if (has_att) pick("attach") container_plates(attach_type, attach_size, a_x, size[1]/2, boss_z, attach_opts(roof_gap=10), 0, h_ref);

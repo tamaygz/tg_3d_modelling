@@ -28,7 +28,9 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   `_pat_gen_2d`, defaults + `pattern_features`, a gallery tile and tests. Do clipping and cuts in 2D and extrude:
   3D booleans are slow in OpenSCAD 2021 (only the weaves need one).
 - **Containers and curved walls:** `lib/shell.scad` (outline as points or named runs, rim height function,
-  `shell_strip_pts`, `shell_wrap`) with windowed `pattern_panel()` children; `projects/custombox` is the reference.
+  `shell_strip_pts`, `shell_wrap`) and `lib/container.scad` (walls with framed openings, floor, lid ledge, mounting
+  boss for the attachment plates, rim dip for grips). `projects/custombox` is the reference; `earbuds` and
+  `sunglasses` show a holder for a given item (presets + clearance, cable opening, grip, nose support).
   One facet per outline edge: keep straight sides as a single edge. Frame widths as `[sides, bottom, top]`.
 - **Snap fits** must bend the flexing part by 2% or less; prove it with a probe (see `projects/led_kit`, `probe`).
 - **Logos / artwork:** exact reproduction = `tools/svg_to_scad.py` into `lib/emblems/` (never `import()` an SVG:
@@ -87,6 +89,8 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 - ~250 mm printer bed: split long parts at a natural joint and join with dowels.
 - Default colours: wood-brown board, gold rails and sliders, silver stoppers, black inlays.
 - Wants generalised, reusable library parts and consistent patterns across projects.
+- Holders for things: wants presets for popular products (researched sizes, his own device first: Soundcore P31i
+  earbuds), a custom size, and a grip cut-out at the front.
 
 ## Design conventions that worked
 - Sliders on rails: T-rail + C-slider gripping under the flange, 0.25 mm clearance per side, printed top-down.
@@ -104,4 +108,6 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 | `projects/attachments` | v3, not printed yet | test coupon + every attachment plate; print first to check the snap fit |
 | `projects/pattern_gallery` | v1, not printed yet | catalogue + test bench of the 12 `lib/patterns.scad` patterns; views: gallery, sample, modes, box |
 | `projects/custombox` | v1, not printed yet | configurable box / basket / bin: outline, corners, sloped + wavy rim, patterned walls, floor, inset lid, mounting boss |
+| `projects/earbuds` | v1, not printed yet | charging-case holder: presets (P31i …), poses, cable hole / dock / slot, grip cut-out, mounting boss |
+| `projects/sunglasses` | v1, not printed yet | folded-glasses tray: size presets, nose support, grip cut-out, mounting boss |
 | `projects/_template` | – | starting point for new projects |

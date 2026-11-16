@@ -19,14 +19,15 @@ Reusable OpenSCAD building blocks. Projects live in `projects/<name>/`, so they 
 | `scale.scad` | `use` | number scales: `number_row_2d()` with dot, bar, diamond or no separators; `scale_plate_2d()`; `plate_body()` + `plate_art()` for 2-colour inlay, raised or engraved numbers |
 | `patterns.scad` | `use` | 12 parametric patterns for any flat surface, and the ways to apply them: `pattern_spec()`, `pattern_2d()`, `pattern_3d()`, `pattern_cutout_2d()`, `pattern_panel_2d()`, `pattern_relief()`, `pattern_cutter()`, `pattern_lining()`, `pattern_panel(mode, ...)`; checks `pattern_problem()`, `pattern_features()`, `pattern_is_connected()`. See [Patterns](#patterns) |
 | `patterns/*.scad` | `use` (optional) | the single generators behind `patterns.scad`, if you want one directly: `geometric.scad` (`hex_honeycomb_2d`, `square_grid_2d`, `diamond_lattice_2d`, `triangular_lattice_2d` and their `*_holes()` point lists), `woven.scad` (`basket_weave_3d/_2d`, `tri_weave_3d/_2d`, `weave_strand()`), `organic.scad` (`voronoi_2d`, `voronoi_cell_pts()`), `decorative.scad` (`fish_scales_2d`, `truchet_arcs_2d`, `girih_star_cross_2d`), `relief.scad` (`flowing_waves_2d`, `concentric_ripples_2d`), `tiling.scad` (`pat_hash()`, `pat_clip_halfplane()`) |
-| `shell.scad` | `use` | thin walls that follow a closed outline (boxes, baskets, bins, lamp shades): outlines `shell_rect_runs()` (round / chamfer / square corners, named runs), `shell_ellipse_pts()`, `shell_squircle_pts()`, `shell_wavy_pts()`; measuring `shell_len()`, `shell_dists()`, `shell_bounds()`; rim height field `shell_rim_height()`; `shell_strip_pts()` (the unrolled wall with its top edge) and `shell_wrap()` which bends a flat panel round the outline. See [Shells](#shells) |
+| `shell.scad` | `use` | thin walls that follow a closed outline (boxes, baskets, bins, lamp shades): outlines `shell_rect_runs()` (round / chamfer / square corners, named runs), `shell_ellipse_pts()`, `shell_squircle_pts()`, `shell_wavy_pts()`; measuring `shell_len()`, `shell_dists()`, `shell_bounds()`; rim height field `shell_rim_height()` and `shell_rim_dip()` (grip cut-out); `shell_dist_at()`; `shell_strip_pts()` (the unrolled wall with its top edge) and `shell_wrap()` which bends a flat panel round the outline. See [Shells](#shells) |
+| `container.scad` | `use` | the parts of an open box on a shell outline: `container_walls()` / `container_wall()` (patterned walls bent round the outline, with framed openings), `container_floor()` (with holes), `container_ledge()` (45° ledge for an inset lid), mounting on the back wall with the attachment plates: `container_mount_xs()`, `container_mount_problem()`, `container_boss()`, `container_plates()`; helpers `container_u()` / `container_v()` (place an opening on a wall from plan coordinates), `container_safe_mode()`. See [Containers](#containers) |
 
 Each style module also defines its option list (`PLAQUE_SHAPES`, `EDGE_PROFILES`, `MARKER_STYLES`…),
 so a model can copy them into its `// [a, b, c]` Customizer comment.
 
 ## Conventions
 
-- **Layers:** `core.scad` (atoms) → element files (`shapes`, `rail`, `scale`, `attach`, `led`, `cable`, `emblem`, `patterns`, `shell`) →
+- **Layers:** `core.scad` (atoms) → element files (`shapes`, `rail`, `scale`, `attach`, `led`, `cable`, `emblem`, `patterns`, `shell`, `container`) →
   data (`emblems/`, `fonts/`) → projects. Element files may `use <core.scad>` but not each other, except where one
   clearly builds on another. Projects never copy library code: if something is missing, add it here.
 - **Naming:** 2D generators end in `_2d`, point-list functions in `_pts`, cutters say so in their comment, private
@@ -254,6 +255,37 @@ reason keep other solids (a floor, a ledge) a hair inside the outline rather tha
 
 Limits: walls are vertical (no taper); curved parts are faceted; relief leaves hairline gaps between facets at
 outward corners; woven patterns wrapped over many facets are slow in OpenSCAD 2021 (minutes), fine on flat walls.
+
+## Containers
+
+`container.scad` puts shells, patterns and attachment plates together into the parts every box-like project
+needs (`projects/custombox`, `projects/earbuds`, `projects/sunglasses`). Front is −Y, back is +Y, the floor's
+underside is z = 0.
+
+```scad
+use <../../lib/shell.scad>
+use <../../lib/patterns.scad>
+use <../../lib/container.scad>
+size = [64, 36]; t = 2; H = 40;
+runs = shell_rect_runs(size, "round", 8, 4);
+pts  = shell_runs_pts(runs);
+rim  = function(p) H - shell_rim_dip(p, size, depth=14, width=26);          // grip cut-out in the front rim
+p    = pattern_spec("hex_honeycomb", cell=7, strut=1.2);
+
+container_floor(pts, 3, p, "solid") translate([0, 2]) circle(d=14);         // floor with a cable hole (plan)
+container_walls(pts, t, H, rim, p, "through_cut", bands=[5, 3])             // walls; one opening in the back wall:
+    translate([container_u(pts, [0, size[1]/2]), container_v(12, H)]) circle(d=10);
+// solid corners, every side its own panel:  container_walls(..., runs=shell_runs_edges(runs), post_w=3)
+// mounting:  xs = container_mount_xs(1, 48, "skadis", "S");  container_boss("skadis", "S", xs, size[1]/2, 21);
+```
+
+- **Openings** are 2D children: for walls in the loop's unrolled frame (x from `container_u(pts, plan_point)`,
+  y from `container_v(z, h)`), for the floor in plan. Each gets a plain collar `frame` wide. They are cut in 2D,
+  so they cost nothing.
+- **Seam:** with one panel all round, start the outline where no opening is (`shell_start_at`); an opening must
+  not straddle the two ends of the strip.
+- **Mounting:** walls are thinner than an attachment socket (4.5 mm), so a solid boss on the outside of the back
+  wall takes the sockets. `container_mount_problem()` returns "" or the reason it does not fit (assert it).
 
 ## Attachment plates
 

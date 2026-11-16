@@ -1,0 +1,27 @@
+# parameter variants checked by: python3 tools/build.py sunglasses --test
+# the holder must be one watertight piece (nose support and boss fused to it)
+
+# --- sizes ---
+preset = "small"; wall_pattern = "hex_honeycomb"
+preset = "aviator"; wall_pattern = "triangular_lattice"; nose_h = 32
+preset = "oversized"; wall_pattern = "voronoi"; wall_seed = 5; corner_r = 26
+preset = "sport wrap"; wall_pattern = "voronoi"; attach_type = "wall"; corner_r = 24; rise_back = 20
+preset = "custom"; custom_size = [140, 40, 45]; clearance = 4; hold = 0.8
+
+# --- nose support and grip ---
+nose = false; grip = false; rise_back = 0; wall_mode = "solid"
+nose_w = 18; nose_foot = 40; nose_h = 40; nose_len = 20; nose_setback = 12
+grip_width = 110; grip_depth = 24; hold = 0.9; nose_h = 12
+floor_mode = "through_cut"; floor_pattern = "square_grid"
+
+# --- walls and corners ---
+preset = "small"; wall_pattern = "basket_weave"; wall_mode = "open_lattice"; corner_fill = "solid"; corners = "chamfer"; corner_r = 8; nose_h = 18; rise_back = 0
+corners = "square"; corner_fill = "solid"; wall_pattern = "girih_star_cross"; wall_mode = "raised"
+wall_pattern = "flowing_waves"; wall_mode = "raised"; wall_angle = 15
+wall_pattern = "fish_scales"; wall_mode = "recessed"; wall_t = 3
+wall_pattern = "concentric_ripples"; wall_mode = "overlay"
+
+# --- mounting ---
+attach_type = "skadis"; attach_size = "S"; attach_count = 3; rise_back = 14
+attach_type = "keyhole"; attach_count = 1; attach_size = "M"; rise_back = 26
+attach_type = "roof"; rise_back = 14
