@@ -30,3 +30,7 @@ wall_t = 1.2; floor_t = 1; clearance = 0.3; rim_band = 1.5; base_band = 1
 # --- slide track and ball joint ---
 attach_type = "slide"; slide_axis = "vertical"; rise_back = 12
 attach_type = "magnet"; attach_joint = "ball"; rise_back = 12
+
+# --- mounting that does not fit: smaller plate or none (WARNING, no error) ---
+attach_type = "skadis"; attach_size = "L"; rise_back = 14
+attach_type = "wall"; hold = 0.3; preset = "Sony WF-1000XM5"

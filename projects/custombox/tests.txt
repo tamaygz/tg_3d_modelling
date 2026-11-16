@@ -43,3 +43,8 @@ attach_type = "fin"; shape = "ellipse"; floor_mode = "through_cut"; floor_patter
 attach_type = "fin"; attach_count = 2; width = 160; fin_w = 140; floor_t = 3
 attach_type = "slide"; attach_count = 2; width = 150
 attach_type = "wall"; attach_joint = "ball"
+
+# --- mounting that does not fit: fewer / smaller plates or none (WARNING, no error) ---
+attach_type = "wall"; attach_size = "L"; attach_count = 3; height = 60; width = 110
+attach_type = "wall"; attach_size = "L"; height = 30
+attach_type = "skadis"; shape = "ellipse"

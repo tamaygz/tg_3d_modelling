@@ -46,7 +46,7 @@ def main():
     if out.exists():
         shutil.rmtree(out)
     (out / "projects").mkdir(parents=True)
-    shutil.copytree(ROOT / "lib", out / "lib", ignore=shutil.ignore_patterns("README.md", "*.txt"))
+    shutil.copytree(ROOT / "lib", out / "lib", ignore=shutil.ignore_patterns("README.md", "*.txt", "examples"))
 
     only = [n for n in a.only.split(",") if n]
     names = sorted(p.name for p in (ROOT / "projects").iterdir()

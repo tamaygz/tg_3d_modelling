@@ -1,5 +1,5 @@
-// Containers: the parts of an open box built on a shell outline. Patterned walls with openings, floor, lid
-// ledge, mounting boss. Used by projects/custombox, projects/earbuds, projects/sunglasses.
+// Containers: the parts of an open box built on a shell outline. Patterned walls with openings and plain areas,
+// floor, lid ledge, ridge, and a mounting zone for the attachment plates built into the back wall or the floor. Used by projects/custombox, projects/earbuds, projects/sunglasses.
 // Use:  use <../../lib/container.scad>   (builds on shell.scad, patterns.scad, attach.scad)
 //
 // Frame: the outline `pts` (see shell.scad) is the outer face of the walls in the floor plane; the floor's

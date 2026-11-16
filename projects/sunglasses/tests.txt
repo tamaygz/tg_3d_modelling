@@ -34,3 +34,8 @@ attach_type = "wall"; attach_joint = "ball"; attach_count = 1; rise_back = 14
 nose_w = 34; nose_foot = 244; nose_h = 22; nose_len = 14; nose_setback = 5
 nose_w = 30; nose_foot = 30; nose_h = 8; nose_len = 30; nose_run_front = 10; nose_run_back = 14; nose_crown = 1
 nose_run_front = 12; nose_run_back = 12; nose_len = 12; floor_mode = "through_cut"; floor_pattern = "hex_honeycomb"
+
+# --- mounting that does not fit: fewer / smaller plates or none (WARNING, no error) ---
+preset = "aviator"; attach_type = "wall"; attach_count = 2
+attach_type = "wall"; attach_size = "L"; attach_count = 3; rise_back = 16
+attach_type = "wall"; attach_size = "L"; rise_back = 0

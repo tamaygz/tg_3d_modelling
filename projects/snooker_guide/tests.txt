@@ -21,3 +21,6 @@ title_size = 14; points_size = 9 | inside plate: title labels wood cloth cushion
 # --- slide track and ball joint ---
 attach_type = "slide"; slide_axis = "vertical"
 attach_type = "keyhole"; attach_joint = "ball"; attach_count = 1
+
+# --- largest plates on the smallest guide (the fit check runs; within the size range they always fit) ---
+attach_size = "L"; table_len = 100

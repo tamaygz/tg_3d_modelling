@@ -27,3 +27,6 @@ base_min = 0; base_max = 3; steps = []; attach_count = 4
 # --- slide track and ball joint ---
 attach_type = "slide"
 attach_type = "wall"; attach_joint = "ball"; attach_count = 1
+
+# --- attachment too large for the board: reduced, no error ---
+attach_size = "L"; margin_y = 2
