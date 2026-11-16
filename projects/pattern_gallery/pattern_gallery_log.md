@@ -24,6 +24,11 @@
   bars between wave ribs at their closest points (brick-bond style for parallel ribs) and spokes to ripples,
   automatically wherever cells are cut out. Two test variants added.
 
+## v1.2 (2026-11-16) – patterns that close round a loop
+- `pattern_period()`, `pattern_wrapped(p, L)`; voronoi and truchet take `wrap` (random numbers from column i mod n).
+  Check used: the pattern in a window at -L/2 minus the same pattern moved by L must be empty (it is, for all 11
+  repeatable patterns; unfitted it differs by 140-340 mm2).
+
 ## Prints and feedback
 - (none yet)
 

@@ -60,18 +60,19 @@ module fish_scales_level_2d(size, k, steps=3, cell=[12, 12], overlap=0.4, curvat
 // the middle of the tile edges, so neighbouring tiles always join into continuous paths.
 // variation: "random" (per tile from the seed; bias = share of tiles turned the other way), "alternate"
 // (checkerboard: circles), "rows", "uniform" (diagonal waves).
-function truchet_flip(i, j, variation="random", seed=1, bias=0.5) =
+// wrap = n > 0: the tiles repeat every n columns (for a wall that is n tiles round; use an even n)
+function truchet_flip(i0, j, variation="random", seed=1, bias=0.5, wrap=0) = let(i = wrap > 0 ? (i0%wrap + wrap)%wrap : i0)
     variation == "alternate" ? (abs(i) + abs(j))%2 == 1 :
     variation == "rows" ? abs(j)%2 == 1 :
     variation == "uniform" ? false : pat_hash(i, j, seed, 2) < bias;
 function _arc_band_pts(c, r, w, a0, a1, n=14) = concat(
     [for (i=[0:n]) c + (r + w/2)*[cos(a0 + (a1 - a0)*i/n), sin(a0 + (a1 - a0)*i/n)]],
     [for (i=[n:-1:0]) c + (r - w/2)*[cos(a0 + (a1 - a0)*i/n), sin(a0 + (a1 - a0)*i/n)]]);
-module truchet_arcs_2d(size, cell=12, strut=1.6, variation="random", seed=1, bias=0.5, center=[0, 0]) {
+module truchet_arcs_2d(size, cell=12, strut=1.6, variation="random", seed=1, bias=0.5, center=[0, 0], wrap=0) {
     e = 0.3;                                                            // e: degrees of overlap between tiles
     for (j=[pat_i0(size[1], cell, center[1]):pat_i1(size[1], cell, center[1])])
     for (i=[pat_i0(size[0], cell, center[0]):pat_i1(size[0], cell, center[0])]) translate([i*cell, j*cell])
-        for (q = truchet_flip(i, j, variation, seed, bias) ? [[-1, 1, 270], [1, -1, 90]] : [[-1, -1, 0], [1, 1, 180]])
+        for (q = truchet_flip(i, j, variation, seed, bias, wrap) ? [[-1, 1, 270], [1, -1, 90]] : [[-1, -1, 0], [1, 1, 180]])
             polygon(_arc_band_pts([q[0], q[1]]*cell/2, cell/2, strut, q[2] - e, q[2] + 90 + e));
 }
 

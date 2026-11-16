@@ -15,6 +15,12 @@
 - The mounting boss behind the back wall is gone: the back wall carries a solid zone with the sockets
   (`container_mount()` in lib/container.scad). Pattern centred on the front wall (`anchor`).
 
+## v1.2 (2026-11-16) – no seam where the wall closes
+- User report: with Voronoi the pattern did not match where the wall's two ends meet. Cause: random patterns do
+  not repeat (and earbuds / sunglasses never fitted any pattern to the perimeter). Now every wall that runs all
+  round uses `pattern_wrapped()`: cells scaled to fit, wavelength fitted, Voronoi / Truchet repeat after one round.
+  Measured: mismatch at the seam 140-340 mm2 before, none after, for all patterns.
+
 ## Prints and feedback
 - (none yet)
 

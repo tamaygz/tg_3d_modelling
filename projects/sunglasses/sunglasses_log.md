@@ -15,6 +15,12 @@
 - User request: front / back slope (`nose_run_front`, `nose_run_back`) and a domed top (`nose_crown`) so the
   glasses do not hook behind the ridge. Defaults 2 / 8 mm and 0.6.
 
+## v1.3 (2026-11-16) – no seam where the wall closes
+- User report: with Voronoi the pattern did not match where the wall's two ends meet. Cause: random patterns do
+  not repeat (and earbuds / sunglasses never fitted any pattern to the perimeter). Now every wall that runs all
+  round uses `pattern_wrapped()`: cells scaled to fit, wavelength fitted, Voronoi / Truchet repeat after one round.
+  Measured: mismatch at the seam 140-340 mm2 before, none after, for all patterns.
+
 ## Prints and feedback
 - (none yet)
 

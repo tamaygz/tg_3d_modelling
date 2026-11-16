@@ -67,7 +67,8 @@ base_band = 4; // [0:0.5:30]
 corner_fill = "pattern"; // [pattern, solid]
 // plain strip at both ends of each wall panel (solid corners) (mm)
 post_w = 3; // [0:0.5:20]
-// adjust the cell size slightly so a whole number of cells fits round the box (no seam; pattern corners only)
+// adjust the pattern slightly so it closes round the box without a seam (pattern corners only): cell size for
+// lattices, wavelength for waves, and Voronoi / Truchet are made to repeat after one round
 fit_cells = true;
 // front and back walls can differ from the others (box shape with solid corners)
 front_pattern = "same"; // [same, hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
@@ -175,21 +176,15 @@ function opts_for(name, h) =
     name == "voronoi" ? [["round", voronoi_round]] :
     name == "flowing_waves" ? [["amplitude", wave_amplitude], ["wavelength", wave_length]] :
     name == "concentric_ripples" ? [["spokes", ripple_spokes]] : [];
-// length along the wall after which a pattern repeats, as a multiple of its cell (0 = it never repeats)
-function period_x(name) = name == "basket_weave" ? 2 : name == "tri_weave" ? 1/sin(60) :
-    name == "voronoi" || name == "concentric_ripples" || name == "flowing_waves" ? 0 : 1;
-// cell size: 0 = default; a number scales the default proportion; fit = make it divide `fit_len`
-function cell_for(name, c, fit_len=0) = let(d = pattern_default(name)[0], d0 = is_list(d) ? d[0] : d,
-    want = c == 0 ? d0 : c, px = period_x(name),
-    got = fit_len > 0 && px > 0 ? fit_len/px/max(1, round(fit_len/px/want)) : want)
-    scaled(d, got/d0);
-function spec_for(name, c, st, ang, seed, h, fit_len=0) =
-    pattern_spec(name, cell_for(name, c, fit_len), st == 0 ? undef : st, ang, seed=seed, opts=opts_for(name, h),
+// cell size: 0 = default; a number scales the default proportion
+function cell_for(name, c) = let(d = pattern_default(name)[0], d0 = is_list(d) ? d[0] : d) scaled(d, (c == 0 ? d0 : c)/d0);
+function spec_for(name, c, st, ang, seed, h) =
+    pattern_spec(name, cell_for(name, c), st == 0 ? undef : st, ang, seed=seed, opts=opts_for(name, h),
                  min_strut=min_strut, min_opening=min_opening);
 function safe_mode(m, s) = container_safe_mode(m, s);     // a pattern that would fall apart when cut through is raised instead
 
-wrap_fit = !split && fit_cells && wall_angle == 0 ? perimeter : 0;
-wall_spec = spec_for(wall_pattern, wall_cell, wall_strut, wall_angle, wall_seed, wall_t, wrap_fit);
+wall_spec0 = spec_for(wall_pattern, wall_cell, wall_strut, wall_angle, wall_seed, wall_t);
+wall_spec = !split && fit_cells ? pattern_wrapped(wall_spec0, perimeter) : wall_spec0;      // closes without a seam (the library does the same)
 front_name = front_pattern == "same" ? wall_pattern : front_pattern;
 back_name = back_pattern == "same" ? wall_pattern : back_pattern;
 function side_spec(name) = spec_for(name, wall_cell, wall_strut, wall_angle, wall_seed, wall_t);
@@ -237,7 +232,7 @@ module lid_2d() {
 module wall_run(e0, e1, spec, m, side_border) {
     mode = safe_mode(m, spec);
     container_wall(pts, e0, e1, wall_t, h_ref, rim, spec, mode, [side_border, base_band + floor_t, rim_band],
-                   mode == "overlay" ? min(wall_relief, 0.4) : wall_relief, wall_relief, mount=mount,
+                   mode == "overlay" ? min(wall_relief, 0.4) : wall_relief, wall_relief, mount=mount, fit=fit_cells,
                    anchor=!split && want_att ? [0, -depth/2] : undef);
 }
 module walls() {

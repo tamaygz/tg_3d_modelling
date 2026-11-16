@@ -27,9 +27,11 @@ function container_v(z, h) = z - h/2;
 // mount  = a container_mount() spec: its solid zone and sockets are built into the wall where they belong
 // anchor = plan point the pattern is centred on (default: the middle of the strip)
 // The optional child cuts openings (loop frame, see the top of this file).
-module container_wall(pts, e0, e1, t, h, hf, p, mode="solid", border=[0, 4, 4], depth=0.8, lining_t=0.6, frame=2, plain=[], mount, anchor) {
-    if ($children > 0) _container_wall(pts, e0, e1, t, h, hf, p, mode, border, depth, lining_t, frame, true, plain, mount, anchor) children();
-    else _container_wall(pts, e0, e1, t, h, hf, p, mode, border, depth, lining_t, frame, false, plain, mount, anchor) square(1);
+// fit    = on a wall that runs all the way round, adjust the pattern so it closes without a seam (pattern_wrapped)
+module container_wall(pts, e0, e1, t, h, hf, p, mode="solid", border=[0, 4, 4], depth=0.8, lining_t=0.6, frame=2, plain=[], mount, anchor, fit=true) {
+    q = fit && e0 == 0 && e1 == len(pts) - 1 ? pattern_wrapped(p, shell_len(pts)) : p;
+    if ($children > 0) _container_wall(pts, e0, e1, t, h, hf, q, mode, border, depth, lining_t, frame, true, plain, mount, anchor) children();
+    else _container_wall(pts, e0, e1, t, h, hf, q, mode, border, depth, lining_t, frame, false, plain, mount, anchor) square(1);
 }
 module _container_plain_2d(zones, h) { for (z=zones) translate([z[0] - z[2]/2, z[1] - h/2]) square([z[2], z[3]]); }
 module _container_wall(pts, e0, e1, t, h, hf, p, mode, border, depth, lining_t, frame, holes, plain, mount, anchor) {
@@ -65,14 +67,14 @@ module _container_wall(pts, e0, e1, t, h, hf, p, mode, border, depth, lining_t, 
 // runs = shell_runs_edges(...) of a box outline: every side is its own panel with `post_w` of plain wall at both
 // ends, and the corner runs are plain. bands = [bottom, top] plain bands; plain, mount, anchor: see container_wall
 // (anchor only matters for the single panel; separate sides are centred on themselves).
-module container_walls(pts, t, h, hf, p, mode="solid", bands=[4, 4], depth=0.8, lining_t=0.6, runs, post_w=3, frame=2, plain=[], mount, anchor) {
-    if ($children > 0) _container_walls(pts, t, h, hf, p, mode, bands, depth, lining_t, runs, post_w, frame, true, plain, mount, anchor) children();
-    else _container_walls(pts, t, h, hf, p, mode, bands, depth, lining_t, runs, post_w, frame, false, plain, mount, anchor) square(1);
+module container_walls(pts, t, h, hf, p, mode="solid", bands=[4, 4], depth=0.8, lining_t=0.6, runs, post_w=3, frame=2, plain=[], mount, anchor, fit=true) {
+    if ($children > 0) _container_walls(pts, t, h, hf, p, mode, bands, depth, lining_t, runs, post_w, frame, true, plain, mount, anchor, fit) children();
+    else _container_walls(pts, t, h, hf, p, mode, bands, depth, lining_t, runs, post_w, frame, false, plain, mount, anchor, fit) square(1);
 }
-module _container_walls(pts, t, h, hf, p, mode, bands, depth, lining_t, runs, post_w, frame, holes, plain, mount, anchor) {
+module _container_walls(pts, t, h, hf, p, mode, bands, depth, lining_t, runs, post_w, frame, holes, plain, mount, anchor, fit) {
     if (is_undef(runs)) {
-        if (holes) container_wall(pts, 0, len(pts) - 1, t, h, hf, p, mode, [0, bands[0], bands[1]], depth, lining_t, frame, plain, mount, anchor) children();
-        else container_wall(pts, 0, len(pts) - 1, t, h, hf, p, mode, [0, bands[0], bands[1]], depth, lining_t, frame, plain, mount, anchor);
+        if (holes) container_wall(pts, 0, len(pts) - 1, t, h, hf, p, mode, [0, bands[0], bands[1]], depth, lining_t, frame, plain, mount, anchor, fit) children();
+        else container_wall(pts, 0, len(pts) - 1, t, h, hf, p, mode, [0, bands[0], bands[1]], depth, lining_t, frame, plain, mount, anchor, fit);
     }
     else for (r=runs) {
         corner = container_is_corner(r[0]);

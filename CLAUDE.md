@@ -35,6 +35,8 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   mounting zone for the attachment plates via `container_mount()` + `mount=`, rim dip for grips). `projects/custombox` is the reference; `earbuds` and
   `sunglasses` show a holder for a given item (presets + clearance, cable opening, grip, nose support).
   One facet per outline edge: keep straight sides as a single edge. Frame widths as `[sides, bottom, top]`.
+  A wall that closes on itself must use a pattern that repeats after the perimeter: `pattern_wrapped()` (the
+  container walls do it); check a seam by subtracting the pattern moved by one perimeter from itself.
 - **Snap fits** must bend the flexing part by 2% or less; prove it with a probe (see `projects/led_kit`, `probe`).
 - **Logos / artwork:** exact reproduction = `tools/svg_to_scad.py` into `lib/emblems/` (never `import()` an SVG:
   the browser engine scales it differently). Verify with `tools/artfit.py overlay`. The user wants a 100% match

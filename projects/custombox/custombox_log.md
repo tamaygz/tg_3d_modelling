@@ -36,6 +36,12 @@
 - `attach_type = "fin"`: socket under the floor in a solid floor zone (thickened upwards), slide plate + fin with a
   blade for anchoring between sofa cushions (user's snack and drinks box). `slide` track and `attach_joint = "ball"` too.
 
+## v1.3 (2026-11-16) – no seam where the wall closes
+- User report: with Voronoi the pattern did not match where the wall's two ends meet. Cause: random patterns do
+  not repeat (and earbuds / sunglasses never fitted any pattern to the perimeter). Now every wall that runs all
+  round uses `pattern_wrapped()`: cells scaled to fit, wavelength fitted, Voronoi / Truchet repeat after one round.
+  Measured: mismatch at the seam 140-340 mm2 before, none after, for all patterns.
+
 ## Prints and feedback
 - (none yet)
 

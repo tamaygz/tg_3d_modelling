@@ -101,6 +101,25 @@ function pattern_tied(p) = let(s = _ps(p), add =
     s[0] == "flowing_waves" && is_undef(_po(s, "ties", undef)) ? [["ties", 1]] :
     s[0] == "concentric_ripples" && is_undef(_po(s, "spokes", undef)) ? [["spokes", 6]] : [])
     len(add) == 0 ? s : [for (i=[0:len(s)-1]) i == 8 ? concat(s[8], add) : s[i]];
+// Wrapping a pattern round a closed wall: it only closes without a seam if it repeats after exactly the length
+// of the wall. pattern_period(p) = the length along X after which a pattern repeats (0 = it does not).
+// pattern_wrapped(p, L) = the same pattern, adjusted as little as possible so that L is a whole number of
+// repeats: the cell size is scaled by a few percent (rib widths stay), flowing waves get a fitting wavelength,
+// and the random patterns (voronoi, truchet_arcs) are made to repeat after L. Rotated or stretched patterns and
+// concentric ripples are returned unchanged (they cannot be made to repeat this way).
+function pattern_period(p) = let(s = _ps(p), n = s[0], c = pat_xy(_pc(s))[0])
+    n == "hex_honeycomb" ? (_po(s, "orient", "pointy") == "flat" ? c*sqrt(3) : c) :
+    n == "triangular_lattice" ? (_po(s, "orient", "up") == "side" ? c*sqrt(3) : c) :
+    n == "basket_weave" ? 2*c : n == "tri_weave" ? c/sin(60) :
+    n == "truchet_arcs" ? 2*c :
+    n == "flowing_waves" ? _po(s, "wavelength", 30) : n == "concentric_ripples" ? 0 : c;
+function pattern_wrapped(p, L) = let(s = _ps(p), per = pattern_period(s))
+    s[3] != 0 || s[7] != [1, 1] || per <= 0 ? s : let(
+        n = max(1, round(L/per)), k = L/(n*per),
+        add = s[0] == "flowing_waves" ? [["wavelength", L/n]] :
+              s[0] == "voronoi" ? [["wrap", n]] : s[0] == "truchet_arcs" ? [["wrap", 2*n]] : [],
+        cell = s[0] == "flowing_waves" ? s[1] : is_list(s[1]) ? [for (x=s[1]) x*k] : s[1]*k)
+        [for (i=[0:len(s)-1]) i == 1 ? cell : i == 8 ? concat(add, s[8]) : s[i]];
 // the same pattern moved by d = [x, y] on the surface (the anchor of the pattern goes to d)
 function pattern_shift(p, d) = let(s = _ps(p), q = pat_rot(d, -s[3])) [for (i=[0:len(s)-1]) i == 4 ? s[4] + q : s[i]];
 
@@ -136,9 +155,9 @@ module _pat_gen_2d(s, cover, g=[0, 0]) {
     else if (n == "triangular_lattice") triangular_lattice_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "alternate", true), _po(s, "orient", "up"), center=g);
     else if (n == "basket_weave") basket_weave_2d(cover, pat_xy(c)[0], pat_xy(st)[0], center=g);
     else if (n == "tri_weave") tri_weave_2d(cover, pat_xy(c)[0], pat_xy(st)[0], center=g);
-    else if (n == "voronoi") voronoi_2d(cover, pat_xy(c)[0], pat_xy(st)[0], s[6], _po(s, "irregularity", 1), _po(s, "min_cell", 0), _po(s, "round", 0), center=g);
+    else if (n == "voronoi") voronoi_2d(cover, pat_xy(c)[0], pat_xy(st)[0], s[6], _po(s, "irregularity", 1), _po(s, "min_cell", 0), _po(s, "round", 0), center=g, wrap=_po(s, "wrap", 0));
     else if (n == "fish_scales") fish_scales_2d(cover, pat_xy(c), pat_xy(st)[0], _po(s, "overlap", 0.4), _po(s, "curvature", 0.7), _po(s, "stagger", 0.5), center=g);
-    else if (n == "truchet_arcs") truchet_arcs_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "variation", "random"), s[6], _po(s, "bias", 0.5), center=g);
+    else if (n == "truchet_arcs") truchet_arcs_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "variation", "random"), s[6], _po(s, "bias", 0.5), center=g, wrap=_po(s, "wrap", 0));
     else if (n == "girih_star_cross") girih_star_cross_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "star", undef), _po(s, "star_ratio", undef), center=g);
     else if (n == "flowing_waves") flowing_waves_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "amplitude", 3), _po(s, "wavelength", 30), _po(s, "phase", 0), _po(s, "shift", 0), center=g, ties=_po(s, "ties", 0));
     else if (n == "concentric_ripples") concentric_ripples_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "rings", 0), _po(s, "first", undef), _po(s, "centers", [[0, 0]]), _po(s, "spokes", 0), center=g);
