@@ -1,4 +1,4 @@
 model custombox.scad
-rev 761c504
-made 2026-11-16 12:39
+rev 9e96135
+made 2026-11-17 02:34
 Box.stl
