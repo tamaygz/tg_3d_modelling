@@ -128,8 +128,11 @@ fmode = container_safe_mode(floor_mode, floor_spec);
 
 // ---------- cable opening ----------
 under = attach_face(attach_type) == "bottom" && attach_type != "none";     // the mounting zone is in the floor
-has_cable = cable != "none" && !(under && cable_on == "floor");
-cable_note = cable != "none" && !has_cable ? "cable opening left out: the floor holds the mounting zone of the fin; put the opening in a wall" : "";
+behind = attach_type != "none" && !under;                 // the mounting zone is in the back wall
+has_cable = cable != "none" && !(under && cable_on == "floor") && !(behind && cable_on == "back");
+cable_note = cable == "none" || has_cable ? "" :
+    under ? "cable opening left out: the floor holds the mounting zone of the fin; put the opening in a wall"
+          : "cable opening left out: the back wall holds the mounting zone; put the opening in the floor or a side wall";
 fit = cable == "dock" ? 0.15 : 1.0;                   // play round the plug: a dock grips it
 hole = [plug_size[0] + 2*fit, plug_size[1] + 2*fit];
 on_floor = cable_on == "floor";
@@ -145,7 +148,6 @@ a_opts = attach_opts(roof_gap=10, slide_axis=slide_axis, fin_len=fin_len, fin_w=
 mount = container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [base_band + ft, rim_band], ft);   // solid zone + sockets in the back wall (fin: in the floor)
 has_att = !is_undef(mount);
 mount_note = container_mount_note(mount, attach_type, attach_size, attach_count);    // "" or what had to be reduced / left out
-assert(!(has_att && has_cable && cable_on == "back"), "the mounting zone is in the back wall: put the cable opening in the floor or a side wall");
 
 // tables read by the tools
 parts = [
