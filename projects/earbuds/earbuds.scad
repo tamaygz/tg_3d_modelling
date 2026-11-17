@@ -76,16 +76,22 @@ floor_mode = "solid"; // [solid, through_cut, recessed]
 
 /* [Mounting] */
 // how it mounts: plates snap into a solid zone of the back wall (none = stands on a desk)
-attach_type = "none"; // [none, wall, keyhole, skadis, hook, magnet, flat, roof, slide]
+attach_type = "none"; // [none, wall, keyhole, skadis, hook, magnet, flat, roof, slide, fin]
 attach_size = "S"; // [S, M, L]
 attach_count = 1; // [1:1:2]
 // ball joint between the holder and the plate: turn and tilt it freely, the lock ring clamps it
 attach_joint = "none"; // [none, ball]
 // slide: the track runs horizontally (slide the holder along it) or vertically (drop it onto the track)
 slide_axis = "horizontal"; // [horizontal, vertical]
+// fin: a blade under the holder that anchors it, e.g. between two sofa cushions: how far down, how wide, how thick (mm)
+fin_len = 100; // [30:5:250]
+fin_w = 60; // [30:5:240]
+fin_t = 4; // [2:0.5:10]
 
 /* [Hidden] */
 $fn = 48;
+ft = container_mount_floor(attach_type, floor_t);      // a mount under the floor needs a thicker floor (it stays flat inside)
+room = container_mount_room(attach_type, wall_t);      // a mount in the back wall stands in by this much: the holder is that much deeper
 // maker's sizes [width, thickness, height] of the closed case standing with its lid up
 function preset_size(n) =
     n == "Soundcore P31i" ? [57.5, 29.3, 57.5] : n == "AirPods Pro 2" ? [60.6, 21.7, 45.2] :
@@ -95,9 +101,9 @@ function preset_size(n) =
     n == "Pixel Buds Pro 2" ? [65.0, 25.0, 49.9] : n == "Nothing Ear" ? [55.5, 22.0, 55.5] : custom_size;
 cs = preset_size(preset);
 item = pose == "flat" ? [cs[0], cs[2], cs[1]] : pose == "side" ? [cs[2], cs[1], cs[0]] : cs;   // [x, y, z] as it sits
-inner = [item[0] + 2*clearance, item[1] + 2*clearance];
+inner = [item[0] + 2*clearance, item[1] + 2*clearance + room];
 size = inner + [2*wall_t, 2*wall_t];
-height = floor_t + max(6, item[2]*hold);              // rim height at the front corners
+height = ft + max(6, item[2]*hold);              // rim height at the front corners
 split = corner_fill == "solid";
 cr = min(corner_r, min(size)/2 - 0.5);
 round_fn = max(3, ceil(cr*PI/2/4));
@@ -107,7 +113,7 @@ runs = shell_rect_runs(size, corners, cr, round_fn, 1);
 run_edges = shell_runs_edges(runs);
 pts = container_box_pts(runs, split);                 // one loop with its seam in the back left corner, or separate sides
 grip_w = min(grip_width, (size[0] - 2*cr)/1.6);        // width at half depth; the shoulders need room on the straight front
-dip = grip ? shell_rim_dip_depth(min(grip_depth, height - floor_t - 2), grip_w) : 0;
+dip = grip ? shell_rim_dip_depth(min(grip_depth, height - ft - 2), grip_w) : 0;
 rim = function(p) shell_rim_height(p, size, height, [0, rise_back]) - shell_rim_dip(p, size, dip, grip_w, 0, "front", wall_t + 4);
 h_ref = height + rise_back;
 
@@ -121,20 +127,22 @@ wmode = container_safe_mode(wall_mode, wall_spec);
 fmode = container_safe_mode(floor_mode, floor_spec);
 
 // ---------- cable opening ----------
-has_cable = cable != "none";
+under = attach_face(attach_type) == "bottom" && attach_type != "none";     // the mounting zone is in the floor
+has_cable = cable != "none" && !(under && cable_on == "floor");
+cable_note = cable != "none" && !has_cable ? "cable opening left out: the floor holds the mounting zone of the fin; put the opening in a wall" : "";
 fit = cable == "dock" ? 0.15 : 1.0;                   // play round the plug: a dock grips it
 hole = [plug_size[0] + 2*fit, plug_size[1] + 2*fit];
 on_floor = cable_on == "floor";
 // centre of the opening: on the floor in plan, on a wall as the plan point of the wall plus a height
 wall_pt = cable_on == "back" ? [cable_x, size[1]/2] : cable_on == "front" ? [cable_x, -size[1]/2] :
           cable_on == "left" ? [-size[0]/2, cable_x] : [size[0]/2, cable_x];
-cable_z = floor_t + hole[1]/2 + max(0, cable_y);      // height of a wall opening's centre
+cable_z = ft + hole[1]/2 + max(0, cable_y);      // height of a wall opening's centre
 assert(!has_cable || on_floor || cable_z + hole[1]/2 < height - (cable_on == "front" ? dip : 0) + (cable_slot ? 100 : -1),
        "cable opening: too high for this wall; lower cable_y or use the slot");
 
 // ---------- mounting ----------
-a_opts = attach_opts(roof_gap=10, slide_axis=slide_axis);
-mount = container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [base_band + floor_t, rim_band]);   // solid zone + sockets in the back wall
+a_opts = attach_opts(roof_gap=10, slide_axis=slide_axis, fin_len=fin_len, fin_w=fin_w, fin_t=fin_t);
+mount = container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [base_band + ft, rim_band], ft);   // solid zone + sockets in the back wall (fin: in the floor)
 has_att = !is_undef(mount);
 mount_note = container_mount_note(mount, attach_type, attach_size, attach_count);    // "" or what had to be reduced / left out
 assert(!(has_att && has_cable && cable_on == "back"), "the mounting zone is in the back wall: put the cable opening in the floor or a side wall");
@@ -147,7 +155,7 @@ parts = [
 ];
 checks = concat([["hw_case", "holder", ">=", 0]], has_att ? [["attach", "holder", "clear"]] : []);
 report = [["case width", cs[0]], ["case thickness", cs[1]], ["case height", cs[2]], ["outer width", size[0]], ["outer depth", size[1]],
-          ["rim height", height], ["grip cut-out depth", dip], ["case stands out above the rim", item[2] + floor_t - height],
+          ["rim height", height], ["grip cut-out depth", dip], ["case stands out above the rim", item[2] + ft - height],
           ["wall pattern cut as asked", wmode == wall_mode ? 1 : 0],
           ["mounting plates fitted", container_mount_count(mount)], ["mounting as asked", mount_note == "" ? 1 : 0]];
 
@@ -155,8 +163,8 @@ report = [["case width", cs[0]], ["case thickness", cs[1]], ["case height", cs[2
 module slot_2d(w, h) { hull() for (s=[-1, 1]) translate([s*max(0, w - h)/2, 0]) circle(d=min(w, h), $fn=32); }
 // the opening in the floor (plan), with its slot running to the back edge
 module floor_hole_2d() {
-    translate([cable_x, cable_y]) slot_2d(hole[0], hole[1]);
-    if (cable_slot) translate([cable_x - (cable_d + 1)/2, cable_y]) square([cable_d + 1, size[1]]);
+    translate([cable_x, cable_y - room/2]) slot_2d(hole[0], hole[1]);                       // under the case, which sits against the front
+    if (cable_slot) translate([cable_x - (cable_d + 1)/2, cable_y - room/2]) square([cable_d + 1, size[1]]);
 }
 // openings in the walls, in the loop's unrolled frame
 module wall_holes_2d() {
@@ -166,26 +174,27 @@ module wall_holes_2d() {
     }
     // the floor slot leaves through the foot of the back wall
     if (on_floor && cable_slot) translate([container_u(pts, [cable_x, size[1]/2]) - (cable_d + 1)/2, container_v(-1, h_ref)])
-        square([cable_d + 1, floor_t + 1]);
+        square([cable_d + 1, ft + 1]);
 }
 
 // ---------- solids ----------
 module holder() {
     relief = wmode == "overlay" ? min(wall_relief, 0.4) : wall_relief;
-    if (has_cable && on_floor) container_floor(pts, floor_t, floor_spec, fmode, wall_t + 2, 0.5) floor_hole_2d();
-    else container_floor(pts, floor_t, floor_spec, fmode, wall_t + 2, 0.5);
+    if (has_cable && on_floor) container_floor(pts, ft, floor_spec, fmode, wall_t + 2, 0.5) floor_hole_2d();
+    else container_floor(pts, ft, floor_spec, fmode, wall_t + 2, 0.5, mount=mount);
     if (has_cable && (!on_floor || cable_slot))
-        container_walls(pts, wall_t, h_ref, rim, wall_spec, wmode, [base_band + floor_t, rim_band], relief, wall_relief, split ? run_edges : undef, 2.5, mount=mount, anchor=[0, -size[1]/2]) wall_holes_2d();
-    else container_walls(pts, wall_t, h_ref, rim, wall_spec, wmode, [base_band + floor_t, rim_band], relief, wall_relief, split ? run_edges : undef, 2.5, mount=mount, anchor=[0, -size[1]/2]);
+        container_walls(pts, wall_t, h_ref, rim, wall_spec, wmode, [base_band + ft, rim_band], relief, wall_relief, split ? run_edges : undef, 2.5, mount=mount, anchor=[0, -size[1]/2]) wall_holes_2d();
+    else container_walls(pts, wall_t, h_ref, rim, wall_spec, wmode, [base_band + ft, rim_band], relief, wall_relief, split ? run_edges : undef, 2.5, mount=mount, anchor=[0, -size[1]/2]);
 }
 // the charging case as a block, to check the fit
 module case_ref() {
     r = min(item[0], item[1])*0.4;                    // cases are well rounded
-    translate([0, 0, floor_t + item[2]/2]) hull() for (sx=[-1, 1], sy=[-1, 1]) translate([sx*(item[0]/2 - r), sy*(item[1]/2 - r), 0]) cylinder(r=r, h=item[2], center=true);
+    translate([0, -room/2, ft + item[2]/2]) hull() for (sx=[-1, 1], sy=[-1, 1]) translate([sx*(item[0]/2 - r), sy*(item[1]/2 - r), 0]) cylinder(r=r, h=item[2], center=true);
 }
 
 // ---------- assembly ----------
 attach_note(mount_note);
+attach_note(cable_note);
 pick("holder") holder();
 container_attach(part, mount, a_opts, 0, h_ref, attach_joint);
 pick("hw_case") case_ref();

@@ -34,3 +34,7 @@ attach_type = "magnet"; attach_joint = "ball"; rise_back = 12
 # --- mounting that does not fit: smaller plate or none (WARNING, no error) ---
 attach_type = "skadis"; attach_size = "L"; rise_back = 14
 attach_type = "wall"; hold = 0.3; preset = "Sony WF-1000XM5"
+
+# --- fin under the floor (thicker flat floor; needs a floor of 38 x 41 mm inside) ---
+attach_type = "fin"; pose = "flat"; cable_on = "back"; cable_y = 3
+attach_type = "fin"

@@ -312,18 +312,21 @@ container_walls(pts, t, H, rim, p, "through_cut", bands=[5, 3])             // w
   so they cost nothing.
 - **Seam:** with one panel all round, start the outline where no opening is (`shell_start_at`); an opening must
   not straddle the two ends of the strip.
-- **Mounting** is part of the wall, not a plate behind it. `m = container_mount(pts, type, size, count, hf, t,
-  [bottom band, rim band])` describes it; pass `mount=m` to `container_walls()` / `container_wall()` and the back
-  wall (the straight wall at the largest y) gets a solid zone there: the pattern stops at it and joins its sides,
-  the wall is thickened outwards to 6 mm only in the zone, and the sockets are cut into it. A zone that starts
-  above the floor has a 45° underside (prints upright without support); if the rim band or the base band is
-  closer than 10 mm, the solid area runs on into it and follows a sloped or wavy rim. Plates close together share one
-  zone; further apart each gets its own and the pattern continues between them. `container_mount_problem(m)`
-  is fitted to the container: fewer plates, then smaller ones, then none (`container_mount_note()` says what
-  changed; show it with `attach_note()`). `container_attach(part, m, opts, z_bottom, z_top, joint)`
-  draws all attachment parts; `each container_attach_rows(type, m, joint)` goes into the parts table. The back wall
-  must be one straight edge. A type that mounts underneath (`fin`) gets the same treatment in the floor: pass
-  `mount=m` to `container_floor()` too, and the zone is thickened upwards with the sockets opening downwards.
+- **Mounting** is part of the wall, and nothing stands out behind it. `m = container_mount(pts, type, size, count,
+  hf, t, [bottom band, rim band], floor_t)` describes it; pass `mount=m` to `container_walls()` / `container_wall()`
+  and the back wall (the straight wall at the largest y) gets a solid zone there: the pattern stops at it and joins
+  its sides, and the sockets are cut into it from behind. The wall's outside stays flat (it is the mounting plane);
+  the thickness the sockets need (6 mm in total) is added on the INSIDE as a pad with 45° edges, and the inside
+  face stays closed (1.5 mm of wall behind every socket). If the rim band or the base band is closer than 10 mm,
+  the solid area runs on into it and follows a sloped or wavy rim. Plates close together share one zone; further
+  apart each gets its own and the pattern continues between them.
+  The mount is fitted to the container: fewer plates, then smaller ones, then none (`container_mount_note()` says
+  what changed; show it with `attach_note()`). `container_attach(part, m, opts, z_bottom, z_top, joint)` draws all
+  attachment parts; `each container_attach_rows(type, m, joint)` goes into the parts table. The back wall must be
+  one straight edge. A type that mounts underneath (`fin`) gets the same treatment in the floor: pass `mount=m` to
+  `container_floor()` too; the floor's underside stays flat and the zone is thickened upwards.
+  For a holder that must keep its inside size: `container_mount_room(type, t)` is how much deeper to make it for
+  the pad, and `container_mount_floor(type, floor_t)` the floor thickness a mount underneath needs.
 - **Plain areas:** `plain=[[x, z, w, h], ...]` (centre x in the loop frame, bottom z, size) keeps rectangles of the
   wall free of pattern and solid, e.g. for a label; the pattern joins their edges.
 - **No seam:** a wall that runs all the way round is built with `pattern_wrapped(p, perimeter)` (switch off with
@@ -363,6 +366,13 @@ ball and whose back has a standard socket. The host turns freely and tilts about
 ring (`attach_ring`) down the tapered cup clamps it. Assembly: ring over the ball onto the neck, press the ball
 into the cup, push the ring towards the adapter. The cup bends 1.4% when the ball goes in (`ball_strain()`, asserted
 under 2%); the joint adds about 30 mm between host and wall. Not for heavy hosts: the neck is 8 mm.
+
+Parts that stand out from a host (slide carriage, ball-joint adapter, fin base) have all edges chamfered
+(`attach_chamfer_box()`): no sharp corners to print or to catch on.
+
+`attach_rows()` lists the track, fin and ball-joint rows only when they are used. The build tools set
+`$all_parts = true` when they read a model's parts table, so the configurators can offer and draw every part a
+model can have (this is why the fin used to be missing in the configurator).
 
 In a project, place sockets with the host helpers (see `projects/_template/_template.scad`):
 

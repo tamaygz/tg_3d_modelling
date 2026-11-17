@@ -34,6 +34,13 @@
 - One call per host: `attach_all(part, ...)` draws all parts, `attach_rows()` lists them.
 - Not printed: ring clamping force, track play, fin stiffness are untested.
 
+## v4.1 (2026-11-17) – flush mounting zone, chamfers, fin everywhere, all parts in the configurator
+- User feedback (4 points): (1) the mounting zone still stood out behind the wall: it is now flush outside, the
+  sockets are cut in from behind and the extra thickness is a pad with 45° edges on the INSIDE; the inside face
+  stays closed. (2) Sharp edges on parts that stand out: slide carriage, ball-joint adapter and fin base are
+  chamfered. (3) Fin option now in every container project. (4) The fin was missing in the configurators because
+  they read the parts list at default settings: the tools now read every possible part (`$all_parts`).
+
 ## Prints and feedback
 - (none yet)
 

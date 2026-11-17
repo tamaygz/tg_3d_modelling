@@ -183,6 +183,8 @@ module attach_plates(type, size, xs, y, opts=undef, y_bottom=undef, y_top=undef)
 // Part ids (all optional except "attach"): "attach" plates, "attach_track" slide track or fin, and with a ball
 // joint "attach_ball" ball plates, "attach_joint" cup adapters, "attach_ring" lock rings.
 // attach_rows() gives their rows for the `parts` table: use  parts = concat([... your rows ...], attach_rows(...));
+// Rows of parts that only exist with some settings (track, fin, ball joint) are left out when they are not used;
+// the build tools set $all_parts = true to get every row, so the configurators can offer and draw them.
 // frame = "flat" for a host modelled lying on its back (plaques; also a socket under a floor), "back" for a host
 // modelled upright with the sockets in a vertical back wall (containers): it only sets the print orientation.
 function attach_rows(type, count, joint="none", pull=[0, 0, -50], colour="#4d6170", frame="flat", opts=undef) = let(
@@ -190,12 +192,13 @@ function attach_rows(type, count, joint="none", pull=[0, 0, -50], colour="#4d617
     up = frame == "back" ? "print=x90" : "print=x180",                  // wall side up
     down = frame == "back" ? "print=x270" : "print=x0",                 // wall side on the bed
     plate_tag = (type == "skadis" || type == "hook" || type == "roof") ? "print=auto" : up,
-    n_track = type == "fin" || (type == "slide" && o[9] == "horizontal") ? 1 : count)
+    n_track = type == "fin" || (type == "slide" && o[9] == "horizontal") ? 1 : count,
+    all = !is_undef($all_parts) && $all_parts)          // the tools ask for every part a model can have
     concat(
         [["attach", "Attachment plate", "PLA", pull, colour, str("pieces=", count), plate_tag]],
-        type == "slide" ? [["attach_track", "Slide track", "PLA / PETG", pull*1.5, "#6f8494", str("pieces=", n_track), down]] : [],
+        type == "slide" || (all && type != "fin") ? [["attach_track", type == "slide" ? "Slide track" : "Slide track / fin", "PLA / PETG", pull*1.5, "#6f8494", str("pieces=", n_track), down]] : [],
         type == "fin" ? [["attach_track", "Fin with slide track", "PETG", pull*1.5, "#6f8494", "pieces=1", "print=auto"]] : [],
-        type != "none" && joint == "ball" ? [
+        (type != "none" && joint == "ball") || all ? [
             ["attach_ball", "Ball plate", "PETG", pull*0.3, "#8fa3b0", str("pieces=", count), up],
             ["attach_joint", "Ball joint adapter", "PETG", pull*0.6, "#5b7282", str("pieces=", count), down],
             ["attach_ring", "Ball joint lock ring", "PETG", pull*0.45, "#c9a13b", str("pieces=", count), "print=auto"]] : []);
@@ -215,6 +218,15 @@ module attach_all(part, type, size, xs, y, opts=undef, y_bottom=undef, y_top=und
             sel("attach_joint", "#5b7282") ball_adapter(size, o[14]);
             sel("attach_ring", "#c9a13b") ball_ring(size, o[14]);
         }
+    }
+}
+
+// a box with all its edges chamfered by c (parts that stand out from a host: no sharp corners, easier to print)
+module attach_chamfer_box(size, c=1) {
+    hull() {
+        translate([c, c, 0]) cube(size - [2*c, 2*c, 0]);
+        translate([c, 0, c]) cube(size - [2*c, 0, 2*c]);
+        translate([0, c, c]) cube(size - [0, 2*c, 2*c]);
     }
 }
 
@@ -244,7 +256,7 @@ module slide_plate(size="M", axis="horizontal") {
     assert(axis == "horizontal" ? bl >= SLIDE_W + 2*SLIDE_CLR + 5 : bw >= SLIDE_W + 2*SLIDE_CLR + 5, "slide plate: this plate size is too small for the track");
     attach_core(size);
     difference() {
-        translate([-bw/2, -bl/2, zw + 0.2]) cube([bw, bl, -zw - 0.2 + 0.01]);
+        translate([-bw/2, -bl/2, zw + 0.2]) attach_chamfer_box([bw, bl, -zw - 0.2 + 1.2], 1);        // chamfered; its top is inside the core
         if (axis == "horizontal") translate([0, 0, zw]) rotate([90, 0, 90]) linear_extrude(w + 2, center=true) union() {
             slide_profile_2d(SLIDE_CLR); translate([-SLIDE_N/2 - SLIDE_CLR, -1]) square([SLIDE_N + 2*SLIDE_CLR, 1 + SLIDE_R]);
         }
@@ -281,7 +293,7 @@ module slide_tracks(size, xs, y, axis="horizontal", track_len=0, screw_d=4.5, he
 module slide_fin(w=80, len=120, t=4, base=3) {
     z0 = -slide_standoff();
     translate([0, 0, z0]) slide_track_plain(w);
-    translate([-w/2, -(SLIDE_N + 8)/2, z0 - base]) cube([w, SLIDE_N + 8, base + 0.01]);                 // the host rests on this
+    translate([-w/2, -(SLIDE_N + 8)/2, z0 - base]) attach_chamfer_box([w, SLIDE_N + 8, base + 0.01], 0.8);   // the host rests on this
     hull() {                                                                                          // blade with rounded lower corners
         translate([-w/2, -t/2, z0 - base - 1]) cube([w, t, 1]);
         for (s=[-1, 1]) translate([s*(w/2 - 8), 0, z0 - base - len + 8]) rotate([90, 0, 0]) cylinder(r=8, h=t, center=true, $fn=32);
@@ -336,7 +348,7 @@ module ball_adapter(size="M", d=16) {
     zc = ball_centre_z(d); zf = ball_cup_foot_z(d); zm = zc + d/2*sin(BALL_LAT); zb = ball_joint_back(size, d);
     difference() {
         union() {
-            translate([-w/2 - 4, -l/2 - ATTACH_NOTCH - 4, zb]) cube([w + 8, l + ATTACH_NOTCH + 8, zf - zb]);    // block with the socket
+            translate([-w/2 - 4, -l/2 - ATTACH_NOTCH - 4, zb]) attach_chamfer_box([w + 8, l + ATTACH_NOTCH + 8, zf - zb], 1);    // block with the socket
             translate([0, 0, zf - 0.01]) cylinder(r1=_ball_cup_r(d, zf), r2=_ball_cup_r(d, zm), h=zm - zf + 0.01, $fn=72);
         }
         translate([0, 0, zc]) sphere(d=d + 0.1, $fn=64);

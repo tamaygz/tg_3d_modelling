@@ -39,3 +39,7 @@ nose_run_front = 12; nose_run_back = 12; nose_len = 12; floor_mode = "through_cu
 preset = "aviator"; attach_type = "wall"; attach_count = 2
 attach_type = "wall"; attach_size = "L"; attach_count = 3; rise_back = 16
 attach_type = "wall"; attach_size = "L"; rise_back = 0
+
+# --- fin under the floor ---
+attach_type = "fin"
+attach_type = "fin"; attach_count = 2; fin_w = 120; floor_mode = "through_cut"; floor_pattern = "hex_honeycomb"

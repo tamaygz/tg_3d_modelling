@@ -75,24 +75,30 @@ floor_mode = "solid"; // [solid, through_cut, raised, recessed]
 
 /* [Mounting] */
 // how it mounts: plates snap into a solid zone of the back wall (none = stands on a shelf)
-attach_type = "none"; // [none, wall, keyhole, skadis, hook, magnet, flat, roof, slide]
+attach_type = "none"; // [none, wall, keyhole, skadis, hook, magnet, flat, roof, slide, fin]
 attach_size = "S"; // [S, M, L]
 attach_count = 2; // [1:1:3]
 // ball joint between the holder and the plate: turn and tilt it freely, the lock ring clamps it
 attach_joint = "none"; // [none, ball]
 // slide: the track runs horizontally (slide the holder along it) or vertically (drop it onto the track)
 slide_axis = "horizontal"; // [horizontal, vertical]
+// fin: a blade under the holder that anchors it, e.g. between two sofa cushions: how far down, how wide, how thick (mm)
+fin_len = 100; // [30:5:250]
+fin_w = 60; // [30:5:240]
+fin_t = 4; // [2:0.5:10]
 
 /* [Hidden] */
 $fn = 48;
+ft = container_mount_floor(attach_type, floor_t);      // a mount under the floor needs a thicker floor (it stays flat inside)
+room = container_mount_room(attach_type, wall_t);      // a mount in the back wall stands in by this much: the holder is that much deeper
 // typical folded sizes [width, depth, lens height]
 function preset_size(n) =
     n == "standard" ? [148, 48, 50] : n == "small" ? [130, 42, 42] : n == "aviator" ? [142, 46, 56] :
     n == "oversized" ? [156, 54, 62] : n == "sport wrap" ? [152, 64, 48] : custom_size;
 gs = preset_size(preset);
-inner = [gs[0] + 2*clearance, gs[1] + 2*clearance];
+inner = [gs[0] + 2*clearance, gs[1] + 2*clearance + room];
 size = inner + [2*wall_t, 2*wall_t];
-height = floor_t + max(8, gs[2]*hold);                // rim height at the front corners
+height = ft + max(8, gs[2]*hold);                // rim height at the front corners
 split = corner_fill == "solid";
 cr = min(corner_r, min(size)/2 - 0.5);
 round_fn = max(3, ceil(cr*PI/2/5));
@@ -102,7 +108,7 @@ runs = shell_rect_runs(size, corners, cr, round_fn, 1);
 run_edges = shell_runs_edges(runs);
 pts = container_box_pts(runs, split);                 // one loop with its seam in the back left corner, or separate sides
 grip_w = min(grip_width, (size[0] - 2*cr)/1.6);        // width at half depth; the shoulders need room on the straight front
-dip = grip ? shell_rim_dip_depth(min(grip_depth, height - floor_t - 2), grip_w) : 0;
+dip = grip ? shell_rim_dip_depth(min(grip_depth, height - ft - 2), grip_w) : 0;
 rim = function(p) shell_rim_height(p, size, height, [0, rise_back]) - shell_rim_dip(p, size, dip, grip_w, 0, "front", wall_t + 4);
 h_ref = height + rise_back;
 
@@ -120,8 +126,8 @@ nose_y = -inner[1]/2 + nose_setback + nose_len/2;     // centre of the ridge, be
 assert(!nose || nose_setback + nose_len <= inner[1], str("nose support: setback ", nose_setback, " + length ", nose_len, " is more than the inside depth ", inner[1]));
 
 // ---------- mounting ----------
-a_opts = attach_opts(roof_gap=10, slide_axis=slide_axis);
-mount = container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [base_band + floor_t, rim_band]);   // solid zone + sockets in the back wall
+a_opts = attach_opts(roof_gap=10, slide_axis=slide_axis, fin_len=fin_len, fin_w=fin_w, fin_t=fin_t);
+mount = container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [base_band + ft, rim_band], ft);   // solid zone + sockets in the back wall (fin: in the floor)
 has_att = !is_undef(mount);
 h_back = height + rise_back;
 mount_note = container_mount_note(mount, attach_type, attach_size, attach_count);    // "" or what had to be reduced / left out
@@ -141,17 +147,17 @@ report = [["glasses width", gs[0]], ["folded depth", gs[1]], ["lens height", gs[
 // the nose ridge (lib/container.scad), kept inside the walls: it only grows up from the floor
 module nose_support() {
     intersection() {
-        translate([0, nose_y, floor_t - 0.2]) container_ridge(nose_w, nose_foot, nose_h + 0.2, nose_len, [nose_run_front, nose_run_back], nose_crown);
-        translate([0, 0, floor_t - 0.3]) linear_extrude(nose_h + 1) offset(delta=-wall_t + 0.3) polygon(pts);
+        translate([0, nose_y, ft - 0.2]) container_ridge(nose_w, nose_foot, nose_h + 0.2, nose_len, [nose_run_front, nose_run_back], nose_crown);
+        translate([0, 0, ft - 0.3]) linear_extrude(nose_h + 1) offset(delta=-wall_t + 0.3) polygon(pts);
     }
 }
 module holder() {
-    container_floor(pts, floor_t, floor_spec, fmode, wall_t + 3, 0.5);
-    container_walls(pts, wall_t, h_ref, rim, wall_spec, wmode, [base_band + floor_t, rim_band],
+    container_floor(pts, ft, floor_spec, fmode, wall_t + 3, 0.5, mount=mount);
+    container_walls(pts, wall_t, h_ref, rim, wall_spec, wmode, [base_band + ft, rim_band],
                     wmode == "overlay" ? min(wall_relief, 0.4) : wall_relief, wall_relief, split ? run_edges : undef, 3, mount=mount, anchor=[0, -size[1]/2]);
     if (nose) {
         nose_support();
-        if (fmode == "through_cut") linear_extrude(floor_t) intersection() {                                     // solid ground under the ridge
+        if (fmode == "through_cut") linear_extrude(ft) intersection() {                                     // solid ground under the ridge
             translate([0, nose_y]) square([max(nose_foot, nose_w) + 4, nose_len + 4], center=true); offset(delta=-0.05) polygon(pts); }
     }
 }

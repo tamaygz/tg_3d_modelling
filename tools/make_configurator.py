@@ -116,7 +116,8 @@ def eval_parts(scad: Path):
     """Ask OpenSCAD for the evaluated `parts` table (works when the table is built with expressions)."""
     import json as _json, subprocess, tempfile
     tmp = scad.with_name("_parts_probe.scad")
-    tmp.write_text(f'include <{scad.name}>\necho(PARTS_JSON=parts);\n')
+    # $all_parts: the library then lists parts that only exist with some settings too (slide track, fin, ball joint)
+    tmp.write_text(f'$all_parts = true;\ninclude <{scad.name}>\necho(PARTS_JSON=parts);\n')
     try:
         out = subprocess.run(["openscad", "-o", str(tmp.with_suffix(".echo")), "-D", 'part="__none__"', str(tmp)],
                              capture_output=True, text=True, timeout=300)

@@ -15,7 +15,7 @@ same construction, without the cable opening. Open `sunglasses_configurator.html
 | Walls | `wall_t`, `corners`, `corner_r`, `wall_pattern`, `wall_mode`, `wall_cell`, `wall_strut`, `wall_angle`, `wall_seed`, `wall_relief`, `rim_band`, `base_band`, `corner_fill`, `rise_back` |
 | Front grip | `grip`, `grip_width`, `grip_depth` |
 | Floor | `floor_t`, `floor_pattern`, `floor_mode` |
-| Mounting | `attach_type` (incl. `slide` track), `attach_size`, `attach_count`, `attach_joint` (ball joint), `slide_axis` |
+| Mounting | `attach_type` (incl. `slide` track), `attach_size`, `attach_count`, `attach_joint` (ball joint), `slide_axis`, `fin_len`, `fin_w`, `fin_t` |
 
 | Preset | Width × folded depth × lens height (mm) |
 |---|---|
@@ -37,8 +37,10 @@ These are typical values, not a standard: measure your glasses folded (widest po
   so the glasses slide up and off the ridge instead of hooking behind it. The ridge only rises from the floor and
   stays inside the walls, however wide or low you make it.
 - **Grip:** the front rim dips by `grip_depth` over `grip_width`; the rim band follows it.
-- **Mounting:** the back wall gets a solid zone with the sockets, built into the wall (the pattern joins its sides;
-  no separate plate behind it); the back wall must be at least 41 mm high for an S plate
+- **Mounting:** the back wall gets a solid zone with the sockets, cut in from behind (the pattern joins its sides).
+  Nothing stands out behind the tray; the extra thickness is a pad on the inside, and the tray is made that much
+  deeper so the glasses still fit. `attach_type = "fin"` puts the sockets under a thicker, flat floor instead and
+  adds a blade to push between cushions; the back wall must be at least 41 mm high for an S plate
   (`rise_back` raises it). If the plates you ask for do not fit, fewer or smaller ones are used, or none; the render
   log and the report say so.
 - The largest presets are close to 165 mm wide: fine for a 250 mm bed.

@@ -91,6 +91,8 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   real OpenSCAD in the browser, so it must be rebuilt after every change. Page template:
   `tools/configurator_template.html`.
 - It reads parameters from the Customizer block and the evaluated `parts` table (generated tables work).
+  The tools evaluate the table with `$all_parts = true`, so optional parts (track, fin, ball joint) are always
+  offered and drawn; a library function that adds part rows only for some settings must honour that flag.
 - Web site + release: the manual workflow `.github/workflows/configurators.yml` stages projects with
   `tools/make_pages.py`, builds pages with yawkat/web-openscad-editor (pinned commit, OpenSCAD snapshot 2026.01.19),
   deploys to GitHub Pages and creates a release (`tools/release_notes.py`). That generator only bundles files from
@@ -105,6 +107,8 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 - Wants generalised, reusable library parts and consistent patterns across projects.
 - Printing time matters: no solid plate behind a patterned wall (he rejected the mounting boss). Build solid
   zones INTO the wall, let the pattern join them, and blend them into rim / base bands.
+  Nothing may stand out behind the wall: cut sockets in from the outside face, add needed thickness INSIDE
+  (pad with 45° edges), never cut through. Chamfer every part that does stand out (no 90° outer edges).
 - Cut-through patterns must be printable and stiff: lines need regular cross ties in the pattern's style.
 - Holders for things: wants presets for popular products (researched sizes, his own device first: Soundcore P31i
   earbuds), a custom size, and a grip cut-out at the front.
@@ -124,7 +128,7 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 | `projects/led_kit` | v1, not printed yet | LED tracks, diffusers, corners, cable parts |
 | `projects/attachments` | v4, not printed yet | test coupon + every attachment plate, slide track, fin, ball joint; print first to check the fits |
 | `projects/pattern_gallery` | v1.2, not printed yet | catalogue + test bench of the 12 `lib/patterns.scad` patterns; views: gallery, sample, modes, box |
-| `projects/custombox` | v1.3, not printed yet | configurable box / basket / bin: outline, corners, sloped + wavy rim, patterned walls, floor, inset lid, mounting zone in the back wall |
-| `projects/earbuds` | v1.2, not printed yet | charging-case holder: presets (P31i …), poses, cable hole / dock / slot, grip cut-out, mounting zone |
-| `projects/sunglasses` | v1.3, not printed yet | folded-glasses tray: size presets, nose support, grip cut-out, mounting zone |
+| `projects/custombox` | v1.4, not printed yet | configurable box / basket / bin: outline, corners, sloped + wavy rim, patterned walls, floor, inset lid, mounting zone in the back wall |
+| `projects/earbuds` | v1.3, not printed yet | charging-case holder: presets (P31i …), poses, cable hole / dock / slot, grip cut-out, mounting zone |
+| `projects/sunglasses` | v1.4, not printed yet | folded-glasses tray: size presets, nose support, grip cut-out, mounting zone |
 | `projects/_template` | – | starting point for new projects |

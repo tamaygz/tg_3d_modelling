@@ -14,7 +14,7 @@ grab the case, and mounts with the snap-in attachment plates. Open `earbuds_conf
 | Front grip | `grip`, `grip_width`, `grip_depth` |
 | Charging cable | `cable` (none / hole / dock), `cable_on` (floor / back / front / left / right), `cable_x`, `cable_y`, `plug_size`, `cable_d`, `cable_slot` |
 | Floor | `floor_t`, `floor_pattern`, `floor_mode` |
-| Mounting | `attach_type` (incl. `slide` track), `attach_size`, `attach_count`, `attach_joint` (ball joint), `slide_axis` |
+| Mounting | `attach_type` (incl. `slide` track), `attach_size`, `attach_count`, `attach_joint` (ball joint), `slide_axis`, `fin_len`, `fin_w`, `fin_t` |
 
 ## Case sizes
 
@@ -45,8 +45,11 @@ side by default), or use `custom`.
   `cable_slot` the opening continues to the edge (floor: out through the foot of the back wall; wall: up to the
   rim), so the cable can be laid in. Every opening gets a plain collar.
 - **Grip:** the front rim dips by `grip_depth` over `grip_width` with smooth shoulders; the rim band follows it.
-- **Mounting:** the back wall gets a solid zone with the sockets, built into the wall (the pattern joins its sides;
-  no separate plate behind it). The back wall must be at least 41 mm high for an S plate. If
+- **Mounting:** the back wall gets a solid zone with the sockets, cut in from behind (the pattern joins its sides).
+  Nothing stands out behind the holder; the extra thickness is a pad on the inside, and the holder is made that
+  much deeper so the case still fits. `attach_type = "fin"` puts the socket under a thicker, flat floor instead and
+  adds a blade to push between cushions; it needs 38 × 41 mm of floor, so it fits the `flat` pose but not a slim
+  upright holder (then it is left out with a warning). The back wall must be at least 41 mm high for an S plate. If
   the plates you ask for do not fit, fewer or smaller ones are used, or none; the render log and the report say so.
   Raise `rise_back` to make room. A desk holder with a floor opening needs the cable to leave through the
   slot at the back.
