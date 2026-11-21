@@ -1,4 +1,43 @@
+# parameter variants checked by: python3 tools/build.py earbuds --test
+# the holder must be one watertight piece and the charging case must fit inside it
 
+# --- presets and poses ---
+preset = "AirPods Pro 2"; cable_on = "back"; cable_y = 4; wall_pattern = "voronoi"
+preset = "AirPods 4"; wall_pattern = "triangular_lattice"; hold = 0.8
+preset = "AirPods 2"; pose = "side"; wall_mode = "solid"; cable = "none"
+preset = "Galaxy Buds2 Pro / FE"; wall_pattern = "square_grid"; corners = "chamfer"; corner_r = 5
+preset = "Galaxy Buds3 Pro"; wall_pattern = "basket_weave"; wall_mode = "open_lattice"; corner_fill = "solid"; cable_on = "left"; cable_y = 3; wall_t = 2.4
+preset = "Sony WF-1000XM5"; pose = "flat"; wall_pattern = "girih_star_cross"; wall_mode = "raised"; corners = "square"; corner_fill = "solid"; cable = "dock"; floor_t = 5; cable_slot = false
+preset = "Bose QC Ultra Earbuds"; attach_type = "skadis"; rise_back = 20; wall_pattern = "triangular_lattice"; grip_depth = 22
+preset = "Pixel Buds Pro 2"; wall_pattern = "fish_scales"; wall_mode = "raised"; cable_on = "right"; cable_x = 3
+preset = "Nothing Ear"; wall_pattern = "truchet_arcs"; wall_mode = "recessed"; grip = false; floor_mode = "recessed"
+preset = "custom"; custom_size = [70, 35, 50]; clearance = 1.5; wall_pattern = "diamond_lattice"; wall_cell = 7; wall_strut = 1.2
+
+# --- cable: positions, slot, dock ---
+cable_x = 10; cable_y = -5; cable_slot = false
+cable = "dock"; floor_t = 6; cable_x = -8
+cable_on = "front"; cable_y = 2; grip_depth = 8
+cable_on = "back"; cable_slot = false; cable_y = 10; corner_fill = "solid"
+cable = "none"; floor_mode = "through_cut"; floor_pattern = "hex_honeycomb"
+
+# --- grip, walls, mounting ---
+grip_width = 40; grip_depth = 30; hold = 1; wall_pattern = "flowing_waves"; wall_mode = "raised"
+wall_mode = "overlay"; wall_pattern = "girih_star_cross"; wall_t = 2.4
+attach_type = "wall"; rise_back = 12
+attach_type = "magnet"; rise_back = 10; cable_on = "left"; corner_fill = "solid"
+wall_t = 1.2; floor_t = 1; clearance = 0.3; rim_band = 1.5; base_band = 1
+
+# --- slide track and ball joint ---
+attach_type = "slide"; slide_axis = "vertical"; rise_back = 12
+attach_type = "magnet"; attach_joint = "ball"; rise_back = 12
+
+# --- mounting that does not fit: smaller plate or none (WARNING, no error) ---
+attach_type = "skadis"; attach_size = "L"; rise_back = 14
+attach_type = "wall"; hold = 0.3; preset = "Sony WF-1000XM5"
+
+# --- fin under the floor (thicker flat floor; needs a floor of 38 x 41 mm inside) ---
+attach_type = "fin"; pose = "flat"; cable_on = "back"; cable_y = 3
+attach_type = "fin"
 
 # --- new patterns ---
 wall_pattern = "asanoha"

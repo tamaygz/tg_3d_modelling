@@ -86,6 +86,8 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   limit the radius to the height and clip with a half-space (see `container_ridge()`); test wide-and-low extremes.
 - To copy a pattern from a picture, measure its repeat (autocorrelation of the hole mask) and the hole sizes
   before guessing a construction: the cube rosette looked like a two-size pattern but is one triangular grid.
+- Appending in Python: NEVER `open(f, "w").write(open(f).read() + x)`: the "w" open truncates the file before the
+  read (it emptied tests.txt twice). Read first, then write. After editing tests.txt, compare the variant count.
 - Guard long-running Python scripts with `__main__` (an import once re-ran a 30-minute fit).
 
 ## Browser configurator
