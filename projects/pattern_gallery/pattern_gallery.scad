@@ -1,4 +1,4 @@
-// Pattern gallery: catalogue and test bench for the 12 patterns in lib/patterns.scad
+// Pattern gallery: catalogue and test bench for the 15 patterns in lib/patterns.scad
 // Views: a tile of every pattern, one sample you can tune, one pattern in every application mode, and a small
 // box whose walls, floor and lid each get their own pattern. See README.md.
 include <../../lib/core.scad>
@@ -8,12 +8,12 @@ use <../../lib/patterns.scad>
 part = "all";                    // which part to export ("all" = assembly); set by the build tools
 
 /* [View] */
-// gallery = all 12 patterns, sample = one pattern in one mode, modes = one pattern in every mode, box = container demo
+// gallery = all 15 patterns, sample = one pattern in one mode, modes = one pattern in every mode, box = container demo
 view = "gallery"; // [gallery, sample, modes, box]
 
 /* [Pattern (sample and modes views)] */
 // which pattern
-pattern = "hex_honeycomb"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
+pattern = "hex_honeycomb"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
 // how it is applied to the sample (sample view)
 mode = "open_lattice"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
 // repeat size in mm (0 = the pattern's default)
@@ -91,6 +91,13 @@ scale_shingle = true;
 truchet_variation = "random"; // [random, alternate, rows, uniform]
 // Girih: star diameter as a share of the repeat (1 = stars touch)
 girih_star = 1; // [0.6:0.05:1]
+// cube rosette: one hexagon in three a cube (sparse), two in three (dense), all (tumbling blocks) or none
+cube_density = "sparse"; // [sparse, dense, all, none]
+// fluted / reeded: convex half-round ribs (reeded), concave grooves (fluted) or flat ribs; ribs upright or lying
+flute_style = "reeded"; // [reeded, fluted, ribbed]
+flute_orient = "vertical"; // [vertical, horizontal]
+// asanoha: a family of grid lines lying (up) or standing (side)
+asanoha_orient = "up"; // [up, side]
 // waves: height of the wave and its length (mm)
 wave_amplitude = 3; // [0:0.5:20]
 wave_length = 30; // [8:1:120]
@@ -113,14 +120,14 @@ tile_gap = 6; // [2:1:20]
 
 /* [Box demo] */
 // inner pattern choices for the four walls, the floor and the lid
-wall_pattern = "hex_honeycomb"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
+wall_pattern = "hex_honeycomb"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
 wall_mode = "through_cut"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
 // the front wall can differ from the other three
-front_pattern = "flowing_waves"; // [same, hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
+front_pattern = "flowing_waves"; // [same, hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
 front_mode = "raised"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
-floor_pattern = "concentric_ripples"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
+floor_pattern = "concentric_ripples"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
 floor_mode = "raised"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
-roof_pattern = "girih_star_cross"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
+roof_pattern = "girih_star_cross"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
 roof_mode = "through_cut"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
 // outer size of the box (mm)
 box_w = 70; // [40:1:200]
@@ -137,13 +144,16 @@ box_relief = 0.6; // [0.2:0.1:2]
 
 /* [Hidden] */
 $fn = 48;
-NAMES = ["hex_honeycomb", "square_grid", "diamond_lattice", "triangular_lattice", "basket_weave", "tri_weave",
-         "voronoi", "fish_scales", "truchet_arcs", "girih_star_cross", "flowing_waves", "concentric_ripples"];
-LABELS = ["Hex honeycomb", "Square grid", "Diamond lattice", "Triangular lattice", "Basket weave", "Tri-weave",
-          "Voronoi", "Fish scales", "Truchet arcs", "Girih star & cross", "Flowing waves", "Concentric ripples"];
+NAMES = ["hex_honeycomb", "square_grid", "diamond_lattice", "triangular_lattice", "cube_rosette",
+         "basket_weave", "tri_weave", "voronoi", "fish_scales", "truchet_arcs",
+         "girih_star_cross", "asanoha", "flowing_waves", "concentric_ripples", "fluted"];
+LABELS = ["Hex honeycomb", "Square grid", "Diamond lattice", "Triangular lattice", "Cube rosette",
+          "Basket weave", "Tri-weave", "Voronoi", "Fish scales", "Truchet arcs",
+          "Girih star & cross", "Asanoha", "Flowing waves", "Concentric ripples", "Fluted"];
 // how each pattern is shown in the gallery: its natural use
-GALLERY_MODES = ["open_lattice", "open_lattice", "open_lattice", "open_lattice", "open_lattice", "open_lattice",
-                 "open_lattice", "raised", "recessed", "overlay", "raised", "raised"];
+GALLERY_MODES = ["open_lattice", "open_lattice", "open_lattice", "open_lattice", "open_lattice",
+                 "open_lattice", "open_lattice", "open_lattice", "raised", "recessed",
+                 "overlay", "open_lattice", "raised", "raised", "raised"];
 MODES = ["through_cut", "open_lattice", "raised", "recessed", "overlay"];
 
 // pattern-specific settings from the Customizer, as the opts list of a spec
@@ -156,6 +166,9 @@ function opts_for(name, h) =
     name == "fish_scales" ? [["overlap", scale_overlap], ["curvature", scale_curvature], ["stagger", scale_stagger], ["shingle", scale_shingle]] :
     name == "truchet_arcs" ? [["variation", truchet_variation]] :
     name == "girih_star_cross" ? [] :
+    name == "cube_rosette" ? [["cubes", cube_density]] :
+    name == "asanoha" ? [["orient", asanoha_orient]] :
+    name == "fluted" ? [["style", flute_style], ["orient", flute_orient]] :
     name == "flowing_waves" ? [["amplitude", wave_amplitude], ["wavelength", wave_length], ["shift", wave_shift]] :
     [["rings", ripple_rings], ["spokes", ripple_spokes], ["falloff", ripple_falloff],
      ["centers", ripple_two_centers ? [[-sample_w/6, -sample_h/8], [sample_w/5, sample_h/6]] : [[0, 0]]]];
@@ -179,11 +192,11 @@ tp = tile + tile_gap;                                 // tile pitch
 mp = sample_w + 8;                                    // pitch of the mode samples
 post = 6;                                             // corner posts of the box (carry the lid pins)
 pin_d = 3; pin_h = 2; pin_clr = 0.2;                  // lid pins on the posts
-function tile_pos(i) = [(i%4 - 1.5)*tp, (1 - floor(i/4))*tp];
+function tile_pos(i) = [(i%5 - 2)*tp, (1 - floor(i/5))*tp];      // 5 columns, 3 rows
 
 feat = pattern_features(user_spec(mode));
 parts = concat(
-  [for (i=[0:11]) [str("g_", NAMES[i]), LABELS[i], "PLA", [0,0,0], i < 4 ? COL_GREY : i < 6 ? COL_TAN : i == 6 ? COL_FIXTURE : i < 10 ? COL_BRASS : COL_GREY_DARK]],
+  [for (i=[0:len(NAMES)-1]) [str("g_", NAMES[i]), LABELS[i], "PLA", [0,0,0], i < 5 ? COL_GREY : i < 7 ? COL_TAN : i == 7 ? COL_FIXTURE : i < 12 ? COL_BRASS : COL_GREY_DARK]],
   [["sample", "Sample", "PLA", [0,0,0], COL_GOLD],
    ["m_flat", "Pattern alone", "PLA", [0,0,0], COL_GREY],
    ["m_through_cut", "Through-cut", "PLA", [0,0,0], COL_GREY],
@@ -249,7 +262,7 @@ module box_lid() {
 }
 
 // ---------- assembly ----------
-if (view == "gallery") for (i=[0:11]) pick(str("g_", NAMES[i])) translate(tile_pos(i)) gallery_tile(i);
+if (view == "gallery") for (i=[0:len(NAMES)-1]) pick(str("g_", NAMES[i])) translate(tile_pos(i)) gallery_tile(i);
 
 if (view == "sample") pick("sample") sample_panel(mode);
 

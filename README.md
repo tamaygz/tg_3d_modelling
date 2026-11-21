@@ -42,7 +42,7 @@ reusable is written there once.
 
 | | |
 |---|---|
-| <img src="lib/examples/images/patterns.png" width="330" alt="The 12 patterns"> | **[Patterns](lib/README.md#patterns)**: 12 patterns (lattices, real weaves, Voronoi, scales, Truchet, Girih, waves, ripples) that can be cut through, raised, engraved, used as an open lattice or as a lining on any flat surface |
+| <img src="lib/examples/images/patterns.png" width="330" alt="The 15 patterns"> | **[Patterns](lib/README.md#patterns)**: 15 patterns (lattices, cube rosettes, real weaves, Voronoi, scales, Truchet, Girih, asanoha, waves, ripples, fluted ribs) that can be cut through, raised, engraved, used as an open lattice or as a lining on any flat surface |
 | <img src="lib/examples/images/shell_wrap.png" width="330" alt="A wall bent round an outline"> | **[Shells](lib/README.md#shells) and [containers](lib/README.md#containers)**: walls that follow any outline with a sloped or wavy rim, floors, lids, openings, grip cut-outs, mounting zones |
 | <img src="lib/examples/images/attach_types.png" width="330" alt="Attachment plates"> | **[Attachments](lib/README.md#attachment-plates)**: one socket, many snap-in plates (wall, keyhole, Skådis, hook, magnet, stand, glue, ceiling, slide track, fin) and an optional ball joint |
 

@@ -54,3 +54,16 @@ view = "box"; wall_pattern = "flowing_waves"; wall_mode = "raised"; front_patter
 # --- ties: line patterns cut through get connectors between the lines ---
 view = "sample"; pattern = "flowing_waves"; mode = "through_cut"; wave_shift = 60; cell = 12; wave_amplitude = 4; border = 2
 view = "sample"; pattern = "flowing_waves"; mode = "open_lattice"; angle = 30; cell = 6; strut = 1.5
+
+# --- cube rosette, asanoha, fluted ---
+view = "sample"; pattern = "cube_rosette"; sample_shape = "round"
+view = "sample"; pattern = "cube_rosette"; cube_density = "dense"; cell = 8; strut = 1.6; mode = "through_cut"; angle = 30
+view = "sample"; pattern = "cube_rosette"; cube_density = "all"; mode = "raised"
+view = "sample"; pattern = "asanoha"
+view = "sample"; pattern = "asanoha"; asanoha_orient = "side"; cell = 14; strut = 1; mode = "through_cut"; sample_shape = "hexagon"
+view = "sample"; pattern = "asanoha"; mode = "overlay"; lining_edge = "chamfer"
+view = "sample"; pattern = "fluted"; mode = "raised"
+view = "sample"; pattern = "fluted"; mode = "raised"; flute_style = "fluted"; cell = 8; strut = 6; relief = 1.5
+view = "sample"; pattern = "fluted"; mode = "open_lattice"; cell = 6; strut = 3
+view = "sample"; pattern = "fluted"; mode = "recessed"; flute_style = "ribbed"; flute_orient = "horizontal"; cell = 5; strut = 2.5
+view = "modes"; pattern = "asanoha"; sample_w = 60; sample_h = 60

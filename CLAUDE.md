@@ -31,7 +31,7 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   `lib/examples/*.scad`. Re-render after a visible change. Each project README starts with its pictures and the
   link to its online configurator (`https://tamaygz.github.io/tg_3d_modelling/<project>`).
 - **Lighting and wiring:** `lib/led.scad` and `lib/cable.scad`, not one-off parts.
-- **Patterns** (lattices, weaves, Voronoi, scales, Truchet, Girih, waves, ripples): `lib/patterns.scad`, never
+- **Patterns** (lattices, cube rosette, weaves, Voronoi, scales, Truchet, Girih, asanoha, waves, ripples, fluted): `lib/patterns.scad`, never
   project code. Pick by name via `pattern_spec()`, apply with `pattern_panel(mode, ...)` or the single helpers
   (`pattern_cutout_2d`, `pattern_relief`, `pattern_cutter`, `pattern_lining`). Frame: XY plane, surface z = 0,
   outside +Z; build flat, then rotate onto walls. New patterns: a generator in `lib/patterns/`, a branch in
@@ -84,6 +84,8 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 - No `rands()` for patterns: `pat_hash()` gives the same numbers in every OpenSCAD version and in the browser.
 - `hull()` with a sphere or cylinder whose radius exceeds its height above the floor pokes through the floor:
   limit the radius to the height and clip with a half-space (see `container_ridge()`); test wide-and-low extremes.
+- To copy a pattern from a picture, measure its repeat (autocorrelation of the hole mask) and the hole sizes
+  before guessing a construction: the cube rosette looked like a two-size pattern but is one triangular grid.
 - Guard long-running Python scripts with `__main__` (an import once re-ran a 30-minute fit).
 
 ## Browser configurator
@@ -127,7 +129,7 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 | `projects/bolavuit_logo` | v2, not printed yet | logo plaque: exact (from SVG) or rebuilt from lib/emblem (0.90 overlap) |
 | `projects/led_kit` | v1, not printed yet | LED tracks, diffusers, corners, cable parts |
 | `projects/attachments` | v4, not printed yet | test coupon + every attachment plate, slide track, fin, ball joint; print first to check the fits |
-| `projects/pattern_gallery` | v1.2, not printed yet | catalogue + test bench of the 12 `lib/patterns.scad` patterns; views: gallery, sample, modes, box |
+| `projects/pattern_gallery` | v1.3, not printed yet | catalogue + test bench of the 15 `lib/patterns.scad` patterns; views: gallery, sample, modes, box |
 | `projects/custombox` | v1.4, not printed yet | configurable box / basket / bin: outline, corners, sloped + wavy rim, patterned walls, floor, inset lid, mounting zone in the back wall |
 | `projects/earbuds` | v1.3, not printed yet | charging-case holder: presets (P31i …), poses, cable hole / dock / slot, grip cut-out, mounting zone |
 | `projects/sunglasses` | v1.4, not printed yet | folded-glasses tray: size presets, nose support, grip cut-out, mounting zone |

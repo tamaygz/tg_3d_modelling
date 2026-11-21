@@ -29,6 +29,14 @@
   Check used: the pattern in a window at -L/2 minus the same pattern moved by L must be empty (it is, for all 11
   repeatable patterns; unfitted it differs by 140-340 mm2).
 
+## v1.3 (2026-11-21) – cube rosette, asanoha, fluted
+- From the user's reference pictures. Cube rosette: the repeat was measured from the picture (autocorrelation: one
+  triangular grid, side = repeat/3, 18 triangles per repeat of which 6 are merged into one cube's three rhombi, 12
+  stay open as two rosettes); `cubes` also gives the dense variant and tumbling blocks. Asanoha: triangle grid with
+  centre-to-corner lines (the standard construction). Fluted: straight ribs with a true round profile (reeded =
+  convex, fluted = concave with a floor, ribbed = flat); tied like waves when cut through; touching ribs stay
+  touching when fitted round a wall.
+
 ## Prints and feedback
 - (none yet)
 

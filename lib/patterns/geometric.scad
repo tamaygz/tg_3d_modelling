@@ -1,4 +1,4 @@
-// Geometric lattices: hex honeycomb, square grid, diamond lattice, triangular lattice.
+// Geometric lattices: hex honeycomb, square grid, diamond lattice, triangular lattice, cube rosette.
 // Use:  use <../../lib/patterns.scad> and pattern_2d("hex_honeycomb", ...), or use this file for the single generators.
 // Frame: XY plane, a cell centre on the origin, covers `size` (centred) and a little more; not clipped.
 // Each generator returns the MATERIAL (the ribs) as one connected 2D shape: a plate with the cells cut out.
@@ -7,6 +7,7 @@ use <tiling.scad>
 
 HEX_ORIENTS = ["pointy", "flat"];
 TRI_ORIENTS = ["up", "side"];
+CUBE_DENSITIES = ["sparse", "dense", "all", "none"];
 
 // ---------- hex honeycomb ----------
 // cell = distance between the centres of neighbouring cells (= hexagon across flats + strut).
@@ -66,4 +67,26 @@ module triangular_lattice_2d(size, cell=14, strut=1.5, alternate=true, orient="u
     s = side ? [size[1], size[0]] : size;
     c = side ? pat_rot(center, -90) : center;
     rotate(side ? 90 : 0) pat_plate_with_holes(s + [3*cell, 2*cell], triangular_lattice_holes(s, cell, strut, alternate, c), c);
+}
+
+// ---------- cube rosette ----------
+// A kumiko-style lattice on a triangular grid (ribs vertical and at +-30 degrees). The grid's hexagons are either
+// "cubes" (three rhombi: the isometric cube, top face wide) or "rosettes" (six small triangles around a point).
+// cell = side of the small triangles = rhombus side. cubes: "sparse" = one hexagon in three is a cube, each
+// surrounded by rosettes (the classic look); "dense" = two in three; "all" = tumbling blocks (rhombille), no
+// triangles; "none" = only rosettes (a plain triangular grid).
+function _cube_v(c, R, k) = c + R*[cos(90 + 60*k), sin(90 + 60*k)];
+function cube_rosette_is_cube(i, j, cubes) = let(col = ((i - j)%3 + 3)%3)
+    cubes == "all" ? true : cubes == "none" ? false : cubes == "dense" ? col != 0 : col == 0;
+function cube_rosette_holes(size, cell=10, strut=2, cubes="sparse", center=[0, 0]) = let(
+    R = cell, D = sqrt(3)*R, dy = D*sqrt(3)/2, ri = R*sin(60)/2)
+    [for (j=[pat_i0(size[1], dy, center[1], 2):pat_i1(size[1], dy, center[1], 2)])
+     for (i=[pat_i0(size[0], D, center[0] - j*D/2, 2):pat_i1(size[0], D, center[0] - j*D/2, 2)])
+        let(c = [i*D + j*D/2, j*dy])
+        each (cube_rosette_is_cube(i, j, cubes)
+            ? [for (k=[0:2]) let(q = [c, _cube_v(c, R, 2*k + 1), _cube_v(c, R, 2*k + 2), _cube_v(c, R, 2*k + 3)])
+                  pat_inset_about(q, (q[0] + q[2])/2, ri, strut/2)]
+            : [for (k=[0:5]) pat_inset_tri([c, _cube_v(c, R, k), _cube_v(c, R, k + 1)], strut/2)])];
+module cube_rosette_2d(size, cell=10, strut=2, cubes="sparse", center=[0, 0]) {
+    pat_plate_with_holes(size + [3*cell, 3*cell], cube_rosette_holes(size, cell, strut, cubes, center), center);
 }

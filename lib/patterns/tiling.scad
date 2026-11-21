@@ -37,6 +37,15 @@ function pat_clip_halfplane(poly, m, n) = let(c = len(poly)) c < 3 ? [] : [
         for (p = da <= 0 ? (db <= 0 ? [b] : [a + (b - a)*da/(da - db)])
                          : (db <= 0 ? [a + (b - a)*da/(da - db), b] : [])) p];
 
+// a triangle moved in by d on every side (scaled about its incentre; [] if nothing is left)
+function pat_inset_tri(p, d) = let(
+    a = norm(p[1] - p[2]), b = norm(p[0] - p[2]), c = norm(p[0] - p[1]), per = a + b + c,
+    I = (a*p[0] + b*p[1] + c*p[2])/per,
+    r = abs((p[1][0] - p[0][0])*(p[2][1] - p[0][1]) - (p[2][0] - p[0][0])*(p[1][1] - p[0][1]))/per)
+    r <= d ? [] : [for (q=p) I + (q - I)*(r - d)/r];
+// a rhombus (or any polygon with an incircle around centre c of radius r) moved in by d
+function pat_inset_about(p, c, r, d) = r <= d ? [] : [for (q=p) c + (q - c)*(r - d)/r];
+
 // a plate covering `size` (centred) with the listed polygons cut out: the body of every lattice pattern.
 // Cutting holes from one plate gives a connected network with the same rib width everywhere.
 module pat_plate_with_holes(size, holes, center=[0, 0]) {

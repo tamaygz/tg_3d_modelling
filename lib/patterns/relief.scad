@@ -1,4 +1,4 @@
-// Surface relief patterns: flowing waves, concentric ripples.
+// Surface relief patterns: flowing waves, concentric ripples, fluted / reeded ribs.
 // Use:  use <../../lib/patterns.scad> and pattern_2d("flowing_waves", ...), or use this file for the single generators.
 // Frame: XY plane, anchored on the origin, covers `size` (centred) and a little more; not clipped.
 // The *_2d modules return the MATERIAL (ribs, rings).
@@ -64,4 +64,43 @@ module concentric_ripples_2d(size, cell=6, strut=2, rings=0, first, centers=[[0,
 module concentric_ripples_level_2d(size, k, steps=4, cell=6, strut=2, rings=0, first, centers=[[0, 0]], spokes=0, center=[0, 0]) {
     n = ripple_count(size + 2*[abs(center[0]), abs(center[1])], cell, rings, first, centers);
     ripple_rings_2d(1, ceil(n*(steps - k + 1)/steps), cell, strut, first, centers, spokes);
+}
+
+// ---------- fluted / reeded ribs ----------
+// Parallel straight ribs, like a fluted column or a reeded vase. cell = rib pitch, strut = rib width (reeded) or
+// groove width (fluted); strut = cell makes them touch, as on most reeded vases. orient: "vertical" = ribs along
+// Y (upright on a wall built with lib/shell.scad), "horizontal" = along X.
+// Its natural 3D form (see fluted_level_2d) has a rounded profile:
+//   style "reeded"  convex half-round ribs standing on the surface
+//   style "fluted"  concave half-round grooves sunk into a band of the relief height
+//   style "ribbed"  flat-topped ribs (a plain extrusion)
+// Cut through, the ribs are tied like flowing waves (ties every tie_pitch, staggered like brick bonds).
+FLUTE_STYLES = ["reeded", "fluted", "ribbed"];
+FLUTE_ORIENTS = ["vertical", "horizontal"];
+FLUTE_FLOOR = 0.25;      // fluted style: groove bottoms stay this share of the relief height above the surface
+module _flute_turn(orient, size, center) {
+    if (orient == "vertical") rotate(90) children(); else children();
+}
+module fluted_2d(size, cell=6, strut=6, orient="vertical", tie_pitch=0, ties=0, center=[0, 0]) {
+    v = orient == "vertical";
+    s = v ? [size[1], size[0]] : size; c = v ? pat_rot(center, -90) : center;
+    rotate(v ? 90 : 0) flowing_waves_2d(s, cell, min(strut, cell), 0, tie_pitch > 0 ? tie_pitch : 4*cell, 0, 0, c, ties);
+}
+// level k of `steps` of the rounded relief (extrude level k from 0 to k/steps of the relief height)
+module fluted_level_2d(size, k, steps=6, cell=6, strut=6, style="reeded", orient="vertical", center=[0, 0]) {
+    v = orient == "vertical";
+    s = v ? [size[1], size[0]] : size; c = v ? pat_rot(center, -90) : center;
+    t = (k - 0.5)/steps;                                          // height share this level stands for
+    w = min(strut, cell);
+    L = s[0] + 2*cell;
+    rows = [pat_i0(s[1], cell, c[1], 2):pat_i1(s[1], cell, c[1], 2)];
+    rotate(v ? 90 : 0) {
+        if (style == "fluted") difference() {                     // concave grooves: the band minus each groove's
+            translate(c) square([L, s[1] + 4*cell], center=true);   // width at this height; the grooves keep a floor of
+            if (t > FLUTE_FLOOR) for (j=rows)                       // FLUTE_FLOOR x the relief height, so the band is one piece
+                translate([c[0], j*cell]) square([L + 1, w*sqrt(1 - pow(1 - (t - FLUTE_FLOOR)/(1 - FLUTE_FLOOR), 2))], center=true);
+        }
+        else for (j=rows) translate([c[0], j*cell])                // convex ribs: narrower towards the top
+            square([L, style == "ribbed" ? w : w*sqrt(1 - t*t)], center=true);
+    }
 }

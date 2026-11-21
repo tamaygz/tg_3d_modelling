@@ -28,7 +28,7 @@ wall_t = 2; // [1.2:0.2:6]
 corners = "round"; // [round, chamfer, square]
 corner_r = 8; // [1:0.5:40]
 // pattern on the walls and how it is applied
-wall_pattern = "hex_honeycomb"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
+wall_pattern = "hex_honeycomb"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
 wall_mode = "through_cut"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
 // pattern repeat size and rib width in mm (0 = a size that suits the holder)
 wall_cell = 0; // [0:0.5:40]
@@ -71,7 +71,7 @@ cable_slot = true;
 /* [Floor] */
 // floor thickness (5 or more for a dock, so the plug is held straight)
 floor_t = 3; // [1:0.2:12]
-floor_pattern = "concentric_ripples"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
+floor_pattern = "concentric_ripples"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
 floor_mode = "solid"; // [solid, through_cut, recessed]
 
 /* [Mounting] */
@@ -87,6 +87,13 @@ slide_axis = "horizontal"; // [horizontal, vertical]
 fin_len = 100; // [30:5:250]
 fin_w = 60; // [30:5:240]
 fin_t = 4; // [2:0.5:10]
+
+/* [Pattern details] */
+// cube rosette: one hexagon in three a cube (sparse), two in three (dense), all (tumbling blocks) or none
+cube_density = "sparse"; // [sparse, dense, all, none]
+// fluted: convex half-round ribs (reeded), concave grooves (fluted) or flat ribs; ribs upright or lying
+flute_style = "reeded"; // [reeded, fluted, ribbed]
+flute_orient = "vertical"; // [vertical, horizontal]
 
 /* [Hidden] */
 $fn = 48;
@@ -120,7 +127,8 @@ h_ref = height + rise_back;
 // ---------- patterns ----------
 k_auto = max(0.35, min(0.8, min(size[0], height)/70));      // automatic pattern size: a few cells across the smaller wall dimension
 function spec_for(name, ang=0) = pattern_sized(name, k_auto, wall_cell, wall_strut, ang, wall_seed, strut_min=1,
-    opts=name == "concentric_ripples" ? [["spokes", 6]] : name == "voronoi" ? [["round", 0.6]] : []);
+    opts=name == "concentric_ripples" ? [["spokes", 6]] : name == "voronoi" ? [["round", 0.6]] :
+         name == "cube_rosette" ? [["cubes", cube_density]] : name == "fluted" ? [["style", flute_style], ["orient", flute_orient]] : []);
 wall_spec = spec_for(wall_pattern, wall_angle);
 floor_spec = spec_for(floor_pattern);
 wmode = container_safe_mode(wall_mode, wall_spec);

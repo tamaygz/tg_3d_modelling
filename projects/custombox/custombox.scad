@@ -47,7 +47,7 @@ rim_wave_phase = 0; // [0:15:345]
 // wall thickness (woven open lattice: total height of the weave)
 wall_t = 2.4; // [1.2:0.2:8]
 // pattern on the walls
-wall_pattern = "hex_honeycomb"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
+wall_pattern = "hex_honeycomb"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
 // how the pattern is applied
 wall_mode = "through_cut"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
 // pattern repeat size in mm (0 = the pattern's default)
@@ -71,15 +71,15 @@ post_w = 3; // [0:0.5:20]
 // lattices, wavelength for waves, and Voronoi / Truchet are made to repeat after one round
 fit_cells = true;
 // front and back walls can differ from the others (box shape with solid corners)
-front_pattern = "same"; // [same, hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
+front_pattern = "same"; // [same, hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
 front_mode = "raised"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
-back_pattern = "same"; // [same, hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
+back_pattern = "same"; // [same, hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
 back_mode = "solid"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
 
 /* [Floor] */
 // floor thickness = strength (mm)
 floor_t = 2; // [0.8:0.2:8]
-floor_pattern = "concentric_ripples"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
+floor_pattern = "concentric_ripples"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
 floor_mode = "solid"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
 // pattern repeat size and rib width (0 = default)
 floor_cell = 0; // [0:0.5:60]
@@ -94,7 +94,7 @@ floor_margin = 3; // [0:0.5:30]
 // inset = a lid that drops into the box onto a ledge (flat rims only)
 lid = "none"; // [none, inset]
 lid_t = 2; // [1:0.2:6]
-lid_pattern = "girih_star_cross"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, flowing_waves, concentric_ripples]
+lid_pattern = "girih_star_cross"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
 lid_mode = "recessed"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
 lid_cell = 0; // [0:0.5:60]
 lid_strut = 0; // [0:0.1:12]
@@ -126,6 +126,11 @@ strand_style = "flat"; // [flat, rounded]
 voronoi_round = 0.8; // [0:0.1:4]
 // honeycomb: corners or flats pointing up
 hex_orient = "pointy"; // [pointy, flat]
+// cube rosette: one hexagon in three a cube (sparse), two in three (dense), all (tumbling blocks) or none
+cube_density = "sparse"; // [sparse, dense, all, none]
+// fluted: convex half-round ribs (reeded), concave grooves (fluted) or flat ribs; ribs upright or lying
+flute_style = "reeded"; // [reeded, fluted, ribbed]
+flute_orient = "vertical"; // [vertical, horizontal]
 // flowing waves: wave height and length (mm)
 wave_amplitude = 3; // [0:0.5:20]
 wave_length = 30; // [8:1:120]
@@ -173,7 +178,9 @@ function opts_for(name, h) =
     name == "basket_weave" || name == "tri_weave" ? [["style", strand_style]] :
     name == "voronoi" ? [["round", voronoi_round]] :
     name == "flowing_waves" ? [["amplitude", wave_amplitude], ["wavelength", wave_length]] :
-    name == "concentric_ripples" ? [["spokes", ripple_spokes]] : [];
+    name == "concentric_ripples" ? [["spokes", ripple_spokes]] :
+    name == "cube_rosette" ? [["cubes", cube_density]] :
+    name == "fluted" ? [["style", flute_style], ["orient", flute_orient]] : [];
 function spec_for(name, c, st, ang, seed, h) =
     pattern_sized(name, 1, c, st, ang, seed, opts_for(name, h), min_strut=min_strut, min_opening=min_opening);
 function safe_mode(m, s) = container_safe_mode(m, s);     // a pattern that would fall apart when cut through is raised instead

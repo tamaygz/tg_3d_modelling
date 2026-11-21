@@ -31,10 +31,11 @@ use <patterns/relief.scad>
 
 // ---------- option lists ----------
 PATTERNS = ["hex_honeycomb", "square_grid", "diamond_lattice", "triangular_lattice",     // geometric lattices
+            "cube_rosette",
             "basket_weave", "tri_weave",                                                  // woven (3D)
             "voronoi",                                                                    // organic
-            "fish_scales", "truchet_arcs", "girih_star_cross",                            // decorative
-            "flowing_waves", "concentric_ripples"];                                       // surface relief
+            "fish_scales", "truchet_arcs", "girih_star_cross", "asanoha",                 // decorative
+            "flowing_waves", "concentric_ripples", "fluted"];                             // surface relief
 PATTERN_MODES   = ["solid", "through_cut", "open_lattice", "raised", "recessed", "overlay"];   // pattern_panel(mode)
 PATTERN_CUTS    = ["cells", "lines"];              // what a cut removes: the openings between the pattern, or the pattern itself
 RELIEF_PROFILES = ["flat", "round"];               // top of raised elements
@@ -54,7 +55,8 @@ function pattern_default(name) =
     name == "basket_weave" ? [10, 7] : name == "tri_weave" ? [24, 3] :
     name == "voronoi" ? [14, 1.5] : name == "fish_scales" ? [[12, 12], 0.8] :
     name == "truchet_arcs" ? [12, 1.6] : name == "girih_star_cross" ? [24, 1.6] :
-    name == "flowing_waves" ? [8, 2.4] : name == "concentric_ripples" ? [6, 2] : undef;
+    name == "flowing_waves" ? [8, 2.4] : name == "concentric_ripples" ? [6, 2] :
+    name == "cube_rosette" ? [10, 2] : name == "asanoha" ? [18, 1.2] : name == "fluted" ? [6, 6] : undef;
 function pattern_known(name) = !is_undef(pattern_default(name));
 
 // name      one of PATTERNS
@@ -88,7 +90,9 @@ function pattern_opt_keys(name) =
     name == "fish_scales" ? ["overlap", "curvature", "stagger", "shingle", "steps"] :
     name == "truchet_arcs" ? ["variation", "bias"] : name == "girih_star_cross" ? ["star", "star_ratio"] :
     name == "flowing_waves" ? ["amplitude", "wavelength", "phase", "shift", "ties"] :
-    name == "concentric_ripples" ? ["rings", "first", "centers", "spokes", "falloff", "steps"] : [];
+    name == "concentric_ripples" ? ["rings", "first", "centers", "spokes", "falloff", "steps"] :
+    name == "cube_rosette" ? ["cubes"] : name == "asanoha" ? ["orient"] :
+    name == "fluted" ? ["style", "orient", "steps", "tie_pitch", "ties"] : [];
 function pat_opt(opts, key, default) = let(r = [for (e=opts) if (e[0] == key) e[1]]) len(r) > 0 ? r[0] : default;
 
 // a name (plus the common settings given as arguments) or a ready spec -> spec
@@ -101,13 +105,15 @@ function pattern_is_3d(p) = let(n = is_string(p) ? p : p[0]) n == "basket_weave"
 // true if the pattern's material forms one network that reaches the edge of any outline (so it can stand
 // alone as an open lattice or stay in one piece when its cells are cut through)
 function pattern_is_connected(p) = let(s = _ps(p), n = s[0])
-    n == "truchet_arcs" ? false : n == "concentric_ripples" ? let(sp = _po(s, "spokes", undef)) is_undef(sp) || sp > 0 : true;
+    n == "truchet_arcs" ? false : n == "concentric_ripples" ? let(sp = _po(s, "spokes", undef)) is_undef(sp) || sp > 0 :
+    n == "fluted" ? let(t = _po(s, "ties", undef)) is_undef(t) || t > 0 : true;
 // Line patterns need ties when they are cut through: without them the lines only hang on the frame (they
 // would print as long bridges and flex). Wherever the cells are cut out, a spec that does not say otherwise gets
-// them: flowing_waves ties = 1 (a bar between neighbouring ribs every wavelength), concentric_ripples spokes = 6.
+// them: flowing_waves ties = 1 (a bar between neighbouring ribs every wavelength), fluted ties = 1 (every
+// tie_pitch, default 4 ribs), concentric_ripples spokes = 6.
 // Set opts ["ties", 0] / ["spokes", 0] to switch them off, or a number to choose. Reliefs are left as they are.
 function pattern_tied(p) = let(s = _ps(p), add =
-    s[0] == "flowing_waves" && is_undef(_po(s, "ties", undef)) ? [["ties", 1]] :
+    (s[0] == "flowing_waves" || s[0] == "fluted") && is_undef(_po(s, "ties", undef)) ? [["ties", 1]] :
     s[0] == "concentric_ripples" && is_undef(_po(s, "spokes", undef)) ? [["spokes", 6]] : [])
     len(add) == 0 ? s : [for (i=[0:len(s)-1]) i == 8 ? concat(s[8], add) : s[i]];
 // Wrapping a pattern round a closed wall: it only closes without a seam if it repeats after exactly the length
@@ -121,14 +127,18 @@ function pattern_period(p) = let(s = _ps(p), n = s[0], c = pat_xy(_pc(s))[0])
     n == "triangular_lattice" ? (_po(s, "orient", "up") == "side" ? c*sqrt(3) : c) :
     n == "basket_weave" ? 2*c : n == "tri_weave" ? c/sin(60) :
     n == "truchet_arcs" ? 2*c :
-    n == "flowing_waves" ? _po(s, "wavelength", 30) : n == "concentric_ripples" ? 0 : c;
+    n == "flowing_waves" ? _po(s, "wavelength", 30) : n == "concentric_ripples" ? 0 :
+    n == "cube_rosette" ? 3*sqrt(3)*c :                        // the cube / rosette colouring repeats every third hexagon
+    n == "asanoha" ? (_po(s, "orient", "up") == "side" ? c*sqrt(3) : c) :
+    n == "fluted" ? (_po(s, "orient", "vertical") == "vertical" ? c : 0) : c;
 function pattern_wrapped(p, L) = let(s = _ps(p), per = pattern_period(s))
     s[3] != 0 || s[7] != [1, 1] || per <= 0 ? s : let(
         n = max(1, round(L/per)), k = L/(n*per),
         add = s[0] == "flowing_waves" ? [["wavelength", L/n]] :
               s[0] == "voronoi" ? [["wrap", n]] : s[0] == "truchet_arcs" ? [["wrap", 2*n]] : [],
-        cell = s[0] == "flowing_waves" ? s[1] : is_list(s[1]) ? [for (x=s[1]) x*k] : s[1]*k)
-        [for (i=[0:len(s)-1]) i == 1 ? cell : i == 8 ? concat(add, s[8]) : s[i]];
+        cell = s[0] == "flowing_waves" ? s[1] : is_list(s[1]) ? [for (x=s[1]) x*k] : s[1]*k,
+        strut = s[0] == "fluted" && pat_xy(s[2])[0] >= pat_xy(s[1])[0] - 0.001 ? s[2]*k : s[2])   // touching ribs stay touching
+        [for (i=[0:len(s)-1]) i == 1 ? cell : i == 2 ? strut : i == 8 ? concat(add, s[8]) : s[i]];
 // the same pattern moved by d = [x, y] on the surface (the anchor of the pattern goes to d)
 function pattern_shift(p, d) = let(s = _ps(p), q = pat_rot(d, -s[3])) [for (i=[0:len(s)-1]) i == 4 ? s[4] + q : s[i]];
 
@@ -146,11 +156,14 @@ function pattern_features(p) = let(s = _ps(p), n = s[0], c = pat_xy(_pc(s)), st 
     n == "truchet_arcs" ? [st[0], c[0]/2 - st[0]] :
     n == "girih_star_cross" ? [st[0], 0.29*_po(s, "star", c[0]) - st[0]] :
     n == "flowing_waves" ? [st[0], wave_gap(c[0], st[0], _po(s, "amplitude", 3), _po(s, "wavelength", 30), _po(s, "shift", 0))] :
+    n == "cube_rosette" ? [st[0], _po(s, "cubes", "sparse") == "all" ? 2*(c[0]*sin(60)/2 - st[0]/2) : 2*(c[0]/(2*sqrt(3)) - st[0]/2)] :
+    n == "asanoha" ? [st[0], asanoha_opening(c[0], st[0])] :
+    n == "fluted" ? [min(st[0], c[0]), c[0] - st[0]] :
     [st[0], c[0] - st[0]];
 // "" if the spec is printable, otherwise what is wrong (use in an assert, or show it to the user)
-function pattern_problem(p) = let(s = _ps(p), f = pattern_features(s), closed = s[0] == "basket_weave" && abs(f[1]) < 0.001)
+function pattern_problem(p) = let(s = _ps(p), f = pattern_features(s), closed = (s[0] == "basket_weave" && f[1] < 0.001) || (s[0] == "fluted" && f[1] < s[10]))   // closed weave / touching ribs: fine
     s[9] > 0 && f[0] < s[9] - 0.001 ? str(s[0], ": rib/strip width ", f[0], " is below min_strut ", s[9]) :
-    f[1] < -0.001 ? str(s[0], ": strut ", s[2], " does not fit into cell ", _pc(s), " (elements overlap)") :
+    f[1] < -0.001 && !closed ? str(s[0], ": strut ", s[2], " does not fit into cell ", _pc(s), " (elements overlap)") :
     s[10] > 0 && !closed && f[1] < s[10] - 0.001 ? str(s[0], ": openings are about ", f[1], " wide, below min_opening ", s[10],
         " (larger cell, thinner strut, or lower density)") : "";
 
@@ -169,16 +182,22 @@ module _pat_gen_2d(s, cover, g=[0, 0]) {
     else if (n == "truchet_arcs") truchet_arcs_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "variation", "random"), s[6], _po(s, "bias", 0.5), center=g, wrap=_po(s, "wrap", 0));
     else if (n == "girih_star_cross") girih_star_cross_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "star", undef), _po(s, "star_ratio", undef), center=g);
     else if (n == "flowing_waves") flowing_waves_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "amplitude", 3), _po(s, "wavelength", 30), _po(s, "phase", 0), _po(s, "shift", 0), center=g, ties=_po(s, "ties", 0));
+    else if (n == "cube_rosette") cube_rosette_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "cubes", "sparse"), center=g);
+    else if (n == "asanoha") asanoha_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "orient", "up"), center=g);
+    else if (n == "fluted") fluted_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "orient", "vertical"), _po(s, "tie_pitch", 0), _po(s, "ties", 0), center=g);
     else if (n == "concentric_ripples") concentric_ripples_2d(cover, pat_xy(c)[0], pat_xy(st)[0], _po(s, "rings", 0), _po(s, "first", undef), _po(s, "centers", [[0, 0]]), _po(s, "spokes", 0), center=g);
 }
-// relief levels: most patterns are one flat level; fish scales rise towards their tips, ripples fall off outwards
+// relief levels: most patterns are one flat level; fish scales rise towards their tips, ripples fall off outwards,
+// fluted / reeded ribs are round
 function pattern_levels(p) = let(s = _ps(p), n = s[0])
+    n == "fluted" && _po(s, "style", "reeded") != "ribbed" ? _po(s, "steps", 6) :
     n == "fish_scales" && _po(s, "shingle", true) ? _po(s, "steps", 3) :
     n == "concentric_ripples" && _po(s, "falloff", 0) > 0 ? _po(s, "steps", 4) : 1;
 function _pat_level_top(s, k, K) = s[0] == "concentric_ripples" ? 1 - _po(s, "falloff", 0)*(K - k)/K : k/K;   // share of h
 module _pat_level_2d(s, cover, k, K, g=[0, 0]) {
     n = s[0]; c = _pc(s); st = s[2];
     if (K == 1) _pat_gen_2d(s, cover, g);
+    else if (n == "fluted") fluted_level_2d(cover, k, K, pat_xy(c)[0], pat_xy(st)[0], _po(s, "style", "reeded"), _po(s, "orient", "vertical"), center=g);
     else if (n == "fish_scales") fish_scales_level_2d(cover, k, K, pat_xy(c), _po(s, "overlap", 0.4), _po(s, "curvature", 0.7), _po(s, "stagger", 0.5), center=g);
     else concentric_ripples_level_2d(cover, k, K, pat_xy(c)[0], pat_xy(st)[0], _po(s, "rings", 0), _po(s, "first", undef), _po(s, "centers", [[0, 0]]), _po(s, "spokes", 0), center=g);
 }

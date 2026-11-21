@@ -1,15 +1,15 @@
 # Pattern gallery
 
-<table><tr><td align="center"><img src="images/gallery.png" width="250" alt="view gallery: all 12 patterns"><br><sub>view gallery: all 12 patterns</sub></td><td align="center"><img src="images/modes.png" width="250" alt="view modes: one pattern alone and in every mode"><br><sub>view modes: one pattern alone and in every mode</sub></td><td align="center"><img src="images/box.png" width="250" alt="view box: walls, front, floor and lid with their own patterns"><br><sub>view box: walls, front, floor and lid with their own patterns</sub></td></tr></table>
+<table><tr><td align="center"><img src="images/gallery.png" width="250" alt="view gallery: all 15 patterns"><br><sub>view gallery: all 15 patterns</sub></td><td align="center"><img src="images/modes.png" width="250" alt="view modes: one pattern alone and in every mode"><br><sub>view modes: one pattern alone and in every mode</sub></td><td align="center"><img src="images/box.png" width="250" alt="view box: walls, front, floor and lid with their own patterns"><br><sub>view box: walls, front, floor and lid with their own patterns</sub></td></tr></table>
 
 **[Open the online configurator](https://tamaygz.github.io/tg_3d_modelling/pattern_gallery)** · or open `pattern_gallery_configurator.html` from this folder · [model](pattern_gallery.scad) · [print files](pattern_gallery_print) · [design log](pattern_gallery_log.md)
 
-Catalogue and test bench for the 12 parametric patterns in [`lib/patterns.scad`](../../lib/README.md#patterns).
+Catalogue and test bench for the 15 parametric patterns in [`lib/patterns.scad`](../../lib/README.md#patterns).
 Open `pattern_gallery_configurator.html` to try a pattern, change its settings and download the result.
 
 | View | What it shows | Parts |
 |---|---|---|
-| `gallery` | all 12 patterns as equal tiles, each in its natural use | `g_<pattern>` |
+| `gallery` | all 15 patterns as equal tiles, each in its natural use | `g_<pattern>` |
 | `sample` | one pattern in one mode on an outline you choose | `sample` |
 | `modes` | one pattern alone and in every mode side by side: through-cut, open lattice, raised, recessed, overlay | `m_flat`, `m_<mode>` |
 | `box` | a small box: the walls, the front wall, the floor and the lid each have their own pattern and mode | `box`, `lid` |
@@ -19,7 +19,7 @@ Open `pattern_gallery_configurator.html` to try a pattern, change its settings a
 | Pattern | `pattern`, `mode`, `cell`, `cell_y`, `strut`, `angle`, `density`, `offset_x/y`, `seed`, `min_strut`, `min_opening` |
 | Sample | `sample_w`, `sample_h`, `sample_shape`, `thickness`, `relief`, `border`, `pad`, `relief_profile` |
 | Overlay / lining | `lining_t`, `lining_mode`, `lining_inset`, `lining_edge` |
-| Pattern details | one or more settings per pattern: orientation, stagger, strand style and lift, Voronoi irregularity / rounding / minimum cell, scale overlap / curvature, Truchet variation, star size, wave amplitude / length / shift, ripple rings / spokes / falloff / second centre |
+| Pattern details | one or more settings per pattern: cube density, asanoha orientation, flute style and direction, orientation, stagger, strand style and lift, Voronoi irregularity / rounding / minimum cell, scale overlap / curvature, Truchet variation, star size, wave amplitude / length / shift, ripple rings / spokes / falloff / second centre |
 | Gallery | `tile`, `tile_gap` |
 | Box demo | `wall_pattern`, `wall_mode`, `front_pattern`, `front_mode`, `floor_pattern`, `floor_mode`, `roof_pattern`, `roof_mode`, sizes and thicknesses |
 
@@ -31,14 +31,17 @@ Open `pattern_gallery_configurator.html` to try a pattern, change its settings a
 | `square_grid` | lattice | open lattice | pitch (x, y) | rib width (vertical, horizontal) |
 | `diamond_lattice` | lattice | open lattice | diamond width, height | rib width |
 | `triangular_lattice` | lattice | open lattice | triangle side | rib width |
+| `cube_rosette` | lattice | open lattice | triangle / rhombus side | rib width |
 | `basket_weave` | woven (3D) | open lattice of real strips | strip pitch | strip width |
 | `tri_weave` | woven (3D) | open lattice of real strands | distance between parallel strands | strand width |
 | `voronoi` | organic | open lattice | average cell size | wall width |
 | `fish_scales` | decorative | raised shingles | scale width, height | line width of the scale edges |
 | `truchet_arcs` | decorative | engraved | tile size | arc width |
 | `girih_star_cross` | decorative | perforated overlay on a solid panel | repeat spacing | strap width |
+| `asanoha` | decorative | open lattice | grid triangle side | line width |
 | `flowing_waves` | relief | raised ribs with rounded tops | rib pitch | rib width |
 | `concentric_ripples` | relief | raised rings, lower towards the outside | ring spacing | ring width |
+| `fluted` | relief | raised round ribs (reeded) | rib pitch | rib width (= pitch: touching) |
 
 ## Using a pattern in your own project
 

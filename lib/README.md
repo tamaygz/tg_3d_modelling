@@ -66,7 +66,7 @@ A complete small project using core, shapes, fonts and attachments is `projects/
 
 ## Patterns
 
-<img src="examples/images/patterns.png" width="520" alt="The 12 patterns">
+<img src="examples/images/patterns.png" width="520" alt="The 15 patterns">
 
 `patterns.scad` makes decorative and structural patterns a building block for any flat surface: walls, floors,
 roofs, lids, panels, inserts. A project picks a pattern by name, sets a few numbers and says how to apply it.
@@ -99,9 +99,10 @@ For a vertical wall, a sloped roof or any other flat face, build in this frame a
 or a strand lies on it), so a larger `size` adds cells around the same centre and neighbouring panels cut from
 the same spec line up when their origins are a whole number of cells apart.
 
-### The 12 patterns
+### The 15 patterns
 
-`PATTERNS` lists the names. `cell` is the repeat size and `strut` the width of the material; an opening is
+`PATTERNS` lists the names. The cube rosette, asanoha and fluted patterns were matched to reference pictures:
+the cube rosette's layout was measured from the picture's repeat (one cube and two rosettes per repeat). `cell` is the repeat size and `strut` the width of the material; an opening is
 about `cell − strut` wide. Pattern-specific settings go into `opts=[["key", value], ...]`.
 
 | Name | What it is | `cell` (default) | `strut` (default) | `opts` (default) |
@@ -110,14 +111,17 @@ about `cell − strut` wide. Pattern-specific settings go into `opts=[["key", va
 | `square_grid` | orthogonal ribs | pitch, or [x, y] (10) | rib width, or [vertical, horizontal] (1.5) | `stagger` 0..0.5: shift of every other row (0) |
 | `diamond_lattice` | diagonal ribs | [diamond width, height] ([12, 18]) | rib width (1.5) | – |
 | `triangular_lattice` | three rib families, triangular openings | triangle side (14) | rib width (1.5) | `alternate` (true; false opens every other triangle), `orient`: "up" / "side" |
+| `cube_rosette` | kumiko-style triangular grid: isometric cubes (3 rhombi) among six-triangle rosettes | triangle / rhombus side (10) | rib width (2) | `cubes`: "sparse" (one hexagon in three is a cube; the classic look) / "dense" / "all" (tumbling blocks) / "none" |
 | `basket_weave` | plain over-under weave of strips, real 3D | strip pitch (10) | strip width (7; = cell for a closed weave) | `lift` in mm (0.375 × h), `style`: "flat" / "rounded" |
 | `tri_weave` | three-direction cane weave (kagome), real 3D | distance between parallel strands (24) | strand width (3; must be under cell/3) | `lift`, `style` |
 | `voronoi` | irregular cell network | average cell size (14) | wall width (1.5) | `irregularity` 0..1 (1), `round` corner radius (0), `min_cell` fill cells smaller than this (0), `wrap` (repeat every n cells along X; set by `pattern_wrapped()`); uses `seed` |
 | `fish_scales` | overlapping scales, tip down | [scale width, height] ([12, 12]) | line width of the scale edges (0.8) | `overlap` (0.4), `curvature` 0.2..1 (0.7), `stagger` (0.5), `shingle` (true: raised as stepped scales), `steps` (3) |
 | `truchet_arcs` | quarter-ring tiles that join into paths | tile size (12) | arc width (1.6) | `variation`: "random" / "alternate" / "rows" / "uniform", `bias` (0.5); uses `seed` |
 | `girih_star_cross` | eight-point stars touching at their tips, crosses between | repeat spacing (24) | strap width (1.6) | `star` diameter (= cell; smaller adds straight straps between the tips), `star_ratio` (0.765) |
+| `asanoha` | Japanese hemp leaf: every grid triangle split from its centre, six-pointed stars | triangle side (18) | line width (1.2) | `orient`: "up" / "side" |
 | `flowing_waves` | parallel sine ribs | rib pitch (8) | rib width (2.4) | `amplitude` (3), `wavelength` (30), `phase` (0°), `shift` per rib (0°), `ties` (bars between ribs every n wavelengths; automatic when cut through) |
 | `concentric_ripples` | rings around one or more centres | ring spacing (6) | ring width (2) | `rings` (0 = fill), `first` radius, `centers` ([[0, 0]]), `spokes` (radial ties; automatic 6 when cut through), `falloff` 0..0.9 (0), `steps` (4) |
+| `fluted` | straight parallel ribs with a round profile (reeded / fluted vase or column) | rib pitch (6) | rib or groove width (6 = touching) | `style`: "reeded" (convex ribs) / "fluted" (concave grooves) / "ribbed" (flat); `orient`: "vertical" / "horizontal"; `steps` (6) of the round profile; `tie_pitch`, `ties` (bars when cut through) |
 
 Common settings of a spec, for every pattern:
 
@@ -213,11 +217,11 @@ translate([0, 0, 40]) pattern_panel("through_cut", roof, [70, 50], t=2, border=3
   small fragment can come loose: use it only where the host itself closes the edge.
 <img src="examples/images/pattern_ties.png" width="520" alt="Ties in line patterns">
 
-- **Ties.** Line patterns have no cross connections of their own: cut through, flowing waves would be long
+- **Ties.** Line patterns have no cross connections of their own: cut through, flowing waves and fluted ribs would be long
   unsupported bridges and ripples loose rings. So wherever the cells are cut out (`through_cut`, `open_lattice`,
   perforated linings, `pattern_cutout_2d`), `pattern_tied(p)` is applied: waves get a bar between neighbouring ribs
   every wavelength, placed where the ribs come closest (or alternately on crests and in troughs when they run
-  parallel, like brick bonds), and ripples get 6 spokes. Set `["ties", n]` / `["spokes", n]` yourself to choose,
+  parallel, like brick bonds), fluted ribs get staggered bars every `tie_pitch`, and ripples get 6 spokes. Set `["ties", n]` / `["spokes", n]` yourself to choose,
   or 0 to switch them off. Reliefs and engravings are not changed.
 - `pattern_is_connected(p)` is false for Truchet arcs and for ripples with `spokes` set to 0: those would fall
   apart when cut through, so `through_cut` and `open_lattice` refuse them.

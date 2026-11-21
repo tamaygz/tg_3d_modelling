@@ -1,4 +1,4 @@
-// Decorative patterns: fish scales, Truchet arcs, Girih star & cross.
+// Decorative patterns: fish scales, Truchet arcs, Girih star & cross, asanoha.
 // Use:  use <../../lib/patterns.scad> and pattern_2d("fish_scales", ...), or use this file for the single generators.
 // Frame: XY plane, anchored on the origin, covers `size` (centred) and a little more; not clipped.
 // The *_2d modules return the MATERIAL of the line pattern (scale edges, arcs, straps).
@@ -96,4 +96,24 @@ module girih_star_cross_2d(size, cell=24, strut=1.6, star, star_ratio, center=[0
                 [[for (k=[0:15]) k], [for (k=[16:31]) k]]);
         if (cell - D > 0.001) for (a=[0, 90]) rotate(a) translate([cell/2, 0]) square([cell - D + strut, strut], center=true);
     }
+}
+
+// ---------- asanoha (hemp leaf) ----------
+// The Japanese hemp-leaf pattern: a grid of equilateral triangles (side `cell`) in which every triangle is split by
+// lines from its centre to its three corners, so that six-pointed stars form around every grid point.
+// The openings are the 3 slim triangles of each grid triangle. orient: "up" = a family of grid lines along X,
+// "side" = along Y (the stars then point up and down).
+function asanoha_opening(cell, strut) = 2*(cell*(sqrt(3)/6)/(1 + 2/sqrt(3)) - strut/2);   // width of the slim triangles
+function asanoha_holes(size, cell=18, strut=1.2, center=[0, 0]) = let(H = cell*sqrt(3)/2)
+    [for (j=[pat_i0(size[1], H, center[1], 2):pat_i1(size[1], H, center[1], 2)])
+     for (i=[pat_i0(size[0], cell, center[0] - j*cell/2, 2):pat_i1(size[0], cell, center[0] - j*cell/2, 2)])
+        let(p0 = [i*cell + j*cell/2, j*H])
+        for (t=[[p0, p0 + [cell, 0], p0 + [cell/2, H]], [p0 + [cell, 0], p0 + [cell*3/2, H], p0 + [cell/2, H]]])
+            let(g = (t[0] + t[1] + t[2])/3)
+            for (k=[0:2]) pat_inset_tri([t[k], t[(k + 1)%3], g], strut/2)];
+module asanoha_2d(size, cell=18, strut=1.2, orient="up", center=[0, 0]) {
+    side = orient == "side";
+    s = side ? [size[1], size[0]] : size;
+    c = side ? pat_rot(center, -90) : center;
+    rotate(side ? 90 : 0) pat_plate_with_holes(s + [3*cell, 2*cell], asanoha_holes(s, cell, strut, c), c);
 }
