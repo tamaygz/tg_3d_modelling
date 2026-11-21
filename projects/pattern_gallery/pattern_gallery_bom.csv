@@ -1,9 +1,12 @@
 kind,item,note,qty,material,id
+"made","Asanoha","PLA","1","","g_asanoha"
 "made","Basket weave","PLA","1","","g_basket_weave"
 "made","Concentric ripples","PLA","1","","g_concentric_ripples"
+"made","Cube rosette","PLA","1","","g_cube_rosette"
 "made","Diamond lattice","PLA","1","","g_diamond_lattice"
 "made","Fish scales","PLA","1","","g_fish_scales"
 "made","Flowing waves","PLA","1","","g_flowing_waves"
+"made","Fluted","PLA","1","","g_fluted"
 "made","Girih star & cross","PLA","1","","g_girih_star_cross"
 "made","Hex honeycomb","PLA","1","","g_hex_honeycomb"
 "made","Square grid","PLA","1","","g_square_grid"
