@@ -47,3 +47,6 @@ attach_type = "fin"; attach_count = 2; fin_w = 120; floor_mode = "through_cut"; 
 # --- new patterns ---
 wall_pattern = "cube_rosette"
 wall_pattern = "fluted"; wall_mode = "raised"; flute_style = "fluted"
+
+# --- clamp / pipe claw ---
+attach_type = "pipe"; rise_back = 16; pipe_d = 25

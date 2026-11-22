@@ -1,6 +1,6 @@
 # Attachment plates
 
-<table><tr><td align="center"><img src="images/attachments.png" width="250" alt="wall plate and test coupon"><br><sub>wall plate and test coupon</sub></td><td align="center"><img src="images/attachments_slide.png" width="250" alt="slide plate on its track"><br><sub>slide plate on its track</sub></td><td align="center"><img src="images/attachments_fin.png" width="250" alt="fin"><br><sub>fin</sub></td></tr><tr><td align="center"><img src="images/attachments_ball.png" width="250" alt="ball joint with a Skådis plate"><br><sub>ball joint with a Skådis plate</sub></td></tr></table>
+<table><tr><td align="center"><img src="images/attachments.png" width="250" alt="wall plate and test coupon"><br><sub>wall plate and test coupon</sub></td><td align="center"><img src="images/attachments_slide.png" width="250" alt="slide plate on its track"><br><sub>slide plate on its track</sub></td><td align="center"><img src="images/attachments_fin.png" width="250" alt="fin"><br><sub>fin</sub></td></tr><tr><td align="center"><img src="images/attachments_ball.png" width="250" alt="ball joint with a Skådis plate"><br><sub>ball joint with a Skådis plate</sub></td></tr><tr><td align="center"><img src="images/attachments_clamp.png" width="250" alt="clamp"><br><sub>clamp with its printed screw</sub></td><td align="center"><img src="images/attachments_pipe.png" width="250" alt="pipe claw"><br><sub>pipe claw</sub></td></tr></table>
 
 **[Open the online configurator](https://tamaygz.github.io/tg_3d_modelling/attachments)** · or open `attachments_configurator.html` from this folder · [model](attachments.scad) · [print files](attachments_print) · [design log](attachments_log.md)
 
@@ -38,3 +38,12 @@ Rebuild and check with `python3 tools/build.py attachments --test` (variants in 
   (adapter: slotted cup + a standard socket for the plate) and `attach_ring` (lock ring). The report shows the cup
   strain (1.4% for the 16 mm ball, limit 2%), the tilt range and the stand-off. Print the coupon, a ball plate, an
   adapter and a ring first to check how firmly the ring clamps.
+
+## Clamp and pipe claw
+
+- `attach_type = "clamp"`: a C-clamp behind the plate for desk tops, shelves and flat bars. `clamp_gap` is the
+  opening between the jaws, `clamp_reach` how far it grips in (from its back to the edge of the screw hole), and
+  `clamp_screw` the printed screw (M10–M20). Part `attach_screw` is the screw with its grip knob and pad: print it
+  standing, knob down, in PETG; add a felt or rubber pad on the upper jaw and the screw pad to protect furniture.
+- `attach_type = "pipe"`: a rounded claw that snaps onto a pipe, tube or conduit of diameter `pipe_d`, running
+  horizontally or vertically (`pipe_axis`). The report shows how much the claw bends when pushed on (limit 2%).

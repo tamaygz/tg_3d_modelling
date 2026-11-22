@@ -41,6 +41,13 @@
   chamfered. (3) Fin option now in every container project. (4) The fin was missing in the configurators because
   they read the parts list at default settings: the tools now read every possible part (`$all_parts`).
 
+## v5 (2026-11-22) – clamp and pipe claw
+- From the user's pictures (a printed C-clamp with a wavy knob, conduit clips M16–M32). Clamp: spine, upper jaw,
+  lower jaw with a threaded boss, 45° gussets, chamfered edges, joined only to the plate's middle (snap arms stay
+  free); printed screw with knob and 45° pad (new lib/thread.scad: ISO coarse threads as one helical surface,
+  0.25 mm play per side, checked: rod in its hole does not touch). Pipe claw: opening chosen for about 1.5% strain
+  (split-ring formula, asserted < 2%), 45° lead-in tips.
+
 ## Prints and feedback
 - (none yet)
 

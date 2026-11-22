@@ -24,3 +24,6 @@ attach_type = "keyhole"; attach_joint = "ball"; attach_count = 1
 
 # --- largest plates on the smallest guide (the fit check runs; within the size range they always fit) ---
 attach_size = "L"; table_len = 100
+
+# --- clamp / pipe claw ---
+attach_type = "pipe"; pipe_axis = "vertical"

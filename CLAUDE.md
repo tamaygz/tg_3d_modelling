@@ -20,8 +20,9 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 - **Mounting:** hanging or standing projects use the attachment host helpers (`attach_fit` + `attach_note`:
   smaller plate or none with a WARNING, never an error; `attach_xs`, `attach_y`, `attach_sockets`, `each attach_rows(...)` in the parts table, one `attach_all(part, ...)`
   line to draw plates / track / ball joint) and expose `attach_type`, `attach_size`, `attach_count`,
-  `attach_joint`, `slide_axis`. Plates snap into the host; types include `slide` (track on the wall) and `fin`
-  (blade under the host: `attach_face(type) == "bottom"`, containers only). New plate types or joints go into
+  `attach_joint`, `slide_axis`. Plates snap into the host; types include `slide` (track on the wall), `fin`
+  (blade under the host: `attach_face(type) == "bottom"`, containers only), `clamp` (C-clamp + printed screw,
+  threads from `lib/thread.scad`) and `pipe` (snap-on claw, strain ≤ 2%). New plate types or joints go into
   `lib/attach.scad` so every project gets them; add them to each project's option list and tests.
 - **Fit, do not fail** (user request): a setting that does not fit is reduced or left out and reported
   (WARNING echo + a `report` line). `assert` only when no printable part can result. Compare lengths with a
@@ -130,7 +131,7 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 | `projects/snooker_guide` | v1, not printed yet | multi-colour relief plaque of the snooker setup with points |
 | `projects/bolavuit_logo` | v2, not printed yet | logo plaque: exact (from SVG) or rebuilt from lib/emblem (0.90 overlap) |
 | `projects/led_kit` | v1, not printed yet | LED tracks, diffusers, corners, cable parts |
-| `projects/attachments` | v4, not printed yet | test coupon + every attachment plate, slide track, fin, ball joint; print first to check the fits |
+| `projects/attachments` | v5, not printed yet | test coupon + every attachment plate, slide track, fin, clamp, pipe claw, ball joint; print first to check the fits |
 | `projects/pattern_gallery` | v1.3, not printed yet | catalogue + test bench of the 15 `lib/patterns.scad` patterns; views: gallery, sample, modes, box |
 | `projects/custombox` | v1.4, not printed yet | configurable box / basket / bin: outline, corners, sloped + wavy rim, patterned walls, floor, inset lid, mounting zone in the back wall |
 | `projects/earbuds` | v1.3, not printed yet | charging-case holder: presets (P31i …), poses, cable hole / dock / slot, grip cut-out, mounting zone |

@@ -30,13 +30,21 @@ font_style = "serif bold"; // [serif, serif bold, sans, sans bold, book serif bo
 
 /* [Attachment] */
 // how it mounts: plates snap into sockets in the back (none = plain back)
-attach_type = "keyhole"; // [none, wall, keyhole, skadis, hook, magnet, stand, flat, roof, slide]
+attach_type = "keyhole"; // [none, wall, keyhole, skadis, hook, magnet, stand, flat, roof, slide, clamp, pipe]
 attach_size = "S"; // [S, M, L]
 attach_count = 2; // [1:1:4]
 // ball joint between the host and the plate: turn and tilt it freely, the lock ring clamps it
 attach_joint = "none"; // [none, ball]
 // slide: the track runs horizontally (slide the host along it) or vertically (drop the host onto it)
 slide_axis = "horizontal"; // [horizontal, vertical]
+// clamp: opening between the jaws (thickest desk, shelf or bar), reach from the clamp's back to the screw hole (mm)
+clamp_gap = 40; // [10:1:120]
+clamp_reach = 25; // [5:1:120]
+// clamp: printed screw size
+clamp_screw = "M16"; // [M10, M12, M16, M20]
+// pipe: outer diameter of the pipe, tube or rail the claw snaps onto (mm), and which way it runs
+pipe_d = 20; // [6:0.5:60]
+pipe_axis = "horizontal"; // [horizontal, vertical]
 
 /* [Hidden] */
 $fn = 48;
@@ -46,7 +54,7 @@ a_fit = attach_fit(attach_type, attach_size, height, thickness=thickness);   // 
 a_type = a_fit[0]; a_size = a_fit[1];
 a_x = attach_xs(attach_count, width, a_type, size=a_size);   // socket x positions (fewer if they don't fit)
 a_y = attach_y(0);                                            // plate centre y
-a_opts = attach_opts(slide_axis=slide_axis);                  // per-type options, passed on to the plates
+a_opts = attach_opts(slide_axis=slide_axis, clamp_gap=clamp_gap, clamp_reach=clamp_reach, clamp_screw=clamp_screw, pipe_d=pipe_d, pipe_axis=pipe_axis);                  // per-type options, passed on to the plates
 
 // tables read by the tools: parts (id, label, note, pull-apart, colour, tags), checks, report
 parts = [

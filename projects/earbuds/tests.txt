@@ -42,3 +42,6 @@ attach_type = "fin"
 # --- new patterns ---
 wall_pattern = "asanoha"
 wall_pattern = "fluted"; wall_mode = "raised"
+
+# --- clamp / pipe claw ---
+attach_type = "clamp"; rise_back = 14; clamp_screw = "M12"

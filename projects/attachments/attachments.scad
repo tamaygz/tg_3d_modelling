@@ -7,7 +7,7 @@ part = "all";                    // which part to export ("all" = assembly)
 
 /* [Plate] */
 // what the plate mounts to
-attach_type = "wall"; // [wall, keyhole, skadis, hook, magnet, stand, flat, roof, slide, fin]
+attach_type = "wall"; // [wall, keyhole, skadis, hook, magnet, stand, flat, roof, slide, fin, clamp, pipe]
 // plate size: S 30x30, M 45x40, L 60x50 mm
 attach_size = "M"; // [S, M, L]
 // ball joint between the host and the plate: turn and tilt freely, the lock ring clamps it
@@ -44,6 +44,14 @@ fin_w = 80; // [30:5:240]
 fin_t = 4; // [2:0.5:10]
 // ball joint: ball diameter
 ball_d = 16; // [12:1:24]
+// clamp: opening between the jaws (thickest desk, shelf or bar), reach from the clamp's back to the screw hole (mm)
+clamp_gap = 40; // [10:1:120]
+clamp_reach = 25; // [5:1:120]
+// clamp: printed screw size
+clamp_screw = "M16"; // [M10, M12, M16, M20]
+// pipe: outer diameter of the pipe, tube or rail the claw snaps onto (mm), and which way it runs
+pipe_d = 20; // [6:0.5:60]
+pipe_axis = "horizontal"; // [horizontal, vertical]
 
 /* [Hidden] */
 // probe for checks: 0 = off; 1 = half way in (arms must bend ~0.6 mm); 2 = seated (must be clear); 3 = seated, pulled back 0.4 mm (bumps must catch); 4 = ball at the mouth of the cup
@@ -55,7 +63,7 @@ ct = attach_depth() + 3;                         // coupon thickness
 cy = -3/2;                                       // coupon centre y (the socket has a pry notch below)
 
 a_opts = attach_opts(screw_d, head_d, magnet, hook_gap, stand_angle, stand_depth, roof_reach - D[1]/2, roof_angle, roof_depth,
-                     slide_axis, track_len, fin_len, fin_w, fin_t, ball_d);
+                     slide_axis, track_len, fin_len, fin_w, fin_t, ball_d, clamp_gap, clamp_reach, clamp_screw, pipe_d, pipe_axis);
 rows = attach_rows(attach_type, 1, attach_joint, [0,0,-25], COL_FIXTURE, opts=a_opts);
 parts = [
   ["coupon", "Test coupon",  "PLA", [0,0,25],  COL_WOOD, "print=x180"],
@@ -64,16 +72,19 @@ parts = [
 ];
 checks = concat([["plate", "coupon", "clear"]],
   attach_type == "slide" || attach_type == "fin" ? [["attach_track", "plate", ">=", 0]] : [],
+  attach_type == "clamp" ? [["attach_screw", "plate", "clear"]] : [],
   attach_joint == "ball" ? [["attach_ball", "coupon", "clear"], ["attach_ball", "attach_joint", "clear"], ["plate", "attach_joint", "clear"], ["attach_ring", "attach_ball", ">=", 0]] : []);
 report = [ ["plate w", D[0]], ["plate l", D[1]], ["socket length", attach_socket_len(attach_size)],
            ["ball joint: cup strain %", ball_strain(ball_d)*100], ["ball joint: tilt each way (deg)", ball_tilt(ball_d)],
-           ["ball joint: stand-off", -ball_joint_back(attach_size, ball_d)], ["slide: stand-off", slide_standoff()] ];
+           ["ball joint: stand-off", -ball_joint_back(attach_size, ball_d)], ["slide: stand-off", slide_standoff()],
+           ["pipe claw: strain % when snapped on", pipe_strain(pipe_d)*100], ["pipe claw: opening", pipe_open(pipe_d)*pipe_d] ];
 
 zj = attach_joint == "ball" ? ball_joint_back(attach_size, ball_d) : 0;      // with a joint the plate sits on the adapter
 module plate() {
   translate([0, 0, zj]) attach_plate(attach_type, attach_size, screw_d=screw_d, head_d=head_d, magnet=magnet, hook_gap=hook_gap,
                stand_reach=stand_reach, stand_angle=stand_angle, stand_depth=stand_depth,
-               roof_reach=roof_reach, roof_angle=roof_angle, roof_depth=roof_depth, slide_axis=slide_axis);
+               roof_reach=roof_reach, roof_angle=roof_angle, roof_depth=roof_depth, slide_axis=slide_axis,
+               clamp_gap=clamp_gap, clamp_reach=clamp_reach, clamp_screw=clamp_screw, pipe_d=pipe_d, pipe_axis=pipe_axis);
 }
 module coupon() { difference() { translate([-cw/2, cy - cl/2, 0]) cube([cw, cl, ct]); attach_socket(attach_size); } }
 

@@ -30,3 +30,7 @@ attach_type = "wall"; attach_joint = "ball"; attach_count = 1
 
 # --- attachment too large for the board: reduced, no error ---
 attach_size = "L"; margin_y = 2
+
+# --- clamp / pipe claw ---
+attach_type = "clamp"; clamp_gap = 30
+attach_type = "pipe"; pipe_d = 28

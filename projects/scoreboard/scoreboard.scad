@@ -97,7 +97,7 @@ dowel_l = 20;
 
 /* [Attachment] */
 // how the board mounts: plates snap into sockets in its back (none = plain back)
-attach_type = "keyhole"; // [none, wall, keyhole, skadis, hook, magnet, stand, flat, roof, slide]
+attach_type = "keyhole"; // [none, wall, keyhole, skadis, hook, magnet, stand, flat, roof, slide, clamp, pipe]
 // plate size: S 30x30, M 45x40, L 60x50 mm
 attach_size = "M"; // [S, M, L]
 // number of sockets / plates across the back
@@ -106,6 +106,14 @@ attach_count = 2; // [1:1:4]
 attach_joint = "none"; // [none, ball]
 // slide: the track runs horizontally (slide the host along it) or vertically (drop the host onto it)
 slide_axis = "horizontal"; // [horizontal, vertical]
+// clamp: opening between the jaws (thickest desk, shelf or bar), reach from the clamp's back to the screw hole (mm)
+clamp_gap = 40; // [10:1:120]
+clamp_reach = 25; // [5:1:120]
+// clamp: printed screw size
+clamp_screw = "M16"; // [M10, M12, M16, M20]
+// pipe: outer diameter of the pipe, tube or rail the claw snaps onto (mm), and which way it runs
+pipe_d = 20; // [6:0.5:60]
+pipe_axis = "horizontal"; // [horizontal, vertical]
 // wall: wood screw hole diameter
 screw_d = 4.5;
 // wall: countersunk screw head diameter
@@ -249,7 +257,8 @@ has_att = a_type != "none";                           // any sockets at all
 a_y     = attach_y((by0 + by1)/2);                    // plate centre y (socket + pry notch centred on the board)
 a_keep  = do_split ? attach_socket_w(a_size)/2 + dowel_l/2 + 2 : 0;   // keep sockets clear of the split dowels
 a_x     = attach_xs(attach_count, bx1 - bx0, a_type, (bx0 + bx1)/2, do_split ? [x_split, a_keep] : undef, a_size);   // socket x positions (fewer if they don't fit)
-a_opts  = attach_opts(screw_d, screw_head_d, magnet, hook_gap, stand_angle, stand_depth, roof_gap, roof_angle, slide_axis=slide_axis);
+a_opts  = attach_opts(screw_d, screw_head_d, magnet, hook_gap, stand_angle, stand_depth, roof_gap, roof_angle, slide_axis=slide_axis,
+                   clamp_gap=clamp_gap, clamp_reach=clamp_reach, clamp_screw=clamp_screw, pipe_d=pipe_d, pipe_axis=pipe_axis);
 function art_pieces(labels) = len(labels) == 0 ? 0 :   // separate solids in one plate's artwork
   sum([for (v=labels) len(str(v))]) + (s_sep == "none" ? 0 : len(labels) - 1) + (plate_border ? 1 : 0);
 n_txt_u = nStrip * art_pieces(ulabels);               // artwork pieces, main plates

@@ -10,3 +10,7 @@ attach_type = "wall"; attach_joint = "ball"; attach_count = 1; attach_size = "M"
 # --- attachments that do not fit are reduced or left out (WARNING, no error) ---
 attach_size = "L"; height = 45
 thickness = 3
+
+# --- clamp / pipe claw ---
+attach_type = "clamp"; attach_count = 1
+attach_type = "pipe"; pipe_d = 25

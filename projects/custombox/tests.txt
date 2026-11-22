@@ -53,3 +53,7 @@ attach_type = "skadis"; shape = "ellipse"
 wall_pattern = "cube_rosette"; rise_back = 30
 wall_pattern = "asanoha"; shape = "squircle"; rise_back = 20
 wall_pattern = "fluted"; wall_mode = "raised"; wall_relief = 1.5; shape = "ellipse"; height = 90
+
+# --- clamp / pipe claw ---
+attach_type = "clamp"; height = 80
+attach_type = "pipe"; pipe_d = 32; height = 80

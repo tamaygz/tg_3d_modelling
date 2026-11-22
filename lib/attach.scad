@@ -11,7 +11,10 @@
 // centred on the origin; it fills z=0..ATTACH_T and its features point to -z (the wall). +Y is up when the
 // host hangs. The socket reaches from y=-l/2-ATTACH_NOTCH (pry notch) to y=+l/2.
 
-ATTACH_TYPES = ["none", "wall", "keyhole", "skadis", "hook", "magnet", "stand", "flat", "roof", "slide", "fin"];
+use <thread.scad>
+
+ATTACH_TYPES = ["none", "wall", "keyhole", "skadis", "hook", "magnet", "stand", "flat", "roof", "slide", "fin", "clamp", "pipe"];
+PIPE_AXES = ["horizontal", "vertical"];
 ATTACH_JOINTS = ["none", "ball"];        // optional ball joint between the host and the plate (any type)
 SLIDE_AXES    = ["horizontal", "vertical"];
 ATTACH_SIZES = ["S", "M", "L"];
@@ -73,11 +76,19 @@ module attach_core(size="M") {
 //   roof_reach         roof: plate centre up to the ceiling (must clear the host's top edge)
 //   roof_angle         roof: angle between the host and the ceiling (90 = hangs straight down)
 //   roof_depth         roof: ceiling flange depth (front to back)
+//   clamp_gap          clamp: opening between the jaws = thickest desk top, shelf or bar it grips
+//   clamp_reach        clamp: from the clamp's back (spine) to the edge of the screw hole = how far it grips in
+//   clamp_screw        clamp: printed screw size (THREAD_SIZES in thread.scad; M10..M20 are sensible)
+//   pipe_d             pipe: outer diameter of the pipe, tube, rail or conduit the claw snaps onto
+//   pipe_axis          pipe: the pipe runs "horizontal" (along the plate's width) or "vertical"
 module attach_plate(type="wall", size="M", screw_d=4.5, head_d=8.5, magnet=[10, 3], magnet_clr=0.15,
                     hook_gap=6, stand_reach=40, stand_angle=15, stand_depth=40, skadis_t=5,
-                    roof_reach=60, roof_angle=90, roof_depth=40, slide_axis="horizontal") {
+                    roof_reach=60, roof_angle=90, roof_depth=40, slide_axis="horizontal",
+                    clamp_gap=40, clamp_reach=25, clamp_screw="M16", pipe_d=20, pipe_axis="horizontal") {
     w = attach_dims(size)[0]; l = attach_dims(size)[1]; c = ATTACH_CLR;
     if (type == "slide" || type == "fin") slide_plate(size, type == "fin" ? "horizontal" : slide_axis);
+    else if (type == "clamp") { attach_core(size); clamp_frame(size, clamp_gap, clamp_reach, clamp_screw); }
+    else if (type == "pipe") { attach_core(size); pipe_claw(size, pipe_d, pipe_axis); }
     else difference() {
         union() {
             attach_core(size);
@@ -107,9 +118,10 @@ module attach_plate(type="wall", size="M", screw_d=4.5, head_d=8.5, magnet=[10, 
 // per-type options as one list, so hosts can pass them on: build it with attach_opts(...)
 function attach_opts(screw_d=4.5, head_d=8.5, magnet=[10, 3], hook_gap=6, stand_angle=15, stand_depth=40,
                      roof_gap=10, roof_angle=90, roof_depth=40,
-                     slide_axis="horizontal", track_len=0, fin_len=120, fin_w=80, fin_t=4, ball_d=16) =
+                     slide_axis="horizontal", track_len=0, fin_len=120, fin_w=80, fin_t=4, ball_d=16,
+                     clamp_gap=40, clamp_reach=25, clamp_screw="M16", pipe_d=20, pipe_axis="horizontal") =
     [screw_d, head_d, magnet, hook_gap, stand_angle, stand_depth, roof_gap, roof_angle, roof_depth,
-     slide_axis, track_len, fin_len, fin_w, fin_t, ball_d];
+     slide_axis, track_len, fin_len, fin_w, fin_t, ball_d, clamp_gap, clamp_reach, clamp_screw, pipe_d, pipe_axis];
 // which face of the host a type mounts on: the fin hangs under the host, everything else is on its back
 function attach_face(type) = type == "fin" ? "bottom" : "back";
 // x positions for up to `count` sockets spread over 60% of `span` around `centre`. Skådis plates stay on the 40 mm
@@ -176,7 +188,8 @@ module attach_plates(type, size, xs, y, opts=undef, y_bottom=undef, y_top=undef)
     if (type != "none") for (x=xs) translate([x, y, 0])
         attach_plate(type, size, screw_d=o[0], head_d=o[1], magnet=o[2], hook_gap=o[3],
                      stand_reach=is_undef(y_bottom) ? 40 : y - y_bottom, stand_angle=o[4], stand_depth=o[5],
-                     roof_reach=is_undef(y_top) ? 60 : y_top - y + o[6], roof_angle=o[7], roof_depth=o[8], slide_axis=o[9]);
+                     roof_reach=is_undef(y_top) ? 60 : y_top - y + o[6], roof_angle=o[7], roof_depth=o[8], slide_axis=o[9],
+                     clamp_gap=o[15], clamp_reach=o[16], clamp_screw=o[17], pipe_d=o[18], pipe_axis=o[19]);
 }
 
 // ---------- everything that hangs on the sockets, in one call ----------
@@ -191,13 +204,14 @@ function attach_rows(type, count, joint="none", pull=[0, 0, -50], colour="#4d617
     o = is_undef(opts) ? attach_opts() : opts,
     up = frame == "back" ? "print=x90" : "print=x180",                  // wall side up
     down = frame == "back" ? "print=x270" : "print=x0",                 // wall side on the bed
-    plate_tag = (type == "skadis" || type == "hook" || type == "roof") ? "print=auto" : up,
+    plate_tag = (type == "skadis" || type == "hook" || type == "roof" || type == "clamp" || type == "pipe") ? "print=auto" : up,
     n_track = type == "fin" || (type == "slide" && o[9] == "horizontal") ? 1 : count,
     all = !is_undef($all_parts) && $all_parts)          // the tools ask for every part a model can have
     concat(
         [["attach", "Attachment plate", "PLA", pull, colour, str("pieces=", count), plate_tag]],
         type == "slide" || (all && type != "fin") ? [["attach_track", type == "slide" ? "Slide track" : "Slide track / fin", "PLA / PETG", pull*1.5, "#6f8494", str("pieces=", n_track), down]] : [],
         type == "fin" ? [["attach_track", "Fin with slide track", "PETG", pull*1.5, "#6f8494", "pieces=1", "print=auto"]] : [],
+        type == "clamp" || all ? [["attach_screw", "Clamp screw", "PETG", pull*1.2, "#2f3a44", str("pieces=", count), "print=auto"]] : [],
         (type != "none" && joint == "ball") || all ? [
             ["attach_ball", "Ball plate", "PETG", pull*0.3, "#8fa3b0", str("pieces=", count), up],
             ["attach_joint", "Ball joint adapter", "PETG", pull*0.6, "#5b7282", str("pieces=", count), down],
@@ -211,6 +225,7 @@ module attach_all(part, type, size, xs, y, opts=undef, y_bottom=undef, y_top=und
     module sel(id, col) { if (part == "all" || part == id) color(col) children(); }
     if (type != "none") {
         if (!skip_plates) sel("attach", "#4d6170") translate([0, 0, zj]) attach_plates(type, size, xs, y, o, y_bottom, y_top);
+        if (type == "clamp") sel("attach_screw", "#2f3a44") translate([0, 0, zj]) for (x=xs) translate([x, y, 0]) clamp_screw_seated(size, o[15], o[16], o[17]);
         if (type == "slide") sel("attach_track", "#6f8494") translate([0, 0, zj]) slide_tracks(size, xs, y, o[9], o[10], o[0], o[1]);
         if (type == "fin") sel("attach_track", "#6f8494") translate([(min(xs) + max(xs))/2, y, zj]) slide_fin(o[12], o[11], o[13]);
         if (ball) for (x=xs) translate([x, y, 0]) {
@@ -418,4 +433,92 @@ module keyhole_cut(head_d=9, neck_d=4.5, travel=10, neck_t=2, depth=4) {
     translate([0,0,-1]) cylinder(d=head_d, h=depth + 1, $fn=48);
     translate([0,0,-1]) hull() { cylinder(d=neck_d, h=neck_t + 1, $fn=32); translate([0,travel,0]) cylinder(d=neck_d, h=neck_t + 1, $fn=32); }
     translate([0,0,neck_t]) hull() { cylinder(d=head_d, h=depth - neck_t, $fn=48); translate([0,travel,0]) cylinder(d=head_d, h=depth - neck_t, $fn=48); }
+}
+
+// ---------- clamp ----------
+// A C-clamp behind the plate for desk tops, shelves, table edges and flat bars. The spine runs down from the plate's
+// top edge; the upper jaw rests on the desk, the lower jaw carries a threaded boss with a printed screw (part
+// attach_screw: grip knob below, pressure pad with a 45 degree underside on top). The spine joins only the plate's
+// middle, 0.6 mm clear of the snap arms, like the roof bracket. All outer edges are chamfered.
+// gap = opening between the jaws, reach = from the spine's inner face to the edge of the screw hole.
+function clamp_jaw_t(screw) = max(7, 0.55*thread_d(screw));          // jaw thickness
+function clamp_boss_h(screw) = max(clamp_jaw_t(screw), 1.3*thread_d(screw));   // threaded length in the lower jaw
+function clamp_spine_t(size) = size == "S" ? 6 : size == "M" ? 7 : 8;
+function clamp_axis_z(size, reach, screw) = -0.6 - clamp_spine_t(size) - reach - thread_d(screw)/2 - thread_clr();
+function clamp_top_y(size) = attach_dims(size)[1]/2 - ATTACH_CLR;
+function clamp_low_y(size, gap, screw) = clamp_top_y(size) - 2*clamp_jaw_t(screw) - gap;     // underside of the lower jaw
+function clamp_pad_h(screw) = 3 + (thread_d(screw)/2 + 5 - (thread_d(screw)/2 - thread_depth(thread_pitch(screw))));   // pad: 45 degree cone + 3 mm disc
+module clamp_frame(size="M", gap=40, reach=25, screw="M16") {
+    w = attach_dims(size)[0]; l = attach_dims(size)[1]; c = ATTACH_CLR; sp = attach_strip();
+    d = thread_d(screw); jt = clamp_jaw_t(screw); bh = clamp_boss_h(screw); st = clamp_spine_t(size);
+    W = max(w - 2*c, d + 10);                                   // jaw width (at least the boss)
+    zt = -0.6 - st;                                             // the spine's inner face (the clamped object stops here)
+    za = clamp_axis_z(size, reach, screw);
+    J = -za + d/2 + 6;                                          // jaw length from z = 0
+    yt = clamp_top_y(size); yl = clamp_low_y(size, gap, screw);
+    g = min(8, gap/4);                                          // 45 degree gusset in the inner corners
+    assert(gap >= clamp_pad_h(screw) + 4, str("clamp: the opening must be at least ", clamp_pad_h(screw) + 4, " mm for the screw's pad"));
+    translate([-w/2 + c, -l/2 + sp + 0.5, -0.61]) cube([w - 2*c, l - 2*sp - 1, 0.62]);              // joins the core's middle
+    difference() {
+        union() {
+            translate([-W/2, yl, -0.6 - st]) attach_chamfer_box([W, yt - yl, st], 1);                    // spine
+            for (y0=[yt - jt, yl]) translate([-W/2, y0, -J]) attach_chamfer_box([W, jt, J - 0.6 + 0.01 - 0.01], 1);   // jaws
+            for (s=[1, -1]) let(y = s > 0 ? yt - jt : yl + jt)                                         // gussets
+                translate([-W/2 + 1, y, zt + 0.01]) rotate([0, 90, 0]) linear_extrude(W - 2)
+                    polygon([[0, 0], [g, 0], [0, -s*g]]);
+            translate([0, yl + jt + 0.01, za]) rotate([90, 0, 0]) cylinder(r=d/2 + 5, h=bh, $fn=64);  // threaded boss
+            translate([0, yl + jt + 0.01 - bh, za]) rotate([90, 0, 0]) cylinder(r1=d/2 + 5, r2=d/2 + 4, h=1, $fn=64);
+        }
+        translate([0, yl + jt + 0.02, za]) rotate([90, 0, 0]) thread_cutter(screw, bh + 1.05);
+    }
+}
+// the screw in its own frame: axis +Z, knob from z = 0, thread above it, pad on top
+module clamp_screw(gap=40, screw="M16") {
+    d = thread_d(screw); h = thread_depth(thread_pitch(screw)); bh = clamp_boss_h(screw);
+    kh = 12; tl = gap + bh - clamp_pad_h(screw) + 2;            // the pad can close the full opening
+    thread_knob(d + 16, kh, "wave");
+    translate([0, 0, kh - 0.01]) thread_rod(screw, tl + 0.02);
+    translate([0, 0, kh + tl]) {                                // pad: 45 degree cone (prints without support), then a disc
+        cylinder(r1=d/2 - h, r2=d/2 + 5, h=d/2 + 5 - (d/2 - h), $fn=64);
+        translate([0, 0, d/2 + 5 - (d/2 - h) - 0.01]) cylinder(r=d/2 + 5, h=3, $fn=64);
+    }
+}
+// seated in the frame (host frame), half open
+module clamp_screw_seated(size="M", gap=40, reach=25, screw="M16") {
+    yl = clamp_low_y(size, gap, screw); bh = clamp_boss_h(screw);
+    open = gap/2;                                               // pad half way up
+    y0 = clamp_top_y(size) - clamp_jaw_t(screw) - open - clamp_pad_h(screw) - (gap + bh - clamp_pad_h(screw) + 2) - 12;
+    translate([0, y0, clamp_axis_z(size, reach, screw)]) rotate([-90, 0, 0]) clamp_screw(gap, screw);
+}
+
+// ---------- pipe claw ----------
+// A rounded claw that snaps onto a pipe, tube, round bar or conduit of diameter d (like electrical conduit clips).
+// The claw wraps the pipe; its opening is chosen so the claw bends by about 1.5% when it is pushed on (asserted
+// under 2%: split-ring bending, strain = opening change * wall / (3 pi R^2)). The tips flare out at 45 degrees as a
+// lead-in. axis "horizontal": the pipe runs along the plate's width; "vertical": along its length.
+function pipe_wall(d) = max(2.2, 0.12*d);
+function pipe_open(d) = let(t = pipe_wall(d), R = (d + t)/2) min(0.88, max(0.72, 1 - 0.015*3*PI*R*R/(t*d)));   // opening / d
+function pipe_strain(d) = let(t = pipe_wall(d), R = (d + t)/2) d*(1 - pipe_open(d))*t/(3*PI*R*R);
+PIPE_CLR = 0.2;
+module pipe_claw_2d(d=20, base=4, base_w=20) {
+    t = pipe_wall(d); ri = d/2 + PIPE_CLR; ro = ri + t; vc = 0.6 + base + ro;      // v = distance behind the plate
+    a = pipe_open(d)*d/2; yc = sqrt(max(0, ri*ri - a*a));                         // opening half width, chord position
+    offset(r=0.6, $fn=16) offset(delta=-0.6) difference() {
+        union() {
+            translate([0, vc]) circle(r=ro, $fn=96);
+            translate([-base_w/2, 0.6 - 0.01]) square([base_w, vc - 0.6]);
+        }
+        translate([0, vc]) circle(r=ri, $fn=96);
+        translate([0, vc]) polygon([[-a, yc], [a, yc], [a + 3*ro, yc + 3*ro], [-a - 3*ro, yc + 3*ro]]);   // opening + 45 degree lead-in
+    }
+}
+module pipe_claw(size="M", d=20, axis="horizontal") {
+    w = attach_dims(size)[0]; l = attach_dims(size)[1]; c = ATTACH_CLR; sp = attach_strip();
+    assert(pipe_strain(d) <= 0.02, str("pipe claw: ", d, " mm would bend the claw by ", pipe_strain(d)*100, "% (limit 2%)"));
+    mid = l - 2*sp - 1;                                          // the plate's middle, clear of the snap arms
+    translate([-w/2 + c, -mid/2, -0.61]) cube([w - 2*c, mid, 0.62]);                // joins the core's middle
+    if (axis == "vertical") translate([0, mid/2, 0]) rotate([90, 0, 0]) linear_extrude(mid)
+        mirror([0, 1]) pipe_claw_2d(d, 4, min(w - 2*c, 0.8*d));
+    else translate([-(w - 2*c)/2, 0, 0]) rotate([90, 0, 90]) linear_extrude(w - 2*c)
+        mirror([0, 1]) pipe_claw_2d(d, 4, min(mid, 0.8*d));
 }

@@ -89,13 +89,21 @@ plate_wave = 4;
 
 /* [Attachment] */
 // how it mounts (plates snap into sockets in the back): none, wall, keyhole, skadis, hook, magnet, stand, flat, roof, slide
-attach_type = "keyhole"; // [none, wall, keyhole, skadis, hook, magnet, stand, flat, roof, slide]
+attach_type = "keyhole"; // [none, wall, keyhole, skadis, hook, magnet, stand, flat, roof, slide, clamp, pipe]
 attach_size = "M"; // [S, M, L]
 attach_count = 2; // [1:1:4]
 // ball joint between the host and the plate: turn and tilt it freely, the lock ring clamps it
 attach_joint = "none"; // [none, ball]
 // slide: the track runs horizontally (slide the host along it) or vertically (drop the host onto it)
 slide_axis = "horizontal"; // [horizontal, vertical]
+// clamp: opening between the jaws (thickest desk, shelf or bar), reach from the clamp's back to the screw hole (mm)
+clamp_gap = 40; // [10:1:120]
+clamp_reach = 25; // [5:1:120]
+// clamp: printed screw size
+clamp_screw = "M16"; // [M10, M12, M16, M20]
+// pipe: outer diameter of the pipe, tube or rail the claw snaps onto (mm), and which way it runs
+pipe_d = 20; // [6:0.5:60]
+pipe_axis = "horizontal"; // [horizontal, vertical]
 // roof: gap between the guide's top edge and the ceiling, and the angle between guide and ceiling (90 = straight down)
 roof_gap = 10;
 roof_angle = 90; // [45:5:135]
@@ -156,7 +164,8 @@ H_TOP  = show_plate ? PC[1] + PH/2 + wave : TH/2;      // guide's top edge (y)
 H_BOT  = show_plate ? PC[1] - PH/2 - wave : -TH/2;     // bottom edge
 A_Y = attach_y(show_plate ? PC[1] : 0);
 A_X = attach_xs(attach_count, TW, A_TYPE, size=A_SIZE);   // fewer if they don't fit
-A_OPTS = attach_opts(stand_angle=stand_angle, roof_gap=roof_gap, roof_angle=roof_angle, slide_axis=slide_axis);
+A_OPTS = attach_opts(stand_angle=stand_angle, roof_gap=roof_gap, roof_angle=roof_angle, slide_axis=slide_axis,
+                     clamp_gap=clamp_gap, clamp_reach=clamp_reach, clamp_screw=clamp_screw, pipe_d=pipe_d, pipe_axis=pipe_axis);
 
 parts = concat([
   ["plate",    "Surround plate", "PLA",           [0,0,-25], COL_WOOD_DARK, "plate=guide", "mat=PLA dark wood"],

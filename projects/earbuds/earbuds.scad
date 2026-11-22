@@ -76,7 +76,7 @@ floor_mode = "solid"; // [solid, through_cut, recessed]
 
 /* [Mounting] */
 // how it mounts: plates snap into a solid zone of the back wall (none = stands on a desk)
-attach_type = "none"; // [none, wall, keyhole, skadis, hook, magnet, flat, roof, slide, fin]
+attach_type = "none"; // [none, wall, keyhole, skadis, hook, magnet, flat, roof, slide, fin, clamp, pipe]
 attach_size = "S"; // [S, M, L]
 attach_count = 1; // [1:1:2]
 // ball joint between the holder and the plate: turn and tilt it freely, the lock ring clamps it
@@ -87,6 +87,14 @@ slide_axis = "horizontal"; // [horizontal, vertical]
 fin_len = 100; // [30:5:250]
 fin_w = 60; // [30:5:240]
 fin_t = 4; // [2:0.5:10]
+// clamp: opening between the jaws (thickest desk, shelf or bar), reach from the clamp's back to the screw hole (mm)
+clamp_gap = 40; // [10:1:120]
+clamp_reach = 25; // [5:1:120]
+// clamp: printed screw size
+clamp_screw = "M16"; // [M10, M12, M16, M20]
+// pipe: outer diameter of the pipe, tube or rail the claw snaps onto (mm), and which way it runs
+pipe_d = 20; // [6:0.5:60]
+pipe_axis = "horizontal"; // [horizontal, vertical]
 
 /* [Pattern details] */
 // cube rosette: one hexagon in three a cube (sparse), two in three (dense), all (tumbling blocks) or none
@@ -152,7 +160,8 @@ assert(!has_cable || on_floor || cable_z + hole[1]/2 < height - (cable_on == "fr
        "cable opening: too high for this wall; lower cable_y or use the slot");
 
 // ---------- mounting ----------
-a_opts = attach_opts(roof_gap=10, slide_axis=slide_axis, fin_len=fin_len, fin_w=fin_w, fin_t=fin_t);
+a_opts = attach_opts(roof_gap=10, slide_axis=slide_axis, fin_len=fin_len, fin_w=fin_w, fin_t=fin_t,
+                     clamp_gap=clamp_gap, clamp_reach=clamp_reach, clamp_screw=clamp_screw, pipe_d=pipe_d, pipe_axis=pipe_axis);
 mount = container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [base_band + ft, rim_band], ft);   // solid zone + sockets in the back wall (fin: in the floor)
 has_att = !is_undef(mount);
 mount_note = container_mount_note(mount, attach_type, attach_size, attach_count);    // "" or what had to be reduced / left out

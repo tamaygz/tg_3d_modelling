@@ -23,3 +23,11 @@ attach_type = "fin"; attach_size = "M"; fin_len = 150; fin_w = 100; fin_t = 5
 attach_type = "wall"; attach_size = "M"; attach_joint = "ball"
 attach_type = "skadis"; attach_size = "S"; attach_joint = "ball"; ball_d = 14
 attach_type = "slide"; attach_size = "M"; attach_joint = "ball"; ball_d = 20
+
+# --- clamp and pipe claw ---
+attach_type = "clamp"; attach_size = "S"; clamp_screw = "M10"; clamp_gap = 25; clamp_reach = 15
+attach_type = "clamp"; attach_size = "M"
+attach_type = "clamp"; attach_size = "L"; clamp_screw = "M20"; clamp_gap = 60; clamp_reach = 40
+attach_type = "clamp"; attach_joint = "ball"
+attach_type = "pipe"; attach_size = "S"; pipe_d = 12
+attach_type = "pipe"; pipe_d = 32; pipe_axis = "vertical"
