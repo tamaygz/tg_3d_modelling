@@ -50,3 +50,6 @@ wall_pattern = "fluted"; wall_mode = "raised"; flute_style = "fluted"
 
 # --- clamp / pipe claw ---
 attach_type = "pipe"; rise_back = 16; pipe_d = 25
+# --- mounting zone flush inside: no pad (thick wall), exact, thin wall, floating ---
+attach_type = "magnet"; rise_back = 30
+attach_type = "clamp"; rise_back = 40; wall_t = 6; wall_mode = "solid"
