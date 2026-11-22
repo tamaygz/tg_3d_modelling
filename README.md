@@ -42,6 +42,7 @@ Each project folder holds the same things:
 | `<name>.scad` | the model; all settings at the top, in OpenSCAD Customizer format |
 | `README.md` | what it is, its settings, recipes and print notes, with pictures |
 | `<name>_configurator.html` | the configurator as a single file: open it in a browser, no install |
+| `<name>_makerworld.scad` | (text-free projects) the model and its library in one file, for MakerWorld's customizer |
 | `<name>_print/` | print-ready files, oriented for the bed (STL, multi-colour 3MF) |
 | `<name>.html` | 3D viewer of the default build |
 | `<name>_log.md` | design log: decisions, fixes, print feedback, open questions |
@@ -69,6 +70,8 @@ elements, fits and bundled fonts. See [`lib/README.md`](lib/README.md).
 |---|---|
 | `python3 tools/build.py <project> --test` | the one command after any change: rebuilds a project's outputs (parts, print files, bundle, configurator) and checks every variant in its `tests.txt`; `all` does every project |
 | `python3 tools/make_screenshots.py <project> \| lib \| all` | renders the README pictures listed in `shots.txt` |
+| `python3 tools/flatten_scad.py projects/<name>/<name>.scad [--verify]` | one-file copy of a model with its library inlined (`<name>_makerworld.scad`, for MakerWorld's customizer; build.py does it for custombox, earbuds, sunglasses, attachments) |
+| `python3 tools/make_showcase_3mf.py` | `marketing/showcase.3mf`: a Bambu Studio project with five demo plates |
 | `python3 tools/make_marketing.py [page]` | renders the marketing pictures in `marketing/images/` from the current models (see `marketing/makerworld.md`) |
 | `python3 tools/make_configurator.py projects/<name>/<name>.scad` | only rebuilds the single-file configurator |
 | `python3 tools/make_pages.py` | stages every project for the online configurator site (used by the workflow below) |

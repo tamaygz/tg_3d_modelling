@@ -5,7 +5,8 @@
 
 For each project (a folder under projects/ with <name>/<name>.scad):
   1. outputs  per-part STLs, print files, viewer and bundle zip (the OpenSCAD skill's asm.py --bundle --check),
-              old bundle zips removed, the lib files added to the new zip, the browser configurator rebuilt.
+              old bundle zips removed, the lib files added to the new zip, the browser configurator rebuilt, and
+              for the projects in MAKERWORLD a one-file <name>_makerworld.scad (tools/flatten_scad.py).
   2. --test   every parameter variant in projects/<name>/tests.txt is built and checked: no errors, no failed
               checks, no parts in unexpected pieces, no open meshes, no overlaps deeper than 0.05 mm.
               tests.txt: one variant per line, `name = value; name = value` (# comments allowed). A line may end
@@ -21,7 +22,7 @@ import glob, os, re, subprocess, sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-import bundle_with_lib, make_configurator
+import bundle_with_lib, make_configurator, flatten_scad
 
 ROOT = Path(__file__).resolve().parent.parent
 BAD = re.compile(r"ERROR|CHECK FAIL|CHECK \?|PIECES|NOT WATERTIGHT|NON-MANIFOLD|EMPTY or failed|print: .* (?:resting on nothing|collide when each)")
@@ -68,6 +69,11 @@ def problems(out, allow_empty=()):
     return bad
 
 
+# projects that also get <name>_makerworld.scad (the model with its library in one file, tools/flatten_scad.py):
+# the ones without text, because MakerWorld's customizer cannot load our fonts
+MAKERWORLD = {"custombox", "earbuds", "sunglasses", "attachments"}
+
+
 def build_outputs(name):
     proj = ROOT / "projects" / name
     scad = proj / f"{name}.scad"
@@ -81,6 +87,8 @@ def build_outputs(name):
     else:
         bad.append("no bundle zip written")
     make_configurator.build(scad)
+    if name in MAKERWORLD:                              # one-file copy for MakerWorld's customizer
+        flatten_scad.flatten(scad, proj / f"{name}_makerworld.scad")
     for l in out.splitlines():
         if l.startswith(("checks:", "report:")):
             print("  " + l)

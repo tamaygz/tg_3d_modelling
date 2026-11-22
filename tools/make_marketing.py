@@ -364,9 +364,48 @@ const {{ chromium }} = require('playwright');
     return cv
 
 
+def page_showcase():
+    """The plates of marketing/showcase.3mf (run tools/make_showcase_3mf.py first), read back from the file."""
+    import zipfile, xml.etree.ElementTree as ET
+    z = zipfile.ZipFile(ROOT / "marketing" / "showcase.3mf")
+    ns = "{http://schemas.microsoft.com/3dmanufacturing/core/2015/02}"
+    model = ET.fromstring(z.read("3D/3dmodel.model")); cfg = ET.fromstring(z.read("Metadata/model_settings.config"))
+    plates = [(pl.find("metadata[@key='plater_name']").get("value"),
+               [int(mi.find("metadata[@key='object_id']").get("value")) for mi in pl.findall("model_instance")]) for pl in cfg.findall("plate")]
+    objs = {int(o.get("id")): o for o in model.find(ns + "resources")}
+    cv = canvas()
+    header(cv, "A print-ready 3MF with 5 plates", "Organizers, holders, every attachment plate and pattern samples, laid out for a 256 mm bed",
+           "showcase.3mf")
+    cells = [(60, 250, 560, 680), (560, 250, 1060, 680), (1060, 250, 1560, 680), (310, 700, 810, 1110), (810, 700, 1310, 1110)]
+    cols = ["orange", "teal", "white", "blue", "yellow"]
+    for (name, ids), c, col in zip(plates, cells, cols):
+        with tempfile.TemporaryDirectory() as tmp:
+            tri = []
+            for i in ids:
+                o = objs[i]
+                v = np.array([[float(x.get(a)) for a in "xyz"] for x in o.iter(ns + "vertex")])
+                f = np.array([[int(t.get(a)) for a in ("v1", "v2", "v3")] for t in o.iter(ns + "triangle")])
+                tri.append(v[f])
+            tri = np.concatenate(tri)
+            stl = Path(tmp) / "p.stl"
+            with open(stl, "w") as fh:
+                fh.write("solid p\n" + "".join("facet normal 0 0 0\nouter loop\n" + "".join("vertex %f %f %f\n" % tuple(p) for p in t)
+                                                + "endloop\nendfacet\n" for t in tri) + "endsolid p\n")
+            scad = Path(tmp) / "p.scad"
+            scad.write_text(f'color("#c8ccd0") translate([0, 0, -1.2]) cube([256, 256, 1.2]); color("#f0a040") import("{stl}");\n')
+            both = render(scad, (), (50, 20), px=900)
+        im = tint(both, FIL[col])
+        place(cv, im, (c[0] + 20, c[1], c[2] - 20, c[3] - 50))
+        d = ImageDraw.Draw(cv)
+        text(d, ((c[0] + c[2])/2, c[3] - 40), name, 28, "bold", INK, "ma")
+    footer(cv)
+    return cv
+
+
 PAGES = {"cover": page_cover, "evolution": page_evolution, "patterns": page_patterns, "compartments": page_compartments,
-         "attachments": page_attachments, "family": page_family, "configurator": page_configurator}
-ORDER = ["cover", "evolution", "compartments", "patterns", "attachments", "configurator", "family"]
+         "attachments": page_attachments, "family": page_family, "configurator": page_configurator,
+         "showcase": page_showcase}
+ORDER = ["cover", "evolution", "compartments", "patterns", "attachments", "configurator", "family", "showcase"]
 
 
 def main():
