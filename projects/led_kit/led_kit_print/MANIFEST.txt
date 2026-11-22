@@ -1,6 +1,6 @@
 model led_kit.scad
-rev 2e2d1d8
-made 2026-11-22 08:51
+rev 13ffb7f
+made 2026-11-22 13:39
 Cable_clip.stl
 Cable_duct.stl
 Corner.stl
