@@ -37,19 +37,23 @@ corner_r = 6; // [2:1:30]
 /* [Cables] */
 // round cable diameter for the clips
 cable_d = 5;
-// flat cable width and thickness (e.g. the strip's own lead)
+// flat cable width (mm; e.g. the strip's own lead)
 flat_w = 8;
+// flat cable thickness (mm)
 flat_t = 2.5;
 // clip mounting
 cable_mount = "adhesive"; // [adhesive, screw]
 // zip tie width
 tie_w = 4.8;
-// duct inner width, height, length
+// duct inner width (mm)
 duct_w = 12;
+// duct inner height (mm)
 duct_h = 8;
+// duct length (mm)
 duct_len = 100;
-// grommet: hole diameter and panel thickness
+// grommet: hole diameter (mm)
 grommet_hole = 10;
+// grommet: panel thickness (mm)
 panel_t = 12;
 
 /* [Hidden] */

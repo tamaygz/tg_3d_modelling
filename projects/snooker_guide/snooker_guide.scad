@@ -28,13 +28,15 @@ points_color = "white"; // [white, black, gold, ball colour]
 points_pos = "right"; // [right, left, above, below]
 // numbers raised on the cloth or inlaid flush
 points_style = "raised"; // [raised, inlay]
-// label the reds (1) and the cue ball (0)
+// label the reds (1)
 points_reds = true;
+// also label the cue ball (0)
 points_cue = true;
 // legend row under the table: every ball with its points, in potting order
 show_legend = true;
 // title above the table (empty = none)
 title = "SNOOKER";
+// title text size (mm)
 title_size = 9; // [4:1:20]
 
 /* [Balls] */
@@ -54,20 +56,25 @@ rail_h = 1.6;
 cushion_h = 0.8;
 // cloth layer thickness (mm, its own colour)
 cloth_t = 0.8;
-// rail and cushion widths (mm)
+// rail width (mm)
 rail_w = 8;
+// cushion width (mm)
 cushion_w = 3;
 // outline corner radius of the table (mm)
 table_corner_r = 6;
 // top edge of the rails
 table_edge = "roundover"; // [flat, roundover, chamfer, cove, ogee]
+// rounding of the rails' top edge (mm)
 table_edge_r = 1.2;
 // bottom finish of the table body (rounded = rounded underside edge, like the real table's apron)
 table_bottom = "roundover"; // [flat, roundover, chamfer, cove, ogee]
+// rounding of the table body's underside edge (mm)
 table_bottom_r = 1.5;
-// pockets: diameter (mm), and tan pocket rims
+// pocket diameter (mm)
 pocket_d = 7.5;
+// tan rims round the pockets
 show_rims = true;
+// pocket rim width (mm)
 rim_w = 2.2;
 // baulk line and D: line width (mm)
 line_w = 0.6;
@@ -75,14 +82,19 @@ line_w = 0.6;
 /* [Surround plate] */
 // plate around the table (off = the table alone)
 show_plate = true;
+// plate outline
 plate_shape = "rounded"; // [rect, rounded, chamfered, notched, arched, wave, scalloped]
 // plate thickness (mm; 6 or more for attachment sockets)
 plate_t = 6;
-// margin around the table (mm), corner size, edge profile, decorative groove
+// margin around the table (mm)
 plate_margin = 10;
+// plate corner size (mm)
 plate_corner_r = 8;
+// plate edge profile
 plate_edge = "roundover"; // [flat, roundover, chamfer, cove, ogee]
+// plate edge profile size (mm)
 plate_edge_r = 2;
+// decorative groove round the plate
 plate_groove = "single"; // [none, single, double]
 // height of the wave / arch / scallops for those shapes
 plate_wave = 4;
@@ -90,22 +102,27 @@ plate_wave = 4;
 /* [Attachment] */
 // how it mounts (plates snap into sockets in the back): none, wall, keyhole, skadis, hook, magnet, stand, flat, roof, slide
 attach_type = "keyhole"; // [none, wall, keyhole, skadis, hook, magnet, stand, flat, roof, slide, clamp, pipe]
+// plate size: S 30 x 30, M 45 x 40, L 60 x 50 mm (a smaller one is used if it does not fit)
 attach_size = "M"; // [S, M, L]
+// number of plates side by side (fewer are used if they do not fit)
 attach_count = 2; // [1:1:4]
 // ball joint between the host and the plate: turn and tilt it freely, the lock ring clamps it
 attach_joint = "none"; // [none, ball]
 // slide: the track runs horizontally (slide the host along it) or vertically (drop the host onto it)
 slide_axis = "horizontal"; // [horizontal, vertical]
-// clamp: opening between the jaws (thickest desk, shelf or bar), reach from the clamp's back to the screw hole (mm)
+// clamp: opening between the jaws = the thickest desk, shelf or bar it grips (mm)
 clamp_gap = 40; // [10:1:120]
+// clamp: reach from the clamp's back to the edge of the screw hole (mm)
 clamp_reach = 25; // [5:1:120]
 // clamp: printed screw size
 clamp_screw = "M16"; // [M10, M12, M16, M20]
-// pipe: outer diameter of the pipe, tube or rail the claw snaps onto (mm), and which way it runs
+// pipe: outer diameter of the pipe, tube or rail the claw snaps onto (mm)
 pipe_d = 20; // [6:0.5:60]
+// pipe: which way the pipe runs
 pipe_axis = "horizontal"; // [horizontal, vertical]
-// roof: gap between the guide's top edge and the ceiling, and the angle between guide and ceiling (90 = straight down)
+// roof: gap between the guide's top edge and the ceiling (mm)
 roof_gap = 10;
+// roof: angle between guide and ceiling (90 = straight down)
 roof_angle = 90; // [45:5:135]
 // stand: lean back from vertical (degrees)
 stand_angle = 15; // [5:1:30]

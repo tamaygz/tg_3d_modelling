@@ -106,13 +106,15 @@ attach_count = 2; // [1:1:4]
 attach_joint = "none"; // [none, ball]
 // slide: the track runs horizontally (slide the host along it) or vertically (drop the host onto it)
 slide_axis = "horizontal"; // [horizontal, vertical]
-// clamp: opening between the jaws (thickest desk, shelf or bar), reach from the clamp's back to the screw hole (mm)
+// clamp: opening between the jaws = the thickest desk, shelf or bar it grips (mm)
 clamp_gap = 40; // [10:1:120]
+// clamp: reach from the clamp's back to the edge of the screw hole (mm)
 clamp_reach = 25; // [5:1:120]
 // clamp: printed screw size
 clamp_screw = "M16"; // [M10, M12, M16, M20]
-// pipe: outer diameter of the pipe, tube or rail the claw snaps onto (mm), and which way it runs
+// pipe: outer diameter of the pipe, tube or rail the claw snaps onto (mm)
 pipe_d = 20; // [6:0.5:60]
+// pipe: which way the pipe runs
 pipe_axis = "horizontal"; // [horizontal, vertical]
 // wall: wood screw hole diameter
 screw_d = 4.5;

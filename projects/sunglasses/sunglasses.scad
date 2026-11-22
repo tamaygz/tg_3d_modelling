@@ -22,17 +22,20 @@ hold = 0.55; // [0.2:0.05:1.1]
 /* [Nose support] */
 // a ridge the bridge of the glasses rests on: keeps them centred and the lenses off the walls
 nose = true;
-// width at the top (the gap between the nose pads is 14-20 mm) and at the foot
+// nose ridge: width at the top (the gap between the nose pads is 14-20 mm)
 nose_w = 13; // [6:0.5:30]
+// nose ridge: width at the foot (mm)
 nose_foot = 24; // [8:1:60]
 // height above the floor: the bridge height carries the glasses, less only centres them
 nose_h = 26; // [5:1:80]
-// length front to back, and distance from the front wall
+// nose ridge: length front to back (mm)
 nose_len = 16; // [4:1:60]
+// nose ridge: distance from the front wall (mm)
 nose_setback = 5; // [0:0.5:40]
 // slope of the front and the back face: how far the top is set in from the foot (mm; 0 = vertical).
 // A sloped back lets the glasses slide up and off instead of hooking behind the ridge
 nose_run_front = 2; // [0:0.5:30]
+// nose ridge: slope at the back end (mm of run; more = gentler)
 nose_run_back = 8; // [0:0.5:30]
 // roundness of the top along its length: 0 = straight bar, 1 = fully domed
 nose_crown = 0.6; // [0:0.05:1]
@@ -40,21 +43,27 @@ nose_crown = 0.6; // [0:0.05:1]
 /* [Walls] */
 // wall thickness (mm)
 wall_t = 2.4; // [1.2:0.2:6]
-// corners of the holder
+// corner shape of the holder
 corners = "round"; // [round, chamfer, square]
+// corner radius (mm)
 corner_r = 14; // [1:0.5:40]
-// pattern on the walls and how it is applied
+// pattern on the walls
 wall_pattern = "diamond_lattice"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
+// how the wall pattern is applied
 wall_mode = "through_cut"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
-// pattern repeat size and rib width in mm (0 = a size that suits the holder)
+// pattern repeat size in mm (0 = a size that suits the holder)
 wall_cell = 0; // [0:0.5:40]
+// rib width in mm (0 = a width that suits the holder)
 wall_strut = 0; // [0:0.1:8]
+// rotation of the wall pattern (degrees)
 wall_angle = 0; // [-90:5:90]
+// seed for Voronoi and Truchet
 wall_seed = 1; // [1:1:999]
 // relief height / engraving depth / lining thickness
 wall_relief = 0.6; // [0.2:0.1:2]
-// plain band under the rim and above the floor (mm)
+// plain band under the rim (mm)
 rim_band = 3; // [0:0.5:20]
+// plain band above the floor (mm)
 base_band = 2; // [0:0.5:20]
 // corners: pattern = the pattern runs round the corners; solid = plain corners
 corner_fill = "pattern"; // [pattern, solid]
@@ -64,42 +73,53 @@ rise_back = 12; // [0:1:80]
 /* [Front grip] */
 // lower the front rim so the glasses are easy to take out
 grip = true;
-// width of the cut-out (at half its depth) and how far down it goes (mm); a narrow cut-out cannot be deep
+// grip cut-out: width at half its depth (mm)
 grip_width = 70; // [10:1:200]
+// grip cut-out: how far down it goes (mm); a narrow cut-out cannot be deep
 grip_depth = 14; // [2:1:80]
 
 /* [Floor] */
+// floor thickness (mm)
 floor_t = 2; // [1:0.2:8]
+// pattern on the floor
 floor_pattern = "hex_honeycomb"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
+// how the floor pattern is applied
 floor_mode = "solid"; // [solid, through_cut, raised, recessed]
 
 /* [Mounting] */
 // how it mounts: plates snap into a solid zone of the back wall (none = stands on a shelf)
 attach_type = "none"; // [none, wall, keyhole, skadis, hook, magnet, flat, roof, slide, fin, clamp, pipe]
+// plate size: S 30 x 30, M 45 x 40, L 60 x 50 mm (a smaller one is used if it does not fit)
 attach_size = "S"; // [S, M, L]
+// number of plates side by side (fewer are used if they do not fit)
 attach_count = 2; // [1:1:3]
 // ball joint between the holder and the plate: turn and tilt it freely, the lock ring clamps it
 attach_joint = "none"; // [none, ball]
 // slide: the track runs horizontally (slide the holder along it) or vertically (drop it onto the track)
 slide_axis = "horizontal"; // [horizontal, vertical]
-// fin: a blade under the holder that anchors it, e.g. between two sofa cushions: how far down, how wide, how thick (mm)
+// fin: a blade under the holder that anchors it, e.g. between two sofa cushions: how far down it reaches (mm)
 fin_len = 100; // [30:5:250]
+// fin: width of the blade (mm)
 fin_w = 60; // [30:5:240]
+// fin: thickness of the blade (mm)
 fin_t = 4; // [2:0.5:10]
-// clamp: opening between the jaws (thickest desk, shelf or bar), reach from the clamp's back to the screw hole (mm)
+// clamp: opening between the jaws = the thickest desk, shelf or bar it grips (mm)
 clamp_gap = 40; // [10:1:120]
+// clamp: reach from the clamp's back to the edge of the screw hole (mm)
 clamp_reach = 25; // [5:1:120]
 // clamp: printed screw size
 clamp_screw = "M16"; // [M10, M12, M16, M20]
-// pipe: outer diameter of the pipe, tube or rail the claw snaps onto (mm), and which way it runs
+// pipe: outer diameter of the pipe, tube or rail the claw snaps onto (mm)
 pipe_d = 20; // [6:0.5:60]
+// pipe: which way the pipe runs
 pipe_axis = "horizontal"; // [horizontal, vertical]
 
 /* [Pattern details] */
 // cube rosette: one hexagon in three a cube (sparse), two in three (dense), all (tumbling blocks) or none
 cube_density = "sparse"; // [sparse, dense, all, none]
-// fluted: convex half-round ribs (reeded), concave grooves (fluted) or flat ribs; ribs upright or lying
+// fluted: convex half-round ribs (reeded), concave grooves (fluted) or flat ribs
 flute_style = "reeded"; // [reeded, fluted, ribbed]
+// fluted: ribs upright (vertical) or lying (horizontal)
 flute_orient = "vertical"; // [vertical, horizontal]
 
 /* [Hidden] */

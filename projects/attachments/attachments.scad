@@ -38,19 +38,23 @@ roof_depth = 40;
 slide_axis = "horizontal"; // [horizontal, vertical]
 // slide: track length (0 = a length that suits the plate)
 track_len = 0; // [0:5:250]
-// fin: how far the blade reaches, its width and thickness
+// fin: how far the blade reaches (mm)
 fin_len = 120; // [30:5:250]
+// fin: width of the blade (mm)
 fin_w = 80; // [30:5:240]
+// fin: thickness of the blade (mm)
 fin_t = 4; // [2:0.5:10]
 // ball joint: ball diameter
 ball_d = 16; // [12:1:24]
-// clamp: opening between the jaws (thickest desk, shelf or bar), reach from the clamp's back to the screw hole (mm)
+// clamp: opening between the jaws = the thickest desk, shelf or bar it grips (mm)
 clamp_gap = 40; // [10:1:120]
+// clamp: reach from the clamp's back to the edge of the screw hole (mm)
 clamp_reach = 25; // [5:1:120]
 // clamp: printed screw size
 clamp_screw = "M16"; // [M10, M12, M16, M20]
-// pipe: outer diameter of the pipe, tube or rail the claw snaps onto (mm), and which way it runs
+// pipe: outer diameter of the pipe, tube or rail the claw snaps onto (mm)
 pipe_d = 20; // [6:0.5:60]
+// pipe: which way the pipe runs
 pipe_axis = "horizontal"; // [horizontal, vertical]
 
 /* [Hidden] */

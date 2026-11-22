@@ -18,25 +18,31 @@ source = "exact"; // [exact, rebuilt]
 // rebuilt only: banner text and ball number. The original text, font and size use the letter-by-letter fitted
 // placement; anything else is set on the same curve by the generic text layout and condensed to fit the banner.
 banner_text = "BOLA VUIT";
+// number on the ball
 ball_number = 8;
 
 /* [Elements] */
-// show each element
+// show the ball
 show_ball = true;
+// show the laurel wreath
 show_wreath = true;
+// show the banner
 show_banner = true;
+// show the banner text
 show_text = true;
 // rebuilt only: leaf layout: fitted = the original's 9 leaves per side; generated = repeating leaf groups
 leaf_layout = "fitted"; // [fitted, generated]
-// generated layout: leaf groups per branch (3 leaves each) and leaf length (px of the 1809 px original)
+// generated layout: leaf groups per branch (3 leaves each)
 leaf_groups = 3; // [1:1:6]
+// generated layout: leaf length (px of the 1809 px original)
 leaf_len = 324;
 // leaf shape
 leaf_style = "almond"; // [almond, pointed, round]
 // banner drawn as an outline (like the original) or filled
 banner_style = "outline"; // [outline, filled]
-// bow under the banner, and the small ears at the band's top corners
+// generated layout: bow under the banner
 banner_bow = true;
+// generated layout: small ears at the band's top corners
 banner_ears = true;
 // lettering font (the original "BOLA VUIT" uses Source Serif 4 Bold, the closest open match)
 font_style = "book serif bold"; // [book serif bold, serif bold, serif, sans bold, sans, round sans bold]

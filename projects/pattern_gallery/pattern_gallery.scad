@@ -26,18 +26,21 @@ strut = 0; // [0:0.1:12]
 angle = 0; // [-180:5:180]
 // more, smaller cells (cell size divided by this; rib width stays)
 density = 1; // [0.5:0.1:3]
-// shift of the pattern (mm)
+// shift of the pattern left / right (mm)
 offset_x = 0; // [-30:0.5:30]
+// shift of the pattern up / down (mm)
 offset_y = 0; // [-30:0.5:30]
 // seed for Voronoi and Truchet (same seed = same pattern)
 seed = 1; // [1:1:999]
-// smallest printable rib and opening (the model stops with a message below these; 0 = no check)
+// smallest printable rib (mm; 0 = no check)
 min_strut = 0.8; // [0:0.1:3]
+// smallest printable opening (mm; 0 = no check)
 min_opening = 1; // [0:0.1:5]
 
 /* [Sample] */
-// sample size (mm)
+// sample width (mm)
 sample_w = 80; // [20:1:240]
+// sample height (mm)
 sample_h = 60; // [20:1:240]
 // outline of the sample
 sample_shape = "rounded"; // [rect, rounded, chamfered, notched, arched, wave, scalloped, round, hexagon]
@@ -93,13 +96,15 @@ truchet_variation = "random"; // [random, alternate, rows, uniform]
 girih_star = 1; // [0.6:0.05:1]
 // cube rosette: one hexagon in three a cube (sparse), two in three (dense), all (tumbling blocks) or none
 cube_density = "sparse"; // [sparse, dense, all, none]
-// fluted / reeded: convex half-round ribs (reeded), concave grooves (fluted) or flat ribs; ribs upright or lying
+// fluted / reeded: convex half-round ribs (reeded), concave grooves (fluted) or flat ribs
 flute_style = "reeded"; // [reeded, fluted, ribbed]
+// fluted: ribs upright (vertical) or lying (horizontal)
 flute_orient = "vertical"; // [vertical, horizontal]
 // asanoha: a family of grid lines lying (up) or standing (side)
 asanoha_orient = "up"; // [up, side]
-// waves: height of the wave and its length (mm)
+// waves: wave height (mm)
 wave_amplitude = 3; // [0:0.5:20]
+// waves: wavelength (mm)
 wave_length = 30; // [8:1:120]
 // waves: phase shift from rib to rib (degrees)
 wave_shift = 0; // [0:5:180]
@@ -121,21 +126,31 @@ tile_gap = 6; // [2:1:20]
 /* [Box demo] */
 // inner pattern choices for the four walls, the floor and the lid
 wall_pattern = "hex_honeycomb"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
+// how the wall pattern is applied
 wall_mode = "through_cut"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
 // the front wall can differ from the other three
 front_pattern = "flowing_waves"; // [same, hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
+// how the front pattern is applied
 front_mode = "raised"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
+// pattern on the floor
 floor_pattern = "concentric_ripples"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
+// how the floor pattern is applied
 floor_mode = "raised"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
+// pattern on the lid
 roof_pattern = "girih_star_cross"; // [hex_honeycomb, square_grid, diamond_lattice, triangular_lattice, cube_rosette, basket_weave, tri_weave, voronoi, fish_scales, truchet_arcs, girih_star_cross, asanoha, flowing_waves, concentric_ripples, fluted]
+// how the lid pattern is applied
 roof_mode = "through_cut"; // [solid, through_cut, open_lattice, raised, recessed, overlay]
-// outer size of the box (mm)
+// box width (mm)
 box_w = 70; // [40:1:200]
+// box depth (mm)
 box_d = 50; // [40:1:200]
+// box height (mm)
 box_h = 36; // [20:1:150]
-// thicknesses
+// wall thickness (mm)
 wall_t = 2.4; // [1.2:0.2:6]
+// floor thickness (mm)
 floor_t = 2; // [1:0.2:6]
+// lid thickness (mm)
 roof_t = 2; // [1:0.2:6]
 // pattern size on the box surfaces, relative to each pattern's default
 box_pattern_scale = 0.7; // [0.4:0.05:1.5]
