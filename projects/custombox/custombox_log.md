@@ -56,6 +56,21 @@
   an inside pad is gone. Socket 4.0 mm + 1.2 mm closed back = 5.2 mm (was 4.5 + 1.5 = 6.0); plates unchanged in
   how they swap, every type keeps the same socket. Magnet default 8 × 2 mm.
 
+## v1.6 (2026-11-22) – compartments, rim per wall, clearer settings
+- Compartments (user request): `compart_rows` x `compart_cols`, or a layout in % per row ("33,33,33 / 50,50 / 100"),
+  row sizes (`compart_sizes`), rows-first or columns-first. Dividers match the walls they run along (front/back
+  for dividers along x, sides for dividers along y) or take their own pattern / none, follow the rim (slopes,
+  waves, notches), can be thinner (`divider_t`) and lower (`divider_drop`), stay under a lid, and get a finger
+  notch (`divider_notch`). Solid joints in the outer walls and a solid floor strip under each divider. Ends stop
+  mid-wall on any outline (round corners, ellipse, wavy sides). Built from lib/container.scad
+  (`container_layout`, `container_grid`, `container_dividers`), text read by the new lib/strings.scad.
+- Rim per wall: `rise_front/back/left/right` (they add up) and a notch per wall (`notch_*`, `notch_*_w`), from
+  the new `shell_rim()`; a notch too deep is made shallower (WARNING + report).
+- Wave settings renamed `rim_wave_x_amp` / `rim_wave_y_amp` (amplitude, mm) next to `_count`; every setting now
+  has its own description line (paired settings had shared one, so the configurator showed none for the second).
+- Fit, do not fail: compartments under 8 mm are left out, a divider drop that would cut into the bands is
+  limited, sizes that do not add up to 100 are scaled.
+
 ## Prints and feedback
 - (none yet)
 

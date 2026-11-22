@@ -6,18 +6,18 @@ corners = "chamfer"; corner_r = 12; wall_pattern = "truchet_arcs"; wall_mode = "
 corners = "square"; corner_fill = "solid"; wall_pattern = "square_grid"; front_pattern = "girih_star_cross"; lid = "inset"; lid_grip = "knob"
 width = 80; depth = 80; height = 40; corner_r = 40; wall_mode = "overlay"; wall_pattern = "girih_star_cross"
 shape = "squircle"; squareness = 5; wall_pattern = "fish_scales"; wall_mode = "raised"; floor_mode = "raised"
-shape = "ellipse"; side_wave = 2.5; side_wave_count = 10; wall_pattern = "voronoi"; rim_wave_x = 6; rim_wave_y = 6; rim_wave_x_count = 2; rim_wave_y_count = 2
+shape = "ellipse"; side_wave = 2.5; side_wave_count = 10; wall_pattern = "voronoi"; rim_wave_x_amp = 6; rim_wave_y_amp = 6; rim_wave_x_count = 2; rim_wave_y_count = 2
 side_wave = 3; side_wave_count = 12; wall_mode = "solid"; floor_pattern = "voronoi"; floor_mode = "through_cut"
 
 # --- rim: slopes and waves ---
 rise_back = 35; wall_pattern = "triangular_lattice"
-rim_wave_x = 10; rim_wave_x_count = 1.5; wall_pattern = "diamond_lattice"; height = 45
-width = 173; depth = 67; height = 83; rise_back = -20; rim_wave_y = 4; wall_pattern = "voronoi"; wall_seed = 9
-rim_wave_x = 8; rim_wave_x_count = 2; rim_wave_phase = 180; rise_right = 15; wall_pattern = "square_grid"; wall_angle = 45; fit_cells = false
+rim_wave_x_amp = 10; rim_wave_x_count = 1.5; wall_pattern = "diamond_lattice"; height = 45
+width = 173; depth = 67; height = 83; rise_back = -20; rim_wave_y_amp = 4; wall_pattern = "voronoi"; wall_seed = 9
+rim_wave_x_amp = 8; rim_wave_x_count = 2; rim_wave_phase = 180; rise_right = 15; wall_pattern = "square_grid"; wall_angle = 45; fit_cells = false
 
 # --- walls: solid corners, per-wall patterns, weaves ---
 corner_fill = "solid"; wall_pattern = "basket_weave"; wall_mode = "open_lattice"; back_pattern = "hex_honeycomb"; corner_r = 10
-corner_fill = "solid"; wall_pattern = "tri_weave"; wall_mode = "open_lattice"; wall_cell = 16; wall_strut = 2.4; strand_style = "rounded"; rim_wave_x = 5
+corner_fill = "solid"; wall_pattern = "tri_weave"; wall_mode = "open_lattice"; wall_cell = 16; wall_strut = 2.4; strand_style = "rounded"; rim_wave_x_amp = 5
 wall_pattern = "concentric_ripples"; ripple_spokes = 0
 wall_pattern = "flowing_waves"; wall_mode = "raised"; floor_mode = "through_cut"; floor_pattern = "square_grid"
 
@@ -34,7 +34,7 @@ attach_type = "keyhole"; rise_back = 25; corners = "square"; wall_pattern = "tri
 # --- limits ---
 width = 40; depth = 40; height = 25; corner_r = 6; wall_cell = 6; wall_strut = 1; base_band = 2; rim_band = 2
 wall_t = 1.2; floor_t = 0.8; wall_cell = 20; wall_strut = 3; facet = 3
-attach_type = "wall"; attach_size = "M"; attach_count = 2; width = 150; height = 95; rim_wave_x = 6; wall_pattern = "flowing_waves"
+attach_type = "wall"; attach_size = "M"; attach_count = 2; width = 150; height = 95; rim_wave_x_amp = 6; wall_pattern = "flowing_waves"
 attach_type = "skadis"; height = 110; rise_back = 30; wall_pattern = "voronoi"; corners = "square"
 
 # --- fin under the floor, slide track, ball joint ---
@@ -57,3 +57,16 @@ wall_pattern = "fluted"; wall_mode = "raised"; wall_relief = 1.5; shape = "ellip
 # --- clamp / pipe claw ---
 attach_type = "clamp"; height = 80
 attach_type = "pipe"; pipe_d = 32; height = 80
+# --- rim per wall: raise and notch ---
+rise_front = 10; rise_left = -8; notch_back = 12; notch_left = 10; notch_left_w = 30
+notch_front = 200; height = 50
+# --- compartments ---
+compart_rows = 2; compart_cols = 3
+compart_layout = "33,33,33 / 50,50 / 100"
+compart_layout = "30,70 / 100"; compart_sizes = "40,60"; compart_order = "columns"; divider_drop = 15; divider_pattern = "solid"
+compart_cols = 4; corner_fill = "solid"; front_pattern = "voronoi"; front_mode = "through_cut"; lid = "inset"; divider_t = 1.6
+compart_rows = 3; attach_type = "wall"; attach_size = "M"; height = 95; rise_left = 10; notch_right = 20
+compart_rows = 2; compart_cols = 2; rise_back = 20; rim_wave_x_amp = 6; rim_wave_x_count = 1.5; divider_notch = 15; divider_mode = "raised"
+compart_rows = 2; compart_cols = 3; shape = "ellipse"; side_wave = 2; side_wave_count = 10; wall_pattern = "voronoi"
+compart_cols = 30; compart_layout = "abc / 0, -5"; divider_drop = 200
+compart_rows = 2; attach_type = "fin"; divider_pattern = "fluted"; divider_mode = "raised"; floor_mode = "through_cut"; floor_pattern = "hex_honeycomb"

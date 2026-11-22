@@ -2,11 +2,13 @@
 # image | parameters | camera tilt,turn
 custombox.png | | 62,28
 custombox_sloped.png | rise_back = 35; wall_pattern = "triangular_lattice" | 62,28
-custombox_organic.png | shape = "ellipse"; side_wave = 2.5; side_wave_count = 10; wall_pattern = "voronoi"; rim_wave_x = 6; rim_wave_y = 6; rim_wave_x_count = 2; rim_wave_y_count = 2 | 62,28
+custombox_organic.png | shape = "ellipse"; side_wave = 2.5; side_wave_count = 10; wall_pattern = "voronoi"; rim_wave_x_amp = 6; rim_wave_y_amp = 6; rim_wave_x_count = 2; rim_wave_y_count = 2 | 62,28
 custombox_lid.png | corners = "square"; corner_fill = "solid"; wall_pattern = "square_grid"; front_pattern = "girih_star_cross"; lid = "inset"; lid_grip = "knob" | 62,28
 custombox_woven.png | corner_fill = "solid"; wall_pattern = "basket_weave"; wall_mode = "open_lattice"; corner_r = 10 | 62,28
 custombox_fin.png | attach_type = "fin"; wall_pattern = "voronoi"; height = 70 | 78,25
-custombox_mount.png | attach_type = "wall"; attach_size = "M"; attach_count = 2; width = 150; height = 95; rim_wave_x = 6; wall_pattern = "flowing_waves" | 65,160
+custombox_mount.png | attach_type = "wall"; attach_size = "M"; attach_count = 2; width = 150; height = 95; rim_wave_x_amp = 6; wall_pattern = "flowing_waves" | 65,160
 custombox_mount_inside.png | part = "box"; attach_type = "wall"; attach_size = "M"; height = 95; wall_pattern = "triangular_lattice" | 50,20
 custombox_asanoha.png | part = "box"; wall_pattern = "asanoha"; shape = "squircle"; squareness = 3; rise_back = 20; wall_cell = 10; wall_strut = 1; width = 140; depth = 80 | 70,10
 custombox_fluted.png | part = "box"; wall_pattern = "fluted"; wall_mode = "raised"; wall_relief = 1.5; corner_r = 14; height = 90; width = 70; depth = 50; rim_band = 0; base_band = 0 | 65,25
+custombox_compartments.png | part = "box"; compart_layout = "33,33,33 / 50,50 / 100"; height = 50 | 55,25
+custombox_organizer.png | part = "box"; compart_rows = 2; compart_cols = 3; rise_back = 20; rim_wave_x_amp = 5; rim_wave_x_count = 1.5; divider_notch = 14; notch_front = 14; wall_pattern = "triangular_lattice"; width = 160; depth = 100 | 55,25

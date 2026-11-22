@@ -13,7 +13,8 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   with a header (use line, frame convention), an option list for styles, and an entry in `lib/README.md`.
   Layers: `core.scad` → element files → data (`emblems/`, `fonts/`) → projects.
 - **Project pattern** (see `projects/_template/`): `include <../../lib/core.scad>`, `part`, Customizer sections
-  (`/* [Section] */`, `// description` above each `name = value;`, trailing `// [a, b, c]` or `// [min:step:max]`),
+  (`/* [Section] */`, `// description` above EACH `name = value;` (never one line for a pair: the configurator then
+  shows nothing for the second, and the user could not tell a wave's amplitude from its count), trailing `// [a, b, c]` or `// [min:step:max]`),
   `/* [Hidden] */`, derived values, `parts` / `checks` / `report` tables, then 2D shapes, solids, assembly through
   `pick()`. Colours from the `COL_*` palette. Offer style choices as string options, plus a `style_preset`
   where there are many (scoreboard's PRESETS). Automatic sizes (a setting of 0) come from `pattern_sized()`.
@@ -40,7 +41,9 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   3D booleans are slow in OpenSCAD 2021 (only the weaves need one).
 - **Containers and curved walls:** `lib/shell.scad` (outline as points or named runs, rim height function,
   `shell_strip_pts`, `shell_wrap`) and `lib/container.scad` (walls with framed openings and plain areas, floor, lid ledge,
-  mounting zone for the attachment plates via `container_mount()` + `mount=`, rim dip for grips). `projects/custombox` is the reference; `earbuds` and
+  mounting zone for the attachment plates via `container_mount()` + `mount=`, rim dip for grips, compartments:
+  `container_layout()` + `container_grid()` + `container_dividers()`, joints via `container_grid_plain()`). Rim heights per
+  wall: `shell_rim()` (raise / waves / notches per side). Layouts typed as text are read with `lib/strings.scad`. `projects/custombox` is the reference; `earbuds` and
   `sunglasses` show a holder for a given item (presets + clearance, cable opening, grip, nose support).
   One facet per outline edge: keep straight sides as a single edge. Frame widths as `[sides, bottom, top]`.
   A wall that closes on itself must use a pattern that repeats after the perimeter: `pattern_wrapped()` (the
@@ -136,7 +139,7 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 | `projects/led_kit` | v1, not printed yet | LED tracks, diffusers, corners, cable parts |
 | `projects/attachments` | v5.1, not printed yet | test coupon + every attachment plate, slide track, fin, clamp, pipe claw, ball joint; print first to check the fits |
 | `projects/pattern_gallery` | v1.3, not printed yet | catalogue + test bench of the 15 `lib/patterns.scad` patterns; views: gallery, sample, modes, box |
-| `projects/custombox` | v1.5, not printed yet | configurable box / basket / bin: outline, corners, sloped + wavy rim, patterned walls, floor, inset lid, mounting zone in the back wall |
+| `projects/custombox` | v1.6, not printed yet | configurable box / basket / bin: outline, corners, rim raise / waves / notches per wall, patterned walls, compartments (grid or % layout), floor, inset lid, mounting zone in the back wall |
 | `projects/earbuds` | v1.4, not printed yet | charging-case holder: presets (P31i …), poses, cable hole / dock / slot, grip cut-out, mounting zone |
 | `projects/sunglasses` | v1.5, not printed yet | folded-glasses tray: size presets, nose support, grip cut-out, mounting zone |
 | `projects/_template` | – | starting point for new projects |

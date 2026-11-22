@@ -257,7 +257,15 @@ module container_divider(A, B, t, h, hf, p, mode="solid", border=[3, 4, 4], dept
 }
 // all dividers of a grid. specs = [[pattern, mode] for dividers along x, [pattern, mode] along y]; bands = [bottom,
 // top]; post = plain band at their ends and joints; floor_t = floor thickness (a solid strip under each divider)
-module container_dividers(pts, grid, t, h, hf, specs, bands=[4, 4], post=3, depth=0.8, lining_t=0.6, notch=[0, 30], floor_t=2) {
+// mount = the container_mount() spec: a mount under the floor keeps its sockets clear of the dividers
+module container_dividers(pts, grid, t, h, hf, specs, bands=[4, 4], post=3, depth=0.8, lining_t=0.6, notch=[0, 30], floor_t=2, mount) {
+    difference() {
+        _container_dividers(grid, t, h, hf, specs, bands, post, depth, lining_t, notch, floor_t);
+        if (!is_undef(mount) && mount[16] == "bottom") for (g=mount[15])
+            translate([mount[3][0], 0, 0]) attach_sockets(mount[0], mount[1], g[2], attach_y(mount[3][1]));
+    }
+}
+module _container_dividers(grid, t, h, hf, specs, bands, post, depth, lining_t, notch, floor_t) {
     for (dv=grid[1]) {
         s = dv[2] == "x" ? specs[0] : specs[1];
         container_divider(dv[0], dv[1], t, h, hf, s[0], s[1], [post, bands[0], bands[1]], depth, lining_t, dv[3], notch);
