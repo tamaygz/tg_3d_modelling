@@ -31,7 +31,8 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 - **READMEs have pictures:** each project lists them in `shots.txt` (image | parameters | camera), rendered by
   `python3 tools/make_screenshots.py <project>|lib|all` into `images/`; library pictures come from
   `lib/examples/*.scad`. Re-render after a visible change. Each project README starts with its pictures and the
-  link to its online configurator (`https://tamaygz.github.io/tg_3d_modelling/<project>`).
+  link to its online configurator (`https://tamaygz.github.io/tg_3d_modelling/<project>`). Marketing pictures (4:3, for
+  MakerWorld and the main README) come from `python3 tools/make_marketing.py`; the listing plan is `marketing/makerworld.md`.
 - **Lighting and wiring:** `lib/led.scad` and `lib/cable.scad`, not one-off parts.
 - **Patterns** (lattices, cube rosette, weaves, Voronoi, scales, Truchet, Girih, asanoha, waves, ripples, fluted): `lib/patterns.scad`, never
   project code. Pick by name via `pattern_spec()`, apply with `pattern_panel(mode, ...)` or the single helpers

@@ -7,6 +7,19 @@ the result in 3D, download the STL. Nothing to install.
 **Online configurators: [tamaygz.github.io/tg_3d_modelling](https://tamaygz.github.io/tg_3d_modelling/)** ·
 [releases](https://github.com/tamaygz/tg_3d_modelling/releases) (each release links every configurator and its sources)
 
+## What it can do
+
+<img src="marketing/images/01_cover.png" width="100%" alt="The Box Generator: one model for every container">
+
+| | |
+|---|---|
+| <img src="marketing/images/02_evolution.png" alt="From plain box to organizer"> | <img src="marketing/images/03_compartments.png" alt="Compartments"> |
+| <img src="marketing/images/04_patterns.png" alt="15 patterns"> | <img src="marketing/images/05_attachments.png" alt="One socket, twelve mounts"> |
+| <img src="marketing/images/06_configurator.png" alt="Customize in the browser"> | <img src="marketing/images/07_family.png" alt="More projects on the same library"> |
+
+Pictures and the MakerWorld listing plan: [`marketing/`](marketing) (rebuilt from the models with
+`python3 tools/make_marketing.py`).
+
 ## Projects
 
 | | |
@@ -55,6 +68,7 @@ elements, fits and bundled fonts. See [`lib/README.md`](lib/README.md).
 |---|---|
 | `python3 tools/build.py <project> --test` | the one command after any change: rebuilds a project's outputs (parts, print files, bundle, configurator) and checks every variant in its `tests.txt`; `all` does every project |
 | `python3 tools/make_screenshots.py <project> \| lib \| all` | renders the README pictures listed in `shots.txt` |
+| `python3 tools/make_marketing.py [page]` | renders the marketing pictures in `marketing/images/` from the current models (see `marketing/makerworld.md`) |
 | `python3 tools/make_configurator.py projects/<name>/<name>.scad` | only rebuilds the single-file configurator |
 | `python3 tools/make_pages.py` | stages every project for the online configurator site (used by the workflow below) |
 | `python3 tools/svg_to_scad.py art.svg out.scad --prefix XX` | converts SVG artwork into exact OpenSCAD polygons |
