@@ -5,7 +5,8 @@ all its settings at the top and comes with a configurator that runs in the brows
 the result in 3D, download the STL. Nothing to install.
 
 **Online configurators: [tamaygz.github.io/tg_3d_modelling](https://tamaygz.github.io/tg_3d_modelling/)** ·
-[releases](https://github.com/tamaygz/tg_3d_modelling/releases) (each release links every configurator and its sources)
+[releases](https://github.com/tamaygz/tg_3d_modelling/releases) (each release links every configurator and its sources) ·
+[licence: CC BY-NC-SA 4.0](LICENSE) (free for personal use and remixes, no commercial use)
 
 ## What it can do
 
@@ -125,3 +126,9 @@ To try the site locally: `python3 tools/make_pages.py`, then in a web-openscad-e
   patterns are tied into one network, every part is one watertight piece (the tests check this).
 - **Library first, one way to do each thing.** Patterns, shells, containers, attachments, LED and cable parts,
   fonts and fits come from `lib/`; projects add only what is specific to them.
+
+## Licence
+
+[CC BY-NC-SA 4.0](LICENSE) © tamaygz: print, share and remix freely with credit; no commercial use (no selling files
+or prints) without written permission; remixes under the same licence. Fonts in `lib/fonts/` keep their own
+licence (SIL OFL 1.1); the Bola Vuit logo belongs to its owner and is not covered. Details in [`LICENSE`](LICENSE).

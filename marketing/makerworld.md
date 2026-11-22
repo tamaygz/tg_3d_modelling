@@ -4,16 +4,16 @@ Everything needed to post the **Custom box** ("The Box Generator") on MakerWorld
 it in two seconds and try it. Pictures are in [`images/`](images); rebuild them after any model change with
 `python3 tools/make_marketing.py` (they are rendered from the current models).
 
-> Before posting: (1) **print two or three boxes and photograph them.** MakerWorld's featured-model guidelines
+> Before posting: **print two or three boxes and photograph them.** MakerWorld's featured-model guidelines
 > and the community favour real print photos over renders; put one photo second in the gallery.
-> (2) **Add a licence to the repository** (there is none yet, see [Licence](#licence)).
+> Licence: [CC BY-NC-SA 4.0](../LICENSE); choose **"BY-NC-SA"** on MakerWorld (see [Licence](#7-licence)).
 
 ## 1. What is already out there (research, Nov 2026)
 
 | Model | What it offers | How ours differs |
 |---|---|---|
 | [Simple parametric box generator](https://makerworld.com/en/models/2688081) | size, walls; outer size fixed | patterns, rims, compartments, mounts |
-| [Parametric Box Generator](https://makerworld.com/en/models/2146936-parametric-box-generator) | rounded corners, optional dividers and lid (MakerWorld-exclusive licence) | free, open source, 15 patterns, % layouts |
+| [Parametric Box Generator](https://makerworld.com/en/models/2146936-parametric-box-generator) | rounded corners, optional dividers and lid (MakerWorld-exclusive licence) | free, source on GitHub, 15 patterns, % layouts |
 | [Parametric storage box with customizable dividers](https://makerworld.com/en/models/1859912-parametric-storage-box-with-customizable-dividers) | print-in-place box, divider positions | dividers follow sloped / wavy rims, own patterns |
 | [Customizable parametric box with dividers](https://makerworld.com/en/models/476274) | cell sizes, inner or outer size | per-row % layouts, rows-first or columns-first |
 | [Parametric honeycomb box](https://www.makerworld.com/en/models/2249972) / [stackable](https://makerworld.com/en/models/2494879-parametric-honeycomb-box-stackable) | honeycomb walls and floor | 15 patterns × 6 ways to apply them, seamless round the corners |
@@ -88,7 +88,7 @@ Mark renders as renders in their captions if MakerWorld asks for it; never prese
 >
 > **🖥️ Customize it free in your browser – no install, no account:**
 > **https://tamaygz.github.io/tg_3d_modelling/custombox**
-> (the real OpenSCAD runs on the page; open source on GitHub: https://github.com/tamaygz/tg_3d_modelling)
+> (the real OpenSCAD runs on the page; source on GitHub: https://github.com/tamaygz/tg_3d_modelling)
 >
 > **What you can set**
 > - **Size & shape:** any width, depth and height; box (round, chamfered or square corners), ellipse or squircle;
@@ -118,6 +118,8 @@ Mark renders as renders in their captions if MakerWorld asks for it; never prese
 >
 > Made with a shared, open library: the same patterns and mounts are used by an earbuds holder, a sunglasses
 > tray, a scoreboard and more – see the GitHub repository. Feedback and print photos are very welcome!
+>
+> **Licence:** CC BY-NC-SA 4.0 – print, share and remix with credit; no commercial use (no selling files or prints).
 
 ## 6. Files and print profiles
 
@@ -149,15 +151,17 @@ here: "Mount your box anywhere".
 
 ## 7. Licence
 
-The repository has no licence yet, which legally means "all rights reserved" and keeps people from remixing.
-Common choices for printable models: **CC BY 4.0** (anyone may use and remix with credit) or **CC BY-SA 4.0**
-(remixes must stay open); for the OpenSCAD code, **MIT**. The fonts in `lib/fonts` keep their own OFL /
-Liberation licences. Pick the same licence on MakerWorld as in the repository.
+The repository is licensed **[CC BY-NC-SA 4.0](../LICENSE)** (Attribution-NonCommercial-ShareAlike): anyone may
+print, share and remix with credit, remixes stay under the same licence, and commercial use (selling the files,
+selling prints, use in paid products) needs written permission. On MakerWorld pick the matching licence,
+**"BY-NC-SA"**, so the listing and the repository agree. Note that a non-commercial licence is not "open source"
+in the OSI sense: say "free" or "source on GitHub" in texts, not "open source". The fonts in `lib/fonts` keep
+their SIL OFL licence; the Bola Vuit logo belongs to its owner (do not publish that project on MakerWorld).
 
 ## 8. Launch checklist
 
 - [ ] Print 2–3 presets, photograph them in daylight on a plain background (one filled with things in use)
-- [ ] Add a licence file to the repository and pick the same one on MakerWorld
+- [ ] Pick the licence "BY-NC-SA" on MakerWorld (same as the repository's [LICENSE](../LICENSE))
 - [ ] Run the web-configurator workflow so the live page has the newest version
 - [ ] Upload: title, tags, pictures in the order above, description, six print profiles
 - [ ] Post in the MakerWorld community section with the cover and the evolution picture

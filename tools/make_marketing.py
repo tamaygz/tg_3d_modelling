@@ -124,7 +124,7 @@ def header(cv, title, sub, kicker=None):
 def footer(cv, s=None):
     d = ImageDraw.Draw(cv)
     d.rectangle((0, H - 64, W, H), fill=(14, 19, 26, 255))
-    text(d, (70, H - 32), s or "Free & open source · OpenSCAD · customize in your browser", 24, "regular", MUTED, "lm")
+    text(d, (70, H - 32), s or "Free for personal use (CC BY-NC-SA) · OpenSCAD · customize in your browser", 24, "regular", MUTED, "lm")
     text(d, (W - 70, H - 32), SITE, 24, "sans", ACCENT, "rm")
 
 

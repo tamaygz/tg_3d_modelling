@@ -109,6 +109,7 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   pick() colours parts from the `parts` table, which gives the web preview its colours.
 
 ## User preferences
+- Licence: CC BY-NC-SA 4.0 (`LICENSE`): no commercial use. Call the project "free" / "source on GitHub", not "open source".
 - Parametric models, every user-facing setting at the top; separate printable parts instead of one fused model.
 - Gives reference images and expects the model to follow them closely.
 - ~250 mm printer bed: split long parts at a natural joint and join with dowels.

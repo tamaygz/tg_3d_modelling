@@ -32,7 +32,8 @@ def main():
             f"Shared library: [lib/]({tree}/lib) · built from commit [{a.ref[:7]}]({a.repo_url}/commit/{a.ref}).", "",
             "`configurators-site.zip` is an offline copy of the site; serve it with any static web server "
             "(for example `python3 -m http.server` in the unpacked folder), since browsers block the "
-            "OpenSCAD worker on `file://` pages."]
+            "OpenSCAD worker on `file://` pages.", "",
+            f"Licence: [CC BY-NC-SA 4.0]({blob}/LICENSE): print, share and remix with credit; no commercial use."]
     print("\n".join(out))
 
 

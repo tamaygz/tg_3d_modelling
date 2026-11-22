@@ -15,3 +15,5 @@ Pictures and texts for sharing the project (MakerWorld, Printables, social posts
 | <img src="images/03_compartments.png" alt="compartments"> | <img src="images/04_patterns.png" alt="patterns"> |
 | <img src="images/05_attachments.png" alt="attachments"> | <img src="images/06_configurator.png" alt="configurator"> |
 | <img src="images/07_family.png" alt="family"> | |
+
+Licence of everything here: [CC BY-NC-SA 4.0](../LICENSE).

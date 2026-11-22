@@ -485,3 +485,6 @@ To match another logo, fit the parameters against its exact polygons (see `proje
 `fonts/` holds Liberation Serif and Sans, regular and bold (SIL Open Font License). Bundling them means
 text renders the same on every machine and in the browser configurator. The WebAssembly engine finds
 no system fonts, so build text models natively (`OSCAD_ENGINE=native`) when using the skill scripts.
+
+---
+Licence: [CC BY-NC-SA 4.0](../LICENSE) (no commercial use); fonts: SIL OFL 1.1 (`fonts/OFL.txt`).
