@@ -1,4 +1,4 @@
 model earbuds.scad
 rev 62dcb7d
-made 2026-11-22 08:44
+made 2026-11-22 09:27
 Earbuds_holder.stl
