@@ -1,4 +1,4 @@
 model sunglasses.scad
-rev 148fe51
-made 2026-11-22 09:34
+rev ff377be
+made 2026-11-22 14:09
 Sunglasses_holder.stl
