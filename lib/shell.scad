@@ -72,10 +72,27 @@ function shell_wavy_pts(pts, amp=2, count=8, phase=0) = amp == 0 ? pts : let(u =
 // ---------- height field ----------
 // A ready-made rim height for a box of `size`: base height at the front left, rising by rise = [to the right,
 // to the back] across the box, plus cosine waves across the width and the depth:
-// waves = [[amplitude, count], [amplitude, count]] (x, y), phase in degrees.
+// waves = [[amplitude, count], [amplitude, count]] (x, y), phase in degrees. (Older form of shell_rim() below.)
 function shell_rim_height(p, size, base, rise=[0, 0], waves=[[0, 1], [0, 1]], phase=0) =
-    base + rise[0]*(p[0]/size[0] + 0.5) + rise[1]*(p[1]/size[1] + 0.5)
-         + waves[0][0]*cos(360*waves[0][1]*p[0]/size[0] + phase) + waves[1][0]*cos(360*waves[1][1]*p[1]/size[1] + phase);
+    shell_rim(p, size, base, [0, rise[1], 0, rise[0]], waves, phase);
+// The same per side, for a box of plan `size` centred on the origin (front = -y, back = +y, left = -x, right = +x):
+//   raise   = [front, back, left, right]: how much higher that wall's rim is (negative = lower). Each one slopes
+//             to 0 at the opposite wall, and they add up (back 20 + right 10: the back right corner is 30 higher).
+//   waves   = [[amplitude, count] along x (front and back), [amplitude, count] along y (left and right)]:
+//             the rim rises and falls by `amplitude` mm, `count` waves over the width / depth
+//   notches = [[side, depth, width, center], ...]: a dip in the rim of that wall (see shell_rim_dip: grip cut-outs,
+//             pouring lips); `width` at half depth, `center` shifts it along the wall
+function shell_rim(p, size, base, raise=[0, 0, 0, 0], waves=[[0, 1], [0, 1]], phase=0, notches=[]) =
+    base + raise[0]*(0.5 - p[1]/size[1]) + raise[1]*(0.5 + p[1]/size[1])
+         + raise[2]*(0.5 - p[0]/size[0]) + raise[3]*(0.5 + p[0]/size[0])
+         + waves[0][0]*cos(360*waves[0][1]*p[0]/size[0] + phase) + waves[1][0]*cos(360*waves[1][1]*p[1]/size[1] + phase)
+         - (len(notches) == 0 ? 0 : [for (n=notches) shell_rim_dip(p, size, n[1], n[2], is_undef(n[3]) ? 0 : n[3], n[0])]*[for (n=notches) 1]);
+// [lowest, highest] the rim of shell_rim() can reach (corners of the slopes, wave amplitudes, deepest notch)
+function shell_rim_range(size, base, raise=[0, 0, 0, 0], waves=[[0, 1], [0, 1]], notches=[]) = let(
+    c = [for (sx=[-1, 1], sy=[-1, 1]) raise[0]*(0.5 - sy/2) + raise[1]*(0.5 + sy/2) + raise[2]*(0.5 - sx/2) + raise[3]*(0.5 + sx/2)],
+    w = abs(waves[0][0]) + abs(waves[1][0]),
+    d = len(notches) == 0 ? 0 : max([for (n=notches) shell_rim_dip_depth(n[1], n[2])]))
+    [base + min(c) - w - d, base + max(c) + w];
 
 // A dip in the rim (a grip cut-out, a pouring lip): subtract it from a rim height. The rim drops by `depth` in
 // the middle of one side (side = "front" / "back" / "left" / "right", center = shift along that side) and fades

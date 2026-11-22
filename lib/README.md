@@ -20,8 +20,9 @@ Reusable OpenSCAD building blocks. Projects live in `projects/<name>/`, so they 
 | `scale.scad` | `use` | number scales: `number_row_2d()` with dot, bar, diamond or no separators; `scale_plate_2d()`; `plate_body()` + `plate_art()` for 2-colour inlay, raised or engraved numbers |
 | `patterns.scad` | `use` | 12 parametric patterns for any flat surface, and the ways to apply them: `pattern_spec()`, `pattern_sized()` (automatic size), `pattern_2d()`, `pattern_3d()`, `pattern_cutout_2d()`, `pattern_panel_2d()`, `pattern_relief()`, `pattern_cutter()`, `pattern_lining()`, `pattern_panel(mode, ...)`; checks `pattern_problem()`, `pattern_features()`, `pattern_is_connected()`, `pattern_tied()`, `pattern_shift()`, `pattern_period()`, `pattern_wrapped()` (make a pattern close round a loop). See [Patterns](#patterns) |
 | `patterns/*.scad` | `use` (optional) | the single generators behind `patterns.scad`, if you want one directly: `geometric.scad` (`hex_honeycomb_2d`, `square_grid_2d`, `diamond_lattice_2d`, `triangular_lattice_2d` and their `*_holes()` point lists), `woven.scad` (`basket_weave_3d/_2d`, `tri_weave_3d/_2d`, `weave_strand()`), `organic.scad` (`voronoi_2d`, `voronoi_cell_pts()`), `decorative.scad` (`fish_scales_2d`, `truchet_arcs_2d`, `girih_star_cross_2d`), `relief.scad` (`flowing_waves_2d`, `concentric_ripples_2d`), `tiling.scad` (`pat_hash()`, `pat_clip_halfplane()`) |
-| `shell.scad` | `use` | thin walls that follow a closed outline (boxes, baskets, bins, lamp shades): outlines `shell_rect_runs()` (round / chamfer / square corners, named runs), `shell_ellipse_pts()`, `shell_squircle_pts()`, `shell_wavy_pts()`; measuring `shell_len()`, `shell_dists()`, `shell_bounds()`; rim height field `shell_rim_height()` and `shell_rim_dip()` (grip cut-out); `shell_dist_at()`; `shell_strip_pts()` (the unrolled wall with its top edge) and `shell_wrap()` which bends a flat panel round the outline. See [Shells](#shells) |
-| `container.scad` | `use` | the parts of an open box on a shell outline: `container_box_pts()` (outline with its seam out of the way), `container_walls()` / `container_wall()` (patterned walls bent round the outline, with framed openings), `container_floor()` (with holes), `container_ledge()` (45° ledge for an inset lid), `container_ridge()` (rounded saddle on the floor with sloped ends and a domed top: nose support, bottle or cable rest), mounting built into the back wall for the attachment plates: `container_mount()` spec, `container_mount_problem()`, `container_plates()`, pattern-free `plain` areas; helpers `container_u()` / `container_v()` (place an opening on a wall from plan coordinates), `container_safe_mode()`. See [Containers](#containers) |
+| `shell.scad` | `use` | thin walls that follow a closed outline (boxes, baskets, bins, lamp shades): outlines `shell_rect_runs()` (round / chamfer / square corners, named runs), `shell_ellipse_pts()`, `shell_squircle_pts()`, `shell_wavy_pts()`; measuring `shell_len()`, `shell_dists()`, `shell_bounds()`; rim height field `shell_rim()` (raise / waves / notches per side), `shell_rim_height()` and `shell_rim_dip()` (grip cut-out); `shell_dist_at()`; `shell_strip_pts()` (the unrolled wall with its top edge) and `shell_wrap()` which bends a flat panel round the outline. See [Shells](#shells) |
+| `container.scad` | `use` | the parts of an open box on a shell outline: `container_box_pts()` (outline with its seam out of the way), compartments (`container_layout()`, `container_grid()`, `container_dividers()`), `container_walls()` / `container_wall()` (patterned walls bent round the outline, with framed openings), `container_floor()` (with holes), `container_ledge()` (45° ledge for an inset lid), `container_ridge()` (rounded saddle on the floor with sloped ends and a domed top: nose support, bottle or cable rest), mounting built into the back wall for the attachment plates: `container_mount()` spec, `container_mount_problem()`, `container_plates()`, pattern-free `plain` areas; helpers `container_u()` / `container_v()` (place an opening on a wall from plan coordinates), `container_safe_mode()`. See [Containers](#containers) |
+| `strings.scad` | `use` | numbers and lists from text settings (works in OpenSCAD 2021 and the browser): `str_nums("33, 33")`, `str_groups("33,33 / 50,50")`, `str_num()`, `str_split()`, `str_trim()`, `str_sub()` |
 
 Each style module also defines its option list (`PLAQUE_SHAPES`, `EDGE_PROFILES`, `MARKER_STYLES`…),
 so a model can copy them into its `// [a, b, c]` Customizer comment.
@@ -252,9 +253,13 @@ Together with `patterns.scad` this gives patterned boxes, baskets, bins and shad
   "right", … ) so walls and corners can be treated separately: `shell_runs_pts()` gives the points,
   `shell_runs_edges()` the edge range of each run. `shell_ellipse_pts()`, `shell_squircle_pts()` and
   `shell_wavy_pts(pts, amp, count)` give round and flowing outlines.
-- **Rim:** any `function (p) -> height`; `shell_rim_height(p, size, base, rise, waves, phase)` is a ready-made
-  one with a slope in x and y plus cosine waves. Because it depends on the position in plan, it is continuous
-  on every outline.
+- **Rim:** any `function (p) -> height`. `shell_rim(p, size, base, raise, waves, phase, notches)` is a ready-made
+  one per side: `raise = [front, back, left, right]` lifts (or lowers) each wall's rim, sloping to 0 at the
+  opposite wall, and the four add up; `waves = [[amplitude, count] along x, [amplitude, count] along y]` (the rim
+  rises and falls by `amplitude` mm); `notches = [[side, depth, width, center], ...]` are dips in a wall's rim
+  (`shell_rim_dip()`: grips, pouring lips). `shell_rim_range(size, base, raise, waves, notches)` gives its
+  [lowest, highest] point. `shell_rim_height(p, size, base, [right, back], waves, phase)` is the older two-slope
+  form. Because they depend on the position in plan, they are continuous on every outline.
 - **Strip frame:** the child of `shell_wrap()` builds the wall flat: x = distance along the outline (0 in the
   middle of the strip), y = height (0 at mid-height `h/2`), z = 0 inner face .. t outer face, relief beyond.
   That is the pattern frame with `size = [strip length, h]`. `shell_strip_pts(pts, e0, e1, hf, h)` is the
@@ -333,6 +338,19 @@ container_walls(pts, t, H, rim, p, "through_cut", bands=[5, 3])             // w
   `container_floor()` too; the floor is made thick enough for the sockets.
   `container_mount_floor(type, floor_t)` is the floor thickness a mount underneath needs (the whole floor gets it,
   so the container stays flat inside and still stands flat).
+- **Compartments:** divider walls in a grid. `g = container_layout(text, rows, cols, sizes_text)` reads a layout
+  from text (`"33,33,33 / 50,50 / 100"`: one group per row with its compartments' sizes; empty = a plain
+  `rows` × `cols` grid; `sizes_text` = the rows' own sizes), `grid = container_grid(pts, wall_t, g[0], g[1], order,
+  t)` lays it out (`order = "rows"`: rows front to back, each split left to right; `"columns"`: the other way).
+  Sizes are weights: the divider thickness comes off first, so the compartments really have those proportions.
+  Compartments narrower than `CONTAINER_MIN_CELL` (8 mm) are left out with a note (`grid[2]`); `grid[0]` are the
+  cells, `grid[3]` the smallest one. `container_dividers(pts, grid, t, h, hf, [[px, mode], [py, mode]], bands,
+  post, depth, lining_t, notch, floor_t)` builds them: dividers along x and along y take their own pattern (match
+  them to the walls they run along), follow any height function `hf` (the rim, lowered, capped under a lid),
+  get a finger notch `[depth, width]`, plain joints where they cross and a solid strip in the floor under them.
+  Their ends stop in the middle of the outer wall; pass `plain=container_grid_plain(pts, grid, t, post)` to the
+  walls so the pattern leaves a solid joint there. `container_divider(A, B, ...)` is one divider on its own.
+  <img src="examples/images/container_compartments.png" width="300" alt="Tray with compartments">
 - **Plain areas:** `plain=[[x, z, w, h], ...]` (centre x in the loop frame, bottom z, size) keeps rectangles of the
   wall free of pattern and solid, e.g. for a label; the pattern joins their edges.
 - **No seam:** a wall that runs all the way round is built with `pattern_wrapped(p, perimeter)` (switch off with

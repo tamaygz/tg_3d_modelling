@@ -1,5 +1,5 @@
 // Containers: the parts of an open box built on a shell outline. Patterned walls with openings and plain areas,
-// floor, lid ledge, ridge, and a mounting zone for the attachment plates built into the back wall or the floor. Used by projects/custombox, projects/earbuds, projects/sunglasses.
+// floor, lid ledge, ridge, compartments (divider walls), and a mounting zone for the attachment plates built into the back wall or the floor. Used by projects/custombox, projects/earbuds, projects/sunglasses.
 // Use:  use <../../lib/container.scad>   (builds on shell.scad, patterns.scad, attach.scad)
 //
 // Frame: the outline `pts` (see shell.scad) is the outer face of the walls in the floor plane; the floor's
@@ -13,6 +13,7 @@
 use <shell.scad>
 use <patterns.scad>
 use <attach.scad>
+use <strings.scad>
 
 // x in the loop's unrolled frame of the outline point nearest to plan point q; y of a height z
 function container_u(pts, q) = shell_dist_at(pts, q) - shell_len(pts)/2;
@@ -157,6 +158,112 @@ module container_ledge(pts, wall_t, z, w=1.6, steps=4) {
     for (k=[0:steps-1]) translate([0, 0, z - w*(k + 1)/steps]) linear_extrude(w/steps + 0.01) difference() {
         offset(delta=-wall_t + 0.1) polygon(pts);
         offset(delta=-wall_t - w*(steps - k)/steps) polygon(pts);
+    }
+}
+
+// ---------- compartments ----------
+// Divider walls that split the inside into compartments. The layout is a list of groups: rows (front to back)
+// that are each split into compartments from left to right, or with order = "columns", columns (left to right)
+// each split from front to back. Sizes are relative weights (percentages or any numbers): [[33, 33, 33], [50, 50],
+// [100]] = a row of three, a row of two and one long compartment. The sizes are the compartments' own inside
+// sizes: the divider thickness is taken off before sharing out the room.
+//
+//   g = container_layout(text, rows, cols, sizes_text);                 // from Customizer fields (see below)
+//   grid = container_grid(pts, wall_t, g[0], g[1], order, divider_t);
+//   container_walls(..., plain=container_grid_plain(pts, grid, post));  // solid joints in the outer walls
+//   container_dividers(pts, grid, divider_t, h, hf, [px, mode_x], [py, mode_y], bands, ...);
+//   grid[2] = notes ("" or what was changed), grid[3] = [smallest compartment x, y]
+//
+// Dividers along x (between rows) and along y (between columns) can carry different patterns (match them to the
+// front / back and the side walls). They follow the rim height function hf (slopes, waves); lower them with an
+// hf of their own. Their ends reach into the middle of the outer wall, where a plain joint keeps the pattern
+// clear; a solid strip under each divider keeps a patterned floor closed under it.
+CONTAINER_MIN_CELL = 8;      // narrowest compartment (mm); a layout that would go below it is thinned out
+CONTAINER_DIV_FOOT = 2;      // solid floor strip on each side of a divider
+// layout from text: "33,33,33 / 50,50 / 100" = one group per row (or column) with the compartments' sizes;
+// empty = a plain grid of `rows` x `cols`. sizes_text = the rows' (columns') own sizes, empty = equal.
+// Returns [groups, sizes, note]; weights of 0 or less are dropped.
+function container_layout(text, rows=1, cols=1, sizes_text="") = let(
+    g0 = [for (g=str_groups(text)) let(v = [for (x=g) if (x > 0) x]) if (len(v) > 0) v],
+    groups = len(g0) > 0 ? g0 : [for (i=[1:1:max(1, rows)]) [for (j=[1:1:max(1, cols)]) 1]],
+    s0 = [for (x=str_nums(sizes_text)) if (x > 0) x],
+    sizes = len(s0) == len(groups) ? s0 : [for (g=groups) 1],
+    off = [for (v=concat(len(g0) > 0 ? g0 : [], len(s0) == len(groups) ? [s0] : [])) let(t = v*[for (x=v) 1]) if (abs(t - 100) > 1.5 && len(v) > 1) 1])
+    [groups, sizes, str(
+        len(s0) > 0 && len(s0) != len(groups) ? str("compartments: ", len(s0), " row/column sizes given for ", len(groups), " rows/columns, using equal sizes") : "",
+        len(s0) > 0 && len(s0) != len(groups) && len(off) > 0 ? "; " : "",
+        len(off) > 0 ? "compartments: sizes that do not add up to 100 are scaled to fill the box" : "")];
+// cells of span [a, b] for weights w with dividers t thick between them: [[start, end], ...]
+function _ctr_cum(v, k) = k <= 0 ? 0 : _ctr_cum(v, k - 1) + v[k - 1];
+function container_split(a, b, w, t) = let(n = len(w), s = w*[for (x=w) 1], avail = b - a - (n - 1)*t)
+    [for (k=[0:1:n - 1]) let(c0 = a + avail*_ctr_cum(w, k)/s + k*t) [c0, c0 + avail*w[k]/s]];
+// keep the groups and their compartments to what fits CONTAINER_MIN_CELL (the last ones are dropped)
+function _ctr_fit(w, span, t) = len(w) <= 1 || (span - (len(w) - 1)*t)*min(w)/(w*[for (x=w) 1]) >= CONTAINER_MIN_CELL - 0.01 ? w
+    : _ctr_fit([for (i=[0:1:len(w) - 2]) w[i]], span, t);
+// where the line c + l*d leaves the outline: [l backwards (< 0), l forwards (> 0), cos of the angle at each wall]
+function _ctr_hits(pts, c, d) = let(n = len(pts),
+    h = [for (i=[0:n-1]) let(A = pts[i], B = pts[(i+1)%n], e = B - A, den = d[0]*e[1] - d[1]*e[0]) if (abs(den) > 1e-9)
+        let(w = A - c, l = (w[0]*e[1] - w[1]*e[0])/den, m = (w[0]*d[1] - w[1]*d[0])/den) if (m >= -1e-6 && m <= 1 + 1e-6)
+        [l, abs(d*[e[1], -e[0]])/norm(e)]],
+    neg = [for (x=h) if (x[0] < 0) x], pos = [for (x=h) if (x[0] > 0) x],
+    a = [for (x=neg) if (x[0] == max([for (y=neg) y[0]])) x][0], b = [for (x=pos) if (x[0] == min([for (y=pos) y[0]])) x][0])
+    [a, b];
+// how far in from the outer face (along the divider) its end must stop: the centre in the middle of the wall,
+// both corners inside the outer face
+function _ctr_inset(wall_t, t, cs) = let(c = max(0.5, cs), tn = sqrt(1 - c*c)/c) (wall_t/2 + t/2*tn)/c;
+// The grid: [cells, dividers, notes, [smallest x, smallest y]]
+//   cells    = [[x0, y0], [x1, y1]] inside each compartment
+//   dividers = [A, B, axis ("x" = runs along x), junctions (distances from A where other dividers meet it), ends
+//               in the outer wall [at A, at B]]
+function container_grid(pts, wall_t, groups, sizes, order="rows", t=2) = let(
+    bb = shell_bounds(pts), lo = bb[0] + [wall_t, wall_t], hi = bb[1] - [wall_t, wall_t],
+    ax = order == "columns" ? 0 : 1, bx = 1 - ax,                       // groups are stacked along ax, split along bx
+    P = function(a, b) ax == 1 ? [b, a] : [a, b],
+    n0 = len(groups),
+    sz = _ctr_fit(sizes, hi[ax] - lo[ax], t), n = len(sz),
+    gr = [for (k=[0:1:n - 1]) _ctr_fit(groups[k], hi[bx] - lo[bx], t)],
+    prim = container_split(lo[ax], hi[ax], sz, t),
+    sec = [for (k=[0:1:n - 1]) container_split(lo[bx], hi[bx], gr[k], t)],
+    cells = [for (k=[0:1:n - 1]) for (c=sec[k]) let(p0 = P(prim[k][0], c[0]), p1 = P(prim[k][1], c[1])) [p0, p1]],
+    // dividers between groups: across the whole box, ends found on the outline
+    mains = [for (k=[1:1:n - 1]) let(a = prim[k][0] - t/2, c = P(a, (lo[bx] + hi[bx])/2), d = P(0, 1), h = _ctr_hits(pts, c, d),
+        A = c + d*(h[0][0] + _ctr_inset(wall_t, t, h[0][1])), B = c + d*(h[1][0] - _ctr_inset(wall_t, t, h[1][1])),
+        js = [for (kk=[k - 1, k]) for (j=[1:1:len(sec[kk]) - 1]) (sec[kk][j][0] - t/2) - (c + d*(h[0][0] + _ctr_inset(wall_t, t, h[0][1])))[bx]])
+        [A, B, ax == 1 ? "x" : "y", js, [true, true]]],
+    // dividers inside a group: from divider to divider, or into the outer wall at the first and last group
+    cross = [for (k=[0:1:n - 1]) for (j=[1:1:len(sec[k]) - 1]) let(b = sec[k][j][0] - t/2, c = P((prim[k][0] + prim[k][1])/2, b), d = P(1, 0),
+        h = _ctr_hits(pts, c, d),
+        a0 = k == 0 ? (c + d*(h[0][0] + _ctr_inset(wall_t, t, h[0][1])))[ax] : prim[k][0] - t/2,
+        a1 = k == n - 1 ? (c + d*(h[1][0] - _ctr_inset(wall_t, t, h[1][1])))[ax] : prim[k][1] + t/2)
+        [P(a0, b), P(a1, b), ax == 1 ? "y" : "x", [], [k == 0, k == n - 1]]],
+    small = [min([for (c=cells) c[1][0] - c[0][0]]), min([for (c=cells) c[1][1] - c[0][1]])],
+    cut = n < n0 || len([for (k=[0:1:n - 1]) if (len(gr[k]) < len(groups[k])) 1]) > 0)
+    [cells, concat(mains, cross),
+     cut ? str("compartments: fewer than asked, each needs at least ", CONTAINER_MIN_CELL, " mm inside") : "", small];
+// plain (pattern-free) joints in the outer walls where the dividers meet them: pass as `plain` to container_walls
+function container_grid_plain(pts, grid, t=2, post=3) = [for (dv=grid[1]) for (e=[0, 1]) if (dv[4][e])
+    [container_u(pts, dv[e] + (dv[e] - dv[1 - e])/norm(dv[e] - dv[1 - e])*t), -1, t + 2*post, 1e4]];
+// One divider wall from A to B (plan points), t thick, centred on the line. hf = top height function (plan point),
+// h = reference height (the highest point), p / mode = pattern, border = [ends, bottom, top] plain bands,
+// junctions = distances from A where other dividers meet it (kept plain), notch = [depth, width]: a finger notch
+// in the middle of its top edge.
+module container_divider(A, B, t, h, hf, p, mode="solid", border=[3, 4, 4], depth=0.8, lining_t=0.6, junctions=[], notch=[0, 30]) {
+    L = norm(B - A); d = (B - A)/L; n = [d[1], -d[0]];
+    q = [A + n*t/2, B + n*t/2];                                          // shell_wrap builds on the inner side of the line
+    hn = function(x) is_undef(notch) || notch[0] <= 0 ? 0 : shell_rim_dip([(x - A)*d - L/2, -50], [L, 100], notch[0], notch[1], 0, "front");
+    hfd = function(x) hf(x) - hn(x);
+    jp = [for (s=junctions) [s - L, -1, t + 2*border[0], 1e4]];         // loop frame of a two-point outline
+    container_wall(q, 0, 0, t, h, hfd, p, mode, border, depth, lining_t, 0, plain=jp, fit=false);
+}
+// all dividers of a grid. specs = [[pattern, mode] for dividers along x, [pattern, mode] along y]; bands = [bottom,
+// top]; post = plain band at their ends and joints; floor_t = floor thickness (a solid strip under each divider)
+module container_dividers(pts, grid, t, h, hf, specs, bands=[4, 4], post=3, depth=0.8, lining_t=0.6, notch=[0, 30], floor_t=2) {
+    for (dv=grid[1]) {
+        s = dv[2] == "x" ? specs[0] : specs[1];
+        container_divider(dv[0], dv[1], t, h, hf, s[0], s[1], [post, bands[0], bands[1]], depth, lining_t, dv[3], notch);
+        L = norm(dv[1] - dv[0]);
+        if (floor_t > 0) translate(dv[0]) rotate(atan2(dv[1][1] - dv[0][1], dv[1][0] - dv[0][0]))
+            translate([0, -t/2 - CONTAINER_DIV_FOOT, 0]) cube([L, t + 2*CONTAINER_DIV_FOOT, floor_t]);
     }
 }
 
