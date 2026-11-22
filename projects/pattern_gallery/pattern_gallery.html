@@ -85,7 +85,7 @@ const PARTS=[{"id": "g_hex_honeycomb", "label": "Hex honeycomb", "note": "PLA, 5
 const $=id=>document.getElementById(id);
 const stage=$('stage'),info=$('info'),rows=$('rows'),plist=$('plist'),pbtn=$('pbtn'),selbar=$('selbar');
 const FINE=window.matchMedia&&matchMedia('(pointer:fine)').matches;
-const REV='f01a927',HINT=(FINE?'Drag to turn, right-drag or Shift-drag to move, scroll to zoom, click a piece to name it, double-click to zoom to it.'
+const REV='9c5df79',HINT=(FINE?'Drag to turn, right-drag or Shift-drag to move, scroll to zoom, click a piece to name it, double-click to zoom to it.'
  :'Drag to turn, two fingers to move and zoom, tap a piece to name it, double-tap to zoom to it.')+(REV?' Rev '+REV+'.':'');
 PARTS.forEach(p=>{p.shift=p.shift||[0,0,0];p.variant=p.variant||'';});
 const VARS=[...new Set(PARTS.map(p=>p.variant))];
