@@ -469,9 +469,10 @@ module clamp_frame(size="M", gap=40, reach=25, screw="M16") {
             translate([0, yl + jt + 0.01, za]) rotate([90, 0, 0]) cylinder(r=d/2 + 5, h=bh, $fn=64);  // threaded boss
             translate([0, yl + jt + 0.01 - bh, za]) rotate([90, 0, 0]) cylinder(r1=d/2 + 5, r2=d/2 + 4, h=1, $fn=64);
         }
-        translate([0, yl + jt + 0.02, za]) rotate([90, 0, 0]) thread_cutter(screw, bh + 1.05);
+        translate([0, clamp_thread_y0(size, gap, screw), za]) rotate([-90, 0, 0]) thread_cutter(screw, bh + 1.05);   // same direction as the screw
     }
 }
+function clamp_thread_y0(size, gap, screw) = clamp_low_y(size, gap, screw) + clamp_jaw_t(screw) - clamp_boss_h(screw) - 1.03;   // start of the threaded hole
 // the screw in its own frame: axis +Z, knob from z = 0, thread above it, pad on top
 module clamp_screw(gap=40, screw="M16") {
     d = thread_d(screw); h = thread_depth(thread_pitch(screw)); bh = clamp_boss_h(screw);
@@ -486,8 +487,10 @@ module clamp_screw(gap=40, screw="M16") {
 // seated in the frame (host frame), half open
 module clamp_screw_seated(size="M", gap=40, reach=25, screw="M16") {
     yl = clamp_low_y(size, gap, screw); bh = clamp_boss_h(screw);
-    open = gap/2;                                               // pad half way up
-    y0 = clamp_top_y(size) - clamp_jaw_t(screw) - open - clamp_pad_h(screw) - (gap + bh - clamp_pad_h(screw) + 2) - 12;
+    p = thread_pitch(screw);
+    y_want = clamp_top_y(size) - clamp_jaw_t(screw) - gap/2 - clamp_pad_h(screw) - (gap + bh - clamp_pad_h(screw) + 2) - 12;   // pad half way up
+    yh = clamp_thread_y0(size, gap, screw);                     // seat the thread a whole number of turns from the hole's
+    y0 = yh + round((y_want + 12 - 0.01 - yh)/p)*p - 12 + 0.01;   // start, so screw and hole are in phase (as when screwed in)
     translate([0, y0, clamp_axis_z(size, reach, screw)]) rotate([-90, 0, 0]) clamp_screw(gap, screw);
 }
 
