@@ -119,7 +119,7 @@ screw_d = 4.5;
 // wall: countersunk screw head diameter
 screw_head_d = 8.5;
 // magnet: [diameter, height] of the round magnets
-magnet = [10, 3];
+magnet = [8, 2];
 // hook: thickness of the rod, rail or door it hangs on
 hook_gap = 6;
 // stand: lean back from vertical (degrees)

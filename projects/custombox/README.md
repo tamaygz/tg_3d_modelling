@@ -52,9 +52,9 @@ walls, floor and lid are all settings, and every surface takes any of the 15 pat
 - **Lid.** Only for a flat rim (no slope, no waves). It rests on a ledge that grows out of the wall at 45°, so the
   box still prints without supports. The report says whether the lid was fitted.
 - **Mounting.** The back wall itself gets a solid zone for the sockets: the pattern stops at it and joins its
-  sides, and the sockets are cut in from behind. The outside of the wall stays flat (nothing stands out behind the
-  box); the extra thickness the sockets need is a low pad with sloped edges on the INSIDE, and the inside face
-  stays closed. The zone runs into the rim or base band when they are close. It needs the box shape, a
+  sides, and the sockets are cut in from behind. The zone is flush with the inside face (nothing takes room from the
+  box's content); what the 5.2 mm socket needs beyond the wall stands out behind it as a pad with 45° edges, and
+  the plates sit flush with that pad. The zone runs into the rim or base band when they are close. It needs the box shape, a
   straight back (`side_wave = 0`) and a back wall as high as the plate. If the plates you ask for do not fit, fewer
   or smaller ones are used, or none: the render log shows a WARNING and the report says what was fitted.
 - **Fin.** `attach_type = "fin"` puts the socket under the floor (any outline): the floor gets a solid zone, thickened

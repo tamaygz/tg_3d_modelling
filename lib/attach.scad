@@ -18,7 +18,8 @@ PIPE_AXES = ["horizontal", "vertical"];
 ATTACH_JOINTS = ["none", "ball"];        // optional ball joint between the host and the plate (any type)
 SLIDE_AXES    = ["horizontal", "vertical"];
 ATTACH_SIZES = ["S", "M", "L"];
-ATTACH_T     = 4.5;   // socket depth = plate core thickness
+ATTACH_T     = 4.0;   // socket depth = plate core thickness (the snap grooves reach 3.5 mm deep; 0.5 mm above them)
+ATTACH_BACK  = 1.2;   // closed host wall behind a socket (3 perimeters): a host needs ATTACH_T + ATTACH_BACK = 5.2 mm
 ATTACH_CLR   = 0.2;   // plate-to-socket clearance per face
 ATTACH_NOTCH = 3;     // pry notch below the plate
 SNAP_LIP     = 1.5;   // socket mouth wall above the groove
@@ -32,6 +33,7 @@ function attach_dims(size) = size == "S" ? [30, 30] : size == "L" ? [60, 50] : [
 function attach_socket_len(size) = attach_dims(size)[1] + ATTACH_NOTCH;                   // socket length (y)
 function attach_socket_w(size) = attach_dims(size)[0];                                     // socket width (x)
 function attach_depth() = ATTACH_T;
+function attach_host_t() = ATTACH_T + ATTACH_BACK;          // host thickness a socket needs (socket + closed back)
 function attach_strip() = ATTACH_CLR + SNAP_ARM + SNAP_GAP;    // end strips taken by the snap arms (keep features out)
 // bump profile, (y outward, z): retention ramp, flat top, 45° lead-in towards +z (the way in)
 function snap_z0() = SNAP_LIP + 0.05 + 0.35*SNAP_B;   // ramp foot just inside the groove: no preload when seated
@@ -81,7 +83,7 @@ module attach_core(size="M") {
 //   clamp_screw        clamp: printed screw size (THREAD_SIZES in thread.scad; M10..M20 are sensible)
 //   pipe_d             pipe: outer diameter of the pipe, tube, rail or conduit the claw snaps onto
 //   pipe_axis          pipe: the pipe runs "horizontal" (along the plate's width) or "vertical"
-module attach_plate(type="wall", size="M", screw_d=4.5, head_d=8.5, magnet=[10, 3], magnet_clr=0.15,
+module attach_plate(type="wall", size="M", screw_d=4.5, head_d=8.5, magnet=[8, 2], magnet_clr=0.15,
                     hook_gap=6, stand_reach=40, stand_angle=15, stand_depth=40, skadis_t=5,
                     roof_reach=60, roof_angle=90, roof_depth=40, slide_axis="horizontal",
                     clamp_gap=40, clamp_reach=25, clamp_screw="M16", pipe_d=20, pipe_axis="horizontal") {
@@ -104,7 +106,7 @@ module attach_plate(type="wall", size="M", screw_d=4.5, head_d=8.5, magnet=[10, 
             translate([0,0,ATTACH_T - c - 0.01]) cylinder(d=head_d + 0.4, h=1, $fn=48);
         }
         if (type == "keyhole") translate([0, -min(8, l/4), 0])
-            keyhole_cut(head_d=9, neck_d=4.5, travel=min(10, l/2 - 4), neck_t=2, depth=ATTACH_T - c - 0.6);
+            keyhole_cut(head_d=9, neck_d=4.5, travel=min(10, l/2 - 4), neck_t=1.6, depth=ATTACH_T - c - 0.6);
         if (type == "magnet") for (p=magnet_xy(w, l, magnet[0])) translate([p[0], p[1], -1])
             cylinder(d=magnet[0] + 2*magnet_clr, h=magnet[1] + 1, $fn=48);
         if (type == "flat") for (i=[-3:3]) {
@@ -116,7 +118,7 @@ module attach_plate(type="wall", size="M", screw_d=4.5, head_d=8.5, magnet=[10, 
 
 // ---------- host helpers (use these in a project instead of placing sockets by hand) ----------
 // per-type options as one list, so hosts can pass them on: build it with attach_opts(...)
-function attach_opts(screw_d=4.5, head_d=8.5, magnet=[10, 3], hook_gap=6, stand_angle=15, stand_depth=40,
+function attach_opts(screw_d=4.5, head_d=8.5, magnet=[8, 2], hook_gap=6, stand_angle=15, stand_depth=40,
                      roof_gap=10, roof_angle=90, roof_depth=40,
                      slide_axis="horizontal", track_len=0, fin_len=120, fin_w=80, fin_t=4, ball_d=16,
                      clamp_gap=40, clamp_reach=25, clamp_screw="M16", pipe_d=20, pipe_axis="horizontal") =
@@ -139,9 +141,9 @@ function attach_xs(count, span, type="wall", centre=0, avoid=undef, size=undef) 
 // plate centre y that centres socket + pry notch on a host whose middle is y_mid
 function attach_y(y_mid) = y_mid + ATTACH_NOTCH/2;
 // does a socket of this size fit a host `height` tall?
-// thickness (optional) = host thickness behind the socket: needs the socket depth plus a 1 mm floor
+// thickness (optional) = host thickness behind the socket: needs the socket depth plus ATTACH_BACK of closed wall
 function attach_fits(size, height, margin=3, thickness=undef) =
-    attach_socket_len(size) <= height - margin + 0.001 && (is_undef(thickness) || thickness >= ATTACH_T + 1 - 0.001);
+    attach_socket_len(size) <= height - margin + 0.001 && (is_undef(thickness) || thickness >= attach_host_t() - 0.001);
 // What actually fits: the type and size asked for if the host is large enough, otherwise the next smaller plate
 // size, otherwise no attachment at all. Returns [type, size, note]; note is "" or a sentence saying what was
 // changed. Use the returned type and size everywhere, and show the note with attach_note(). A host should never
@@ -149,24 +151,8 @@ function attach_fits(size, height, margin=3, thickness=undef) =
 function attach_smaller(size) = size == "L" ? "M" : size == "M" ? "S" : "";
 function attach_fit(type, size, height, margin=3, thickness=undef) =
     type == "none" ? ["none", size, ""] :
-    !is_undef(thickness) && thickness < ATTACH_T + 1 - 0.001 ?
-        ["none", size, str("attachment left out: sockets need a host at least ", ATTACH_T + 1, " mm thick, this one is ", thickness, " mm")] :
-    attach_fits(size, height, margin) ? [type, size, ""] :
-    attach_smaller(size) == "" ?
-        ["none", size, str("attachment left out: even the smallest plate (S) needs ", attach_socket_len("S") + margin, " mm of height, this host has ", height, " mm")] :
-    let(r = attach_fit(type, attach_smaller(size), height, margin, thickness))
-        [r[0], r[1], r[0] == "none" ? r[2] : str("attachment plate size reduced from ", size, " to ", r[1], " to fit a height of ", height, " mm")];
-// prints a note as a warning in the render log (nothing if the note is empty)
-module attach_note(note) { if (note != "") echo(str("WARNING: ", note)); }
-// What actually fits: the type and size asked for if the host is large enough, otherwise the next smaller plate
-// size, otherwise no attachment at all. Returns [type, size, note]; note is "" or a sentence saying what was
-// changed. Use the returned type and size everywhere, and show the note with attach_note(). A host should never
-// stop with an error because an attachment does not fit.
-function attach_smaller(size) = size == "L" ? "M" : size == "M" ? "S" : "";
-function attach_fit(type, size, height, margin=3, thickness=undef) =
-    type == "none" ? ["none", size, ""] :
-    !is_undef(thickness) && thickness < ATTACH_T + 1 - 0.001 ?
-        ["none", size, str("attachment left out: sockets need a host at least ", ATTACH_T + 1, " mm thick, this one is ", thickness, " mm")] :
+    !is_undef(thickness) && thickness < attach_host_t() - 0.001 ?
+        ["none", size, str("attachment left out: sockets need a host at least ", attach_host_t(), " mm thick, this one is ", thickness, " mm")] :
     attach_fits(size, height, margin) ? [type, size, ""] :
     attach_smaller(size) == "" ?
         ["none", size, str("attachment left out: even the smallest plate (S) needs ", attach_socket_len("S") + margin, " mm of height, this host has ", height, " mm")] :
@@ -175,8 +161,8 @@ function attach_fit(type, size, height, margin=3, thickness=undef) =
 // prints a note as a warning in the render log (nothing if the note is empty)
 module attach_note(note) { if (note != "") echo(str("WARNING: ", note)); }
 function attach_fit_msg(size, height, thickness=undef) =
-    !is_undef(thickness) && thickness < ATTACH_T + 1
-        ? str("attachment sockets need a host at least ", ATTACH_T + 1, " mm thick; this one is ", thickness, " mm. Make it thicker or set attach_type to none.")
+    !is_undef(thickness) && thickness < attach_host_t()
+        ? str("attachment sockets need a host at least ", attach_host_t(), " mm thick; this one is ", thickness, " mm. Make it thicker or set attach_type to none.")
         : str("attach_size ", size, " needs ", attach_socket_len(size), " mm of height; this host has ", height, " mm. Choose a smaller size.");
 // row for the project's `parts` table
 function attach_print_tag(type) = (type == "skadis" || type == "hook" || type == "roof") ? "print=auto" : "print=x180";

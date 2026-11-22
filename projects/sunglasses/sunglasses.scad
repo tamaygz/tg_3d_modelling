@@ -105,13 +105,12 @@ flute_orient = "vertical"; // [vertical, horizontal]
 /* [Hidden] */
 $fn = 48;
 ft = container_mount_floor(attach_type, floor_t);      // a mount under the floor needs a thicker floor (it stays flat inside)
-room = container_mount_room(attach_type, wall_t);      // a mount in the back wall stands in by this much: the holder is that much deeper
 // typical folded sizes [width, depth, lens height]
 function preset_size(n) =
     n == "standard" ? [148, 48, 50] : n == "small" ? [130, 42, 42] : n == "aviator" ? [142, 46, 56] :
     n == "oversized" ? [156, 54, 62] : n == "sport wrap" ? [152, 64, 48] : custom_size;
 gs = preset_size(preset);
-inner = [gs[0] + 2*clearance, gs[1] + 2*clearance + room];
+inner = [gs[0] + 2*clearance, gs[1] + 2*clearance];
 size = inner + [2*wall_t, 2*wall_t];
 height = ft + max(8, gs[2]*hold);                // rim height at the front corners
 split = corner_fill == "solid";

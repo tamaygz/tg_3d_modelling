@@ -38,8 +38,8 @@ These are typical values, not a standard: measure your glasses folded (widest po
   stays inside the walls, however wide or low you make it.
 - **Grip:** the front rim dips by `grip_depth` over `grip_width`; the rim band follows it.
 - **Mounting:** the back wall gets a solid zone with the sockets, cut in from behind (the pattern joins its sides).
-  Nothing stands out behind the tray; the extra thickness is a pad on the inside, and the tray is made that much
-  deeper so the glasses still fit. `attach_type = "fin"` puts the sockets under a thicker, flat floor instead and
+  The zone is flush with the inside (the glasses keep all their room); what the 5.2 mm socket needs beyond the
+  wall stands out behind it as a pad with 45° edges, and the plate sits flush with that pad. `attach_type = "fin"` puts the sockets under a thicker, flat floor instead and
   adds a blade to push between cushions; the back wall must be at least 41 mm high for an S plate
   (`rise_back` raises it). If the plates you ask for do not fit, fewer or smaller ones are used, or none; the render
   log and the report say so.

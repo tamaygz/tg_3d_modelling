@@ -49,6 +49,13 @@
   chamfered. (3) Fin option now in every container project. (4) The fin was missing in the configurators because
   they read the parts list at default settings: the tools now read every possible part (`$all_parts`).
 
+## v1.5 (2026-11-22) – mounting zone flush inside, grows outward; shallower socket
+- Mounting zone reversed (user request): flush with the INSIDE face of the back wall, using the wall's own
+  thickness; only what the socket still needs grows outward behind the wall as a pad with 45° edges (flat at the
+  bottom on the floor). The inside is the same as without a mount, so the extra depth that used to make room for
+  an inside pad is gone. Socket 4.0 mm + 1.2 mm closed back = 5.2 mm (was 4.5 + 1.5 = 6.0); plates unchanged in
+  how they swap, every type keeps the same socket. Magnet default 8 × 2 mm.
+
 ## Prints and feedback
 - (none yet)
 

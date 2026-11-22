@@ -106,7 +106,6 @@ flute_orient = "vertical"; // [vertical, horizontal]
 /* [Hidden] */
 $fn = 48;
 ft = container_mount_floor(attach_type, floor_t);      // a mount under the floor needs a thicker floor (it stays flat inside)
-room = container_mount_room(attach_type, wall_t);      // a mount in the back wall stands in by this much: the holder is that much deeper
 // maker's sizes [width, thickness, height] of the closed case standing with its lid up
 function preset_size(n) =
     n == "Soundcore P31i" ? [57.5, 29.3, 57.5] : n == "AirPods Pro 2" ? [60.6, 21.7, 45.2] :
@@ -116,7 +115,7 @@ function preset_size(n) =
     n == "Pixel Buds Pro 2" ? [65.0, 25.0, 49.9] : n == "Nothing Ear" ? [55.5, 22.0, 55.5] : custom_size;
 cs = preset_size(preset);
 item = pose == "flat" ? [cs[0], cs[2], cs[1]] : pose == "side" ? [cs[2], cs[1], cs[0]] : cs;   // [x, y, z] as it sits
-inner = [item[0] + 2*clearance, item[1] + 2*clearance + room];
+inner = [item[0] + 2*clearance, item[1] + 2*clearance];
 size = inner + [2*wall_t, 2*wall_t];
 height = ft + max(6, item[2]*hold);              // rim height at the front corners
 split = corner_fill == "solid";
@@ -182,8 +181,8 @@ report = [["case width", cs[0]], ["case thickness", cs[1]], ["case height", cs[2
 module slot_2d(w, h) { hull() for (s=[-1, 1]) translate([s*max(0, w - h)/2, 0]) circle(d=min(w, h), $fn=32); }
 // the opening in the floor (plan), with its slot running to the back edge
 module floor_hole_2d() {
-    translate([cable_x, cable_y - room/2]) slot_2d(hole[0], hole[1]);                       // under the case, which sits against the front
-    if (cable_slot) translate([cable_x - (cable_d + 1)/2, cable_y - room/2]) square([cable_d + 1, size[1]]);
+    translate([cable_x, cable_y]) slot_2d(hole[0], hole[1]);                       // under the case, which sits against the front
+    if (cable_slot) translate([cable_x - (cable_d + 1)/2, cable_y]) square([cable_d + 1, size[1]]);
 }
 // openings in the walls, in the loop's unrolled frame
 module wall_holes_2d() {
@@ -208,7 +207,7 @@ module holder() {
 // the charging case as a block, to check the fit
 module case_ref() {
     r = min(item[0], item[1])*0.4;                    // cases are well rounded
-    translate([0, -room/2, ft + item[2]/2]) hull() for (sx=[-1, 1], sy=[-1, 1]) translate([sx*(item[0]/2 - r), sy*(item[1]/2 - r), 0]) cylinder(r=r, h=item[2], center=true);
+    translate([0, 0, ft + item[2]/2]) hull() for (sx=[-1, 1], sy=[-1, 1]) translate([sx*(item[0]/2 - r), sy*(item[1]/2 - r), 0]) cylinder(r=r, h=item[2], center=true);
 }
 
 // ---------- assembly ----------

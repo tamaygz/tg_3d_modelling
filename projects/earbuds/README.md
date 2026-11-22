@@ -46,8 +46,8 @@ side by default), or use `custom`.
   rim), so the cable can be laid in. Every opening gets a plain collar.
 - **Grip:** the front rim dips by `grip_depth` over `grip_width` with smooth shoulders; the rim band follows it.
 - **Mounting:** the back wall gets a solid zone with the sockets, cut in from behind (the pattern joins its sides).
-  Nothing stands out behind the holder; the extra thickness is a pad on the inside, and the holder is made that
-  much deeper so the case still fits. `attach_type = "fin"` puts the socket under a thicker, flat floor instead and
+  The zone is flush with the inside (the case keeps all its room); what the 5.2 mm socket needs beyond the wall
+  stands out behind it as a pad with 45° edges, and the plate sits flush with that pad. `attach_type = "fin"` puts the socket under a thicker, flat floor instead and
   adds a blade to push between cushions; it needs 38 × 41 mm of floor, so it fits the `flat` pose but not a slim
   upright holder (then it is left out with a warning). The back wall must be at least 41 mm high for an S plate. If
   the plates you ask for do not fit, fewer or smaller ones are used, or none; the render log and the report say so.

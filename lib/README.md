@@ -317,21 +317,22 @@ container_walls(pts, t, H, rim, p, "through_cut", bands=[5, 3])             // w
   so they cost nothing.
 - **Seam:** with one panel all round, start the outline where no opening is (`shell_start_at`); an opening must
   not straddle the two ends of the strip.
-- **Mounting** is part of the wall, and nothing stands out behind it. `m = container_mount(pts, type, size, count,
+- **Mounting** is part of the wall and takes nothing from the inside. `m = container_mount(pts, type, size, count,
   hf, t, [bottom band, rim band], floor_t)` describes it; pass `mount=m` to `container_walls()` / `container_wall()`
   and the back wall (the straight wall at the largest y) gets a solid zone there: the pattern stops at it and joins
-  its sides, and the sockets are cut into it from behind. The wall's outside stays flat (it is the mounting plane);
-  the thickness the sockets need (6 mm in total) is added on the INSIDE as a pad with 45° edges, and the inside
-  face stays closed (1.5 mm of wall behind every socket). If the rim band or the base band is closer than 10 mm,
+  its sides. The zone is flush with the wall's inside face and uses the wall's own thickness; only what the socket
+  still needs (`attach_host_t()` = 5.2 mm in total: 4.0 socket + 1.2 closed back) stands out behind the wall as a
+  pad with 45° edges (flat at the bottom where it stands on the floor). The sockets are cut in from its outer face,
+  the plates sit flush with it and stay interchangeable (every type uses the same socket). If the rim band or the base band is closer than 10 mm,
   the solid area runs on into it and follows a sloped or wavy rim. Plates close together share one zone; further
   apart each gets its own and the pattern continues between them.
   The mount is fitted to the container: fewer plates, then smaller ones, then none (`container_mount_note()` says
   what changed; show it with `attach_note()`). `container_attach(part, m, opts, z_bottom, z_top, joint)` draws all
   attachment parts; `each container_attach_rows(type, m, joint)` goes into the parts table. The back wall must be
   one straight edge. A type that mounts underneath (`fin`) gets the same treatment in the floor: pass `mount=m` to
-  `container_floor()` too; the floor's underside stays flat and the zone is thickened upwards.
-  For a holder that must keep its inside size: `container_mount_room(type, t)` is how much deeper to make it for
-  the pad, and `container_mount_floor(type, floor_t)` the floor thickness a mount underneath needs.
+  `container_floor()` too; the floor is made thick enough for the sockets.
+  `container_mount_floor(type, floor_t)` is the floor thickness a mount underneath needs (the whole floor gets it,
+  so the container stays flat inside and still stands flat).
 - **Plain areas:** `plain=[[x, z, w, h], ...]` (centre x in the loop frame, bottom z, size) keeps rectangles of the
   wall free of pattern and solid, e.g. for a label; the pattern joins their edges.
 - **No seam:** a wall that runs all the way round is built with `pattern_wrapped(p, perimeter)` (switch off with
@@ -359,7 +360,7 @@ notch below it and lever it out. Keep plate features out of the end strips (`att
 | roof | a ceiling: stem up behind the host to a flange with 4 countersunk screws; `roof_angle` 45–135° (90 = hangs straight down) | the stem keeps 0.6 mm off the snap arms; set `roof_reach` above the host's top edge |
 | skadis | IKEA Skådis pegboard | hooks 4.6 mm wide for 5 × 15 mm slots in a 5 mm board; M/L plates have two hooks 40 mm apart. Hosts with several plates keep them on the 40 mm grid. Community-measured sizes, not IKEA's: check against your board. |
 | hook | a rod, rail, wire shelf or door of thickness `hook_gap` | |
-| magnet | steel surfaces | pockets for round magnets (default 10 × 3), glued in from the wall side |
+| magnet | steel surfaces | pockets for round magnets (default 8 × 2), glued in from the wall side |
 | stand | a table | two fins make a kickstand; `stand_reach` = plate centre to the host's bottom edge |
 | flat | glue or double-sided tape | grooved back for a better bond |
 | slide | a dovetail track with rounded edges, screwed to the wall (part `attach_track`) | `slide_axis` "horizontal": the channel runs through the plate, one long track carries all plates and the host can be slid along it; "vertical": the host is dropped onto a short track per plate and hangs on its upper end. `track_len` (0 = automatic). The host stands 5 mm off the wall. |
@@ -394,8 +395,26 @@ attach_note(a_fit[2]);                                   // WARNING in the rende
 attach_all(part, a_type, a_size, a_x, a_y, a_opts, y_bottom, y_top, attach_joint);   // plates, track, ball joint
 ```
 
-Host rules: the socket needs `attach_socket_len(size)` of height (plate + 3 mm pry notch) and `ATTACH_T` (4.5 mm) of depth, plus a floor
-behind it. Its ceiling is printed as a bridge as wide as the socket (40–65 mm) when the host prints back-down;
+Host rules: the socket needs `attach_socket_len(size)` of height (plate + 3 mm pry notch) and `ATTACH_T` (4.0 mm) of depth, plus
+`ATTACH_BACK` (1.2 mm, three perimeters) of closed host behind it: `attach_host_t()` = 5.2 mm in total.
+
+Depth budget (why the socket is 4.0 mm and the same for every type): the plates must stay interchangeable, so one
+socket serves all of them and its depth is set by the snap, not by the type. The snap grooves reach 3.5 mm deep
+(1.5 mm mouth lip + 2.0 mm bump with its lead-in); 0.5 mm of core above them is the least that keeps the bumps
+inside the plate. The arm strain depends only on arm thickness, bend and length, not on the depth (under 1%).
+What each type needs inside the 3.8 mm plate core:
+
+| type | needs in the core | left |
+|---|---|---|
+| magnet 8 × 2 | 2.15 mm pocket from the wall side | 1.65 mm behind the magnet |
+| magnet 10 × 3 | 3.15 mm pocket | 0.65 mm (works, 8 × 2 is the better fit) |
+| wall | 2 mm countersink for a Ø8.5 head | 1.8 mm under the head |
+| keyhole | 1.6 mm neck + 1.6 mm head chamber | 0.6 mm cover |
+| flat (glue) | 0.5 mm glue grooves | 3.3 mm |
+| skadis, hook, stand, roof, slide, fin, clamp, pipe | nothing: their parts stand out from the wall side | – |
+
+A thinner host for one type would make its plates fit nowhere else, so the saving stops at 5.2 mm (was 6.0).
+The socket ceiling is printed as a bridge as wide as the socket (40–65 mm) when the host prints back-down;
 the plate has 0.2 mm headroom. Test the fit first with `projects/attachments` (coupon + plate + key).
 
 ## LED strips

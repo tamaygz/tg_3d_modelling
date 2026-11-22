@@ -9,6 +9,9 @@ Any project with sockets in its back takes any of these plates.
 
 **Print this first:** the test coupon has one socket, so you can check the snap fit on your printer before
 printing a whole project. Open `attachments_configurator.html` to pick a type and size and download the STLs.
+It is exactly as thin as a host may be (5.2 mm: 4.0 mm socket + 1.2 mm closed back, 4 mm rim), so it also
+proves the minimum. Every type uses the same socket, so plates can be swapped at any time; the depth budget per
+type (magnet 8 × 2, screw heads, keyhole) is in [lib/README.md](../../lib/README.md#attachment-plates).
 
 | Setting | Options |
 |---|---|

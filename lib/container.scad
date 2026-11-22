@@ -161,13 +161,15 @@ module container_ledge(pts, wall_t, z, w=1.6, steps=4) {
 }
 
 // ---------- mounting ----------
-// The snap-in attachment plates (attach.scad) need a socket 4.5 mm deep, more than a wall is thick. So the back
-// wall (the straight wall at the largest y) gets a solid zone that is part of the wall itself: the pattern stops
-// at it and joins it, and the sockets are cut into it from behind. The outside of the wall stays flat (nothing
-// stands out behind the container: the wall's outer face is the mounting plane); the thickness the sockets need
-// (CONTAINER_BOSS_T in total) is added on the INSIDE as a pad with 45 degree edges, and the inside face stays
-// closed. If the rim band or the base band is close, the solid area runs on into it (following a sloped or wavy
-// rim) instead of leaving a strip of pattern.
+// The snap-in attachment plates (attach.scad) need a socket ATTACH_T deep plus ATTACH_BACK of closed wall behind
+// it (attach_host_t() = 5.2 mm), usually more than a wall is thick. So the back wall (the straight wall at the
+// largest y) gets a solid zone that is part of the wall itself: the pattern stops at it and joins it. The zone is
+// flush with the wall's INSIDE face (nothing stands into the container, its content keeps all its room) and uses
+// the wall's own thickness; only what is missing (CONTAINER_BOSS_T - t) grows OUTWARDS, with 45 degree edges all
+// round (a flat bottom where it stands on the floor), so it prints upright without support. The sockets are cut
+// into it from behind and the plates sit flush with its outer face. Every plate type uses the same socket, so the
+// plates stay interchangeable. If the rim band or the base band is close, the solid area of the wall runs on into
+// it (following a sloped or wavy rim) instead of leaving a strip of pattern.
 // Plates that sit close together share one zone; further apart, each gets its own and the pattern continues between.
 //
 //   m = container_mount(pts, attach_type, attach_size, attach_count, rim, wall_t, [bottom band, rim band]);
@@ -176,11 +178,12 @@ module container_ledge(pts, wall_t, z, w=1.6, steps=4) {
 //   container_floor(..., mount=m);                       // builds it instead when the type mounts under the floor
 //   container_attach(part, m, attach_opts(), 0, h_top, attach_joint);     // plates, track / fin, ball joint parts
 //   parts rows: each container_attach_rows(attach_type, m, attach_joint)
-CONTAINER_BOSS_T = 6;        // wall thickness in the mounting zone: socket depth 4.5 + 1.5 of closed wall on the inside
+CONTAINER_BOSS_T = attach_host_t();   // wall thickness in the mounting zone: socket + closed back (5.2 mm)
 CONTAINER_ZONE_M = 4;        // solid wall around the sockets
 CONTAINER_MERGE  = 10;       // a strip of pattern narrower than this between the zone and a band is made solid too
 
-// mount spec: [type, size, xs, back centre [x, y], z0, total width, zone height, floating, protrusion, t,
+// mount spec: [type, size, xs, back centre [x, y] (outer face of the wall), z0, total width, zone height, floating,
+//              protrusion (how far the zone stands out behind the wall), t,
 //              straight back length, centre x offset, lowest rim over the zones, merge up, merge down,
 //              zones [[centre x offset, width, its plates' x], ...]]
 // (undef for type "none"). hf = rim height function, t = wall thickness, bands = [bottom, top] plain bands.
@@ -252,29 +255,31 @@ function _container_mount_plain(m, mx, h) = [for (z=_container_mount_zones(m, mx
     [[z[0], z[1] - 2, z[2] + 4, z[3] + 4]],
     m[13] ? [[z[0], z[1], z[2] + 4, 2*h]] : [],                        // on up to the rim
     m[14] ? [[z[0], -h, z[2] + 4, z[1] + h + 1]] : [])];               // on down to the floor
-// The thick parts, built in the strip frame of their facet. The wall's outside stays flat: the sockets are cut
-// into it from behind and the extra thickness they need goes INWARDS, as a pad on the inside face with 45 degree
-// edges (so it prints upright without support and has no sharp steps). The inside face stays closed: 1.5 mm of
-// solid wall behind every socket.
+// The thick parts, built in the strip frame of their facet (z = 0 inside face, z = t outside face). The zone is
+// flush with the inside face; the thickness the sockets need beyond the wall (c = m[8]) stands out behind it as a
+// pad with 45 degree edges (flat at the bottom when the zone stands on the floor). The sockets are cut in from
+// the pad's outer face, leaving ATTACH_BACK of closed wall on the inside.
 module _container_mount_block(m, mx, t, h) {
     for (g=m[15]) {
-        gx = mx - (g[0] - m[11]); w = g[1]; c = m[8];                                        // c = how far the pad stands in
+        gx = mx - (g[0] - m[11]); w = g[1];
+        c = m[8] + (is_undef($pat_shrink) ? 0 : $pat_shrink);            // shell_wrap pulls some facets in a hair: the pad face stays on the plane
         inside = is_undef($pat_window) || abs($pat_window[0][0] - gx) < $pat_window[1][0]/2;    // only on the facet that holds it
-        if (inside) translate([gx, 0, t]) rotate([0, 180, 0]) difference() {                 // now z = 0 is the outer face, +z into the container
+        if (inside) translate([gx, 0, t + c]) rotate([0, 180, 0]) difference() {             // now z = 0 is the pad's outer face, +z into the container
             union() {
-                translate([-w/2, m[4] - h/2, 0]) cube([w, m[6], t + 0.01]);                       // the wall itself, solid
+                translate([-w/2, m[4] - h/2, c - 0.01]) cube([w, m[6], t + 0.01]);                // the wall itself, solid
                 if (c > 0) hull() {
-                    translate([-w/2, m[4] - h/2, t]) cube([w, m[6], 0.01]);
-                    translate([-w/2 + c, m[4] - h/2 + (m[7] ? c : 0), t + c - 0.01]) cube([w - 2*c, m[6] - c - (m[7] ? c : 0), 0.01]);
+                    translate([-w/2, m[4] - h/2, c - 0.01]) cube([w, m[6], 0.01]);
+                    translate([-w/2 + c, m[4] - h/2 + (m[7] ? c : 0), 0]) cube([w - 2*c, m[6] - c - (m[7] ? c : 0), 0.01]);
                 }
             }
             attach_sockets(m[0], m[1], [for (x=g[2]) x - g[0]], container_mount_z(m) - h/2);
         }
     }
 }
+// How thick a container's floor must be for a mount underneath (attach_face(type) == "bottom"): the whole floor
+// gets that thickness, so it stays flat inside and the container still stands flat outside.
 // How much deeper a container must be inside so that the pad of a back mount does not take room from its
 // content, and how thick its floor must be for a mount underneath (the floor stays flat inside).
-function container_mount_room(type, t) = type == "none" || attach_face(type) == "bottom" ? 0 : max(0, CONTAINER_BOSS_T - t);
 function container_mount_floor(type, floor_t) = type != "none" && attach_face(type) == "bottom" ? max(floor_t, CONTAINER_BOSS_T) : floor_t;
 // Everything that hangs on the mount, seated: plates, slide track or fin, ball joint parts. `part` = the project's
 // part variable: one line draws whichever of them is selected (see attach_all). z_bottom / z_top = lowest and
@@ -282,7 +287,7 @@ function container_mount_floor(type, floor_t) = type != "none" && attach_face(ty
 module container_attach(part, m, opts, z_bottom=0, z_top=100, joint="none") {
     if (!is_undef(m)) {
         if (m[16] == "bottom") translate([m[3][0], 0, 0]) attach_all(part, m[0], m[1], m[2], attach_y(m[3][1]), opts, joint=joint);
-        else translate([m[3][0], m[3][1], container_mount_z(m)]) rotate([90, 0, 0])
+        else translate([m[3][0], m[3][1] + m[8], container_mount_z(m)]) rotate([90, 0, 0])      // on the pad's outer face
             attach_all(part, m[0], m[1], m[2], 0, opts, z_bottom - container_mount_z(m), z_top - container_mount_z(m), joint);
     }
 }

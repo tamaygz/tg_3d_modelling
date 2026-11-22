@@ -112,8 +112,11 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 - Wants generalised, reusable library parts and consistent patterns across projects.
 - Printing time matters: no solid plate behind a patterned wall (he rejected the mounting boss). Build solid
   zones INTO the wall, let the pattern join them, and blend them into rim / base bands.
-  Nothing may stand out behind the wall: cut sockets in from the outside face, add needed thickness INSIDE
-  (pad with 45° edges), never cut through. Chamfer every part that does stand out (no 90° outer edges).
+  Mounting zones are flush with the wall's INSIDE face (nothing into the enclosure) and use the wall's own
+  thickness; only what the socket still needs (`attach_host_t()` = 5.2 mm total) grows OUTWARD as a pad with 45°
+  edges; sockets cut in from its outer face, never cut through. Chamfer every part that stands out (no 90° outer edges).
+- The plate system must stay generic and interchangeable: one socket for every type, plates swappable any time
+  (no type-specific plate-less mounts). Keep the depth minimal within that (socket 4.0 + 1.2 back, magnet 8 × 2).
 - Cut-through patterns must be printable and stiff: lines need regular cross ties in the pattern's style.
 - Holders for things: wants presets for popular products (researched sizes, his own device first: Soundcore P31i
   earbuds), a custom size, and a grip cut-out at the front.
@@ -131,9 +134,9 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 | `projects/snooker_guide` | v1, not printed yet | multi-colour relief plaque of the snooker setup with points |
 | `projects/bolavuit_logo` | v2, not printed yet | logo plaque: exact (from SVG) or rebuilt from lib/emblem (0.90 overlap) |
 | `projects/led_kit` | v1, not printed yet | LED tracks, diffusers, corners, cable parts |
-| `projects/attachments` | v5, not printed yet | test coupon + every attachment plate, slide track, fin, clamp, pipe claw, ball joint; print first to check the fits |
+| `projects/attachments` | v5.1, not printed yet | test coupon + every attachment plate, slide track, fin, clamp, pipe claw, ball joint; print first to check the fits |
 | `projects/pattern_gallery` | v1.3, not printed yet | catalogue + test bench of the 15 `lib/patterns.scad` patterns; views: gallery, sample, modes, box |
-| `projects/custombox` | v1.4, not printed yet | configurable box / basket / bin: outline, corners, sloped + wavy rim, patterned walls, floor, inset lid, mounting zone in the back wall |
-| `projects/earbuds` | v1.3, not printed yet | charging-case holder: presets (P31i …), poses, cable hole / dock / slot, grip cut-out, mounting zone |
-| `projects/sunglasses` | v1.4, not printed yet | folded-glasses tray: size presets, nose support, grip cut-out, mounting zone |
+| `projects/custombox` | v1.5, not printed yet | configurable box / basket / bin: outline, corners, sloped + wavy rim, patterned walls, floor, inset lid, mounting zone in the back wall |
+| `projects/earbuds` | v1.4, not printed yet | charging-case holder: presets (P31i …), poses, cable hole / dock / slot, grip cut-out, mounting zone |
+| `projects/sunglasses` | v1.5, not printed yet | folded-glasses tray: size presets, nose support, grip cut-out, mounting zone |
 | `projects/_template` | – | starting point for new projects |

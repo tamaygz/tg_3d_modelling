@@ -48,6 +48,16 @@
   0.25 mm play per side, checked: rod in its hole does not touch). Pipe claw: opening chosen for about 1.5% strain
   (split-ring formula, asserted < 2%), 45° lead-in tips.
 
+## v5.1 (2026-11-22) – mounting zone flush inside, grows outward; shallower socket
+- Mounting zone reversed (user request): flush with the INSIDE face of the back wall, using the wall's own
+  thickness; only what the socket still needs grows outward behind the wall as a pad with 45° edges (flat at the
+  bottom on the floor). The inside is the same as without a mount, so the extra depth that used to make room for
+  an inside pad is gone. Socket 4.0 mm + 1.2 mm closed back = 5.2 mm (was 4.5 + 1.5 = 6.0); plates unchanged in
+  how they swap, every type keeps the same socket. Magnet default 8 × 2 mm.
+- Depth analysis of every type (lib/README "Depth budget"): the snap grooves set the socket depth (3.5 mm + 0.5 mm
+  core above them); magnet 8 × 2, wall countersink, keyhole (neck now 1.6 mm) and glue grooves all fit the 3.8 mm
+  core. A type-specific thinner socket would break interchangeability, so all types share 5.2 mm.
+
 ## Prints and feedback
 - (none yet)
 

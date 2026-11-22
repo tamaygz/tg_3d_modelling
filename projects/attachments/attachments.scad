@@ -19,7 +19,7 @@ screw_d = 4.5;
 // wall: countersunk head diameter
 head_d = 8.5;
 // magnet: [diameter, height] of the round magnets
-magnet = [10, 3];
+magnet = [8, 2];
 // hook: thickness of the rod, rail or door it hangs on
 hook_gap = 6;
 // stand: plate centre to the host's bottom edge
@@ -57,9 +57,9 @@ pipe_axis = "horizontal"; // [horizontal, vertical]
 // probe for checks: 0 = off; 1 = half way in (arms must bend ~0.6 mm); 2 = seated (must be clear); 3 = seated, pulled back 0.4 mm (bumps must catch); 4 = ball at the mouth of the cup
 probe = 0;
 D  = attach_dims(attach_size);
-cw = attach_socket_w(attach_size) + 12;          // coupon width
-cl = attach_socket_len(attach_size) + 12;        // coupon length
-ct = attach_depth() + 3;                         // coupon thickness
+cw = attach_socket_w(attach_size) + 8;           // coupon width
+cl = attach_socket_len(attach_size) + 8;         // coupon length
+ct = attach_host_t();                            // coupon thickness
 cy = -3/2;                                       // coupon centre y (the socket has a pry notch below)
 
 a_opts = attach_opts(screw_d, head_d, magnet, hook_gap, stand_angle, stand_depth, roof_reach - D[1]/2, roof_angle, roof_depth,
