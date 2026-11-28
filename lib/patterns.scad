@@ -210,30 +210,39 @@ module _pat_weave_3d(s, cover, h, g=[0, 0]) {
 // that part of the surface. The result is exactly the piece of the full pattern, panel or lining inside the
 // window (frames and outlines are still worked out on the whole surface). lib/shell.scad uses this to bend a
 // panel round corners piece by piece; use it yourself to split a large panel into printable tiles.
+// A third element turns the window about its centre: [[cx, cy], [w, h], angle] (tapered walls unroll into a fan,
+// whose facets lie at an angle). $pat_clip = [[x, y], ...] (optional, with a window) clips the piece further to
+// that polygon, e.g. the exact trapezoid of a facet.
 function _pat_win(size) = is_undef($pat_window) ? [[0, 0], size] : $pat_window;
+function _pat_wa() = is_undef($pat_window) || len($pat_window) < 3 ? 0 : $pat_window[2];
 // area the generator must cover (in its own axes) to fill a window of `wsize`, and the point it must cover it around
-function _pat_cover(s, wsize) = let(a = s[3]) [(abs(wsize[0]*cos(a)) + abs(wsize[1]*sin(a)))/s[7][0], (abs(wsize[0]*sin(a)) + abs(wsize[1]*cos(a)))/s[7][1]];
+function _pat_cover(s, wsize) = let(a = s[3] - _pat_wa()) [(abs(wsize[0]*cos(a)) + abs(wsize[1]*sin(a)))/s[7][0], (abs(wsize[0]*sin(a)) + abs(wsize[1]*cos(a)))/s[7][1]];
+// the window as a 2D shape (turned, and cut to $pat_clip when given)
+module pat_window_2d() {
+    if (is_undef($pat_clip)) translate($pat_window[0]) rotate(_pat_wa()) square($pat_window[1], center=true);
+    else intersection() { translate($pat_window[0]) rotate(_pat_wa()) square($pat_window[1], center=true); polygon($pat_clip); }
+}
 function _pat_gcenter(s, wc) = let(q = pat_rot(wc, -s[3]) - s[4]) [q[0]/s[7][0], q[1]/s[7][1]];
 module _pat_place(s) { rotate(s[3]) translate(s[4]) scale(s[7]) children(); }
 // the surface rectangle, cut down to the window
 module _pat_rect(size) {
     if (is_undef($pat_window)) square(size, center=true);
-    else intersection() { square(size, center=true); translate($pat_window[0]) square($pat_window[1], center=true); }
+    else intersection() { square(size, center=true); pat_window_2d(); }
 }
 // clip finished 2D geometry to the window (nothing to do without one)
 // $pat_shrink (optional, with a window) pulls the piece's material in by that much. Pieces that overlap at an
 // angle (facets of a bent wall) get different values, so their surfaces cross cleanly instead of almost coinciding.
 module _pat_w() {
     if (is_undef($pat_window)) children();
-    else if (is_undef($pat_shrink) || $pat_shrink == 0) intersection() { translate($pat_window[0]) square($pat_window[1], center=true); children(); }
-    else offset(delta=-$pat_shrink) intersection() { translate($pat_window[0]) square($pat_window[1], center=true); children(); }
+    else if (is_undef($pat_shrink) || $pat_shrink == 0) intersection() { pat_window_2d(); children(); }
+    else offset(delta=-$pat_shrink) intersection() { pat_window_2d(); children(); }
 }
 // shrink only (for 2D that is already cut to the window)
 module _pat_s() { if (is_undef($pat_window) || is_undef($pat_shrink) || $pat_shrink == 0) children(); else offset(delta=-$pat_shrink) children(); }
 // clip only, no shrink: for shapes that are cut OUT of the material (their edges move with the material's)
 module _pat_wc() {
     if (is_undef($pat_window)) children();
-    else intersection() { translate($pat_window[0]) square($pat_window[1], center=true); children(); }
+    else intersection() { pat_window_2d(); children(); }
 }
 // the placed pattern, generated for the window only
 module _pat_field(s, size) { w = _pat_win(size); _pat_place(s) _pat_gen_2d(s, _pat_cover(s, w[1]), _pat_gcenter(s, w[0])); }

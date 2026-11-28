@@ -63,3 +63,7 @@ COL_GREY      = "#9aa4ad";   // utility parts
 COL_GREY_DARK = "#3d4a54";
 COL_FIXTURE   = "#4d6170";   // attachment plates
 COL_CLEAR     = "#e9eef0";   // diffusers
+COL_TERRACOTTA = "#c56a45";  // plant pots
+COL_SAGE      = "#8fa98a";   // pot inserts, leaves
+COL_WATER     = "#5aa7d8";   // water parts: floats, tanks
+COL_PETAL     = "#f4c542";   // flowers, toppers
