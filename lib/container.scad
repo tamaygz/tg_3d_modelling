@@ -123,6 +123,7 @@ module container_wall_taper(pts, s, ht, t, h, hf, p, mode="solid", border=[0, 4,
 // neighbour's (see shell_wrap_taper); joints sharper than CONTAINER_TAPER_POST get a plain post instead
 CONTAINER_TAPER_GROW = 0.25;     // mm: the most a cut is grown at a joint (more would eat thin ribs that cross it)
 CONTAINER_TAPER_POST = 1.2;      // mm: joints that would need more growth than this get a plain post
+CONTAINER_TAPER_EDGE = 0.6;      // mm: cuts into the wall keep this far from the edge of the pattern area
 function container_taper_grow(th, turn) = th*tan(1.15*turn) + 0.1;
 module _container_taper_cut(th) {
     a = is_undef($shell_alt) ? 0 : $shell_alt;
@@ -142,7 +143,8 @@ module _container_wall_taper(pts, s, ht, t, h, hf, p, mode, border, depth, linin
     F = shell_taper_frame(pts, s, ht, 0, len(pts) - 1, h);
     q = container_safe_mode(mode == "open_lattice" ? "through_cut" : mode, p);
     sp = q == "through_cut" ? pattern_tied(p) : p;
-    b = _pat_b3(border);
+    b0 = _pat_b3(border);
+    b = [b0[0], b0[1], max(b0[2], lip[0] + 1)];                         // the pattern stays below a rolled lip
     rh = q == "raised" ? depth : q == "overlay" ? lining_t : 0;           // relief height
     lw = line[1]; lh = line[0] == "bead" ? line[2] : 0;
     up = max(rh, lh, lip[1]);
@@ -167,7 +169,7 @@ module _container_wall_taper(pts, s, ht, t, h, hf, p, mode, border, depth, linin
             if (rh > 0) translate([0, 0, t - 0.5]) linear_extrude(rh + 0.5) shell_window_2d() field_2d() children();   // relief layer, deep in the wall
             if (lh > 0 && !is_undef(lf)) translate([0, 0, t - 0.5]) linear_extrude(lh + 0.5) shell_window_2d() line_2d(lw);
             if (lip[0] > 0 && lip[1] > 0) let(k = max(1, ceil(lip[1]/0.4)))
-                for (j=[1:k]) translate([0, 0, t - 0.01]) linear_extrude(lip[1]*j/k + 0.01) shell_window_2d()
+                for (j=[1:k]) translate([0, 0, t - 0.5]) linear_extrude(lip[1]*j/k + 0.5) shell_window_2d()
                     polygon(shell_taper_strip_pts(pts, s, ht, hf=hf, h=h, lf=function(x) hf(x) - lip[0] + lip[1]*(j - 1)/k));
         }
         // cuts: openings through the wall, engraved lines, and the spaces between the pattern's ribs (through the
@@ -175,10 +177,11 @@ module _container_wall_taper(pts, s, ht, t, h, hf, p, mode, border, depth, linin
         // ends must not lie in the facets' end faces); near the joints every other cut is grown so it contains its
         // neighbour's (see shell_wrap_taper): the cut faces of two facets then never cross in a hair-thin wedge.
         shell_wrap_taper(pts, s, ht, t, h=h, above=up, lap=0.3, shrink=false) {
+            // cells keep CONTAINER_TAPER_EDGE from the area's edge: grown at a joint, a cut must not reach the plain band
             if (q == "through_cut") translate([0, 0, -1]) linear_extrude(t + up + 2) _container_taper_cut(t)
-                pattern_cutout_2d(sp, sz, inset=0) field_2d() children();
+                pattern_cutout_2d(sp, sz, inset=CONTAINER_TAPER_EDGE) field_2d() children();
             if (q == "recessed") translate([0, 0, t - depth]) linear_extrude(depth + up + 1) _container_taper_cut(depth)
-                pattern_cutout_2d(sp, sz, inset=0, cut="lines") field_2d() children();
+                pattern_cutout_2d(sp, sz, inset=CONTAINER_TAPER_EDGE, cut="lines") field_2d() children();
             // raised: the relief layer minus the spaces between the ribs; overlay: the same inside a 1.5 mm frame
             if (q == "raised") _container_relief_cut(sp, sz, t, depth) field_2d() children();
             if (q == "overlay") _container_relief_cut(sp, sz, t, lining_t, true, 1.5) field_2d() children();

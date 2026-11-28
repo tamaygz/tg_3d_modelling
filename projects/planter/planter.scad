@@ -319,16 +319,19 @@ float_z = want_float ? max(ft, z_w - draft) : ft;                // shown floati
 float_note = want_float && lift < 2 ? str("the float may not lift its rod and topper (", round(lift*10)/10, " g spare): use a smaller topper, a skewer, or a wider fill_d") : "";
 
 // ---------- wick basket ----------
-want_cup = wick == "cup" || wick == "both";
-want_rope = wick == "rope" || wick == "both";
+ask_cup = wick == "cup" || wick == "both";
 // the basket sits in the middle, or moves away from the float guide, or gets smaller (WARNING) where both do not fit
 cb_room = min(r_in_dir(fill_dir + 180, ft) - 1.5, r_ins_in(fill_dir + 180, z_f) - 1);   // from the axis to the wall opposite the guide
 cb_side = min(r_in_dir(fill_dir + 90, ft), r_in_dir(fill_dir - 90, ft), r_ins_in(fill_dir + 90, z_f) + 0.5, r_ins_in(fill_dir - 90, z_f) + 0.5) - 1.5;   // sideways
 cb_gap = has_shaft ? g_r - g_ro - 1.5 : 1e4;                     // from the axis to the guide
-cb_r = max(8, min(wick_d/2, (min(cb_gap, cb_room) + cb_room)/2 - cb_coll - 0.5, cb_side - cb_coll - 0.5));   // basket outer radius at the top (+ collar)
+cb_r0 = min(wick_d/2, (min(cb_gap, cb_room) + cb_room)/2 - cb_coll - 0.5, cb_side - cb_coll - 0.5);
+want_cup = ask_cup && cb_r0 >= 8;                                // a basket narrower than 16 mm is left out: rope wicks instead
+want_rope = wick == "rope" || wick == "both" || (ask_cup && !want_cup);
+cb_r = max(8, cb_r0);                                            // basket outer radius at the top (+ collar)
 cb_off = has_shaft ? max(0, cb_r + cb_coll + 0.5 - cb_gap) : 0;  // shift away from the guide
 cb_c = -cb_off*dir_v(fill_dir);                                  // basket axis
-cb_note = want_cup && cb_r < wick_d/2 - 0.01 ? str("wick basket made ", 2*cb_r, " mm wide instead of ", wick_d, ": the fill shaft leaves no more room") : "";
+cb_note = ask_cup && !want_cup ? "wick basket left out: the fill shaft leaves no room for it; holes for rope wicks instead"
+        : want_cup && cb_r < wick_d/2 - 0.01 ? str("wick basket made ", 2*cb_r, " mm wide instead of ", wick_d, ": the fill shaft leaves no more room") : "";
 cb_h = z_f + fi - ft - 0.02;                                     // from the pot floor to just under the top of the insert floor
 
 // ---------- insert ----------
@@ -598,7 +601,7 @@ module warn(note) { if (note != "") echo(str("WARNING: ", note)); }
 warn(band_note);
 warn(dip_note);
 warn(float_note);
-if (want_cup) warn(cb_note);
+warn(cb_note);
 if (band_mode_used != s_mode && s_mode != "solid") echo(str("WARNING: ", s_pat, " falls apart when cut through: raised instead"));
 pick("pot") pot();
 pick("insert") insert();

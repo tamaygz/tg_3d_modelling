@@ -43,11 +43,12 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
   outside +Z; build flat, then rotate onto walls. New patterns: a generator in `lib/patterns/`, a branch in
   `_pat_gen_2d`, defaults + `pattern_features`, a gallery tile and tests. Do clipping and cuts in 2D and extrude:
   3D booleans are slow in OpenSCAD 2021 (only the weaves need one).
-- **Containers and curved walls:** `lib/shell.scad` (outline as points or named runs, rim height function,
+- **Containers and curved walls:** `lib/shell.scad` (outline as points or named runs, rim height function, tapered walls
+  `shell_wrap_taper` in an unrolled fan frame,
   `shell_strip_pts`, `shell_wrap`) and `lib/container.scad` (walls with framed openings and plain areas, floor, lid ledge,
   mounting zone for the attachment plates via `container_mount()` + `mount=`, rim dip for grips, compartments:
   `container_layout()` + `container_grid()` + `container_dividers()`, joints via `container_grid_plain()`). Rim heights per
-  wall: `shell_rim()` (raise / waves / notches per side). Layouts typed as text are read with `lib/strings.scad`. `projects/custombox` is the reference; `earbuds` and
+  wall: `shell_rim()` (raise / waves / notches per side). Layouts typed as text are read with `lib/strings.scad`. `projects/custombox` is the reference (`projects/planter` for tapered walls: `container_wall_taper()`, build them cut-from-solid, never as facets that each carry their own holes); `earbuds` and
   `sunglasses` show a holder for a given item (presets + clearance, cable opening, grip, nose support).
   One facet per outline edge: keep straight sides as a single edge. Frame widths as `[sides, bottom, top]`.
   A wall that closes on itself must use a pattern that repeats after the perimeter: `pattern_wrapped()` (the
@@ -147,4 +148,5 @@ Read `README.md` (structure, tools, adding a project) and `lib/README.md` (libra
 | `projects/custombox` | v1.6, not printed yet | configurable box / basket / bin: outline, corners, rim raise / waves / notches per wall, patterned walls, compartments (grid or % layout), floor, inset lid, mounting zone in the back wall |
 | `projects/earbuds` | v1.4, not printed yet | charging-case holder: presets (P31i …), poses, cable hole / dock / slot, grip cut-out, mounting zone |
 | `projects/sunglasses` | v1.5, not printed yet | folded-glasses tray: size presets, nose support, grip cut-out, mounting zone |
+| `projects/planter` | v1, not printed yet | self-watering pot: tapered outline, reservoir below / side tower / sealed side tank, soil insert + wick basket, float with toppers, styled band and rim, sensor / drip / hanger / saucer |
 | `projects/_template` | – | starting point for new projects |

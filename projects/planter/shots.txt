@@ -1,0 +1,10 @@
+# pictures for README.md: python3 tools/make_screenshots.py planter
+# image | parameters | camera tilt,turn
+planter.png | | 62,28
+planter_terracotta.png | style_preset = "terracotta"; topper = "sun" | 62,28
+planter_honeycomb.png | style_preset = "honeycomb"; topper = "heart" | 62,28
+planter_crown.png | shape = "polygon"; sides = 6; style_preset = "crown"; topper = "star" | 62,28
+planter_blossom.png | style_preset = "blossom"; topper = "leaf" | 62,28
+planter_side_tank.png | reservoir = "side"; topper = "drop"; saucer = true | 62,200
+planter_tower.png | reservoir = "below_side"; style_preset = "scallop"; topper = "mushroom" | 62,28
+planter_inside.png | part = "insert"; sensor = "capacitive"; drip_d = 7 | 50,20

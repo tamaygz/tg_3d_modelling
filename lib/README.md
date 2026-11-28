@@ -20,8 +20,8 @@ Reusable OpenSCAD building blocks. Projects live in `projects/<name>/`, so they 
 | `scale.scad` | `use` | number scales: `number_row_2d()` with dot, bar, diamond or no separators; `scale_plate_2d()`; `plate_body()` + `plate_art()` for 2-colour inlay, raised or engraved numbers |
 | `patterns.scad` | `use` | 12 parametric patterns for any flat surface, and the ways to apply them: `pattern_spec()`, `pattern_sized()` (automatic size), `pattern_2d()`, `pattern_3d()`, `pattern_cutout_2d()`, `pattern_panel_2d()`, `pattern_relief()`, `pattern_cutter()`, `pattern_lining()`, `pattern_panel(mode, ...)`; checks `pattern_problem()`, `pattern_features()`, `pattern_is_connected()`, `pattern_tied()`, `pattern_shift()`, `pattern_period()`, `pattern_wrapped()` (make a pattern close round a loop). See [Patterns](#patterns) |
 | `patterns/*.scad` | `use` (optional) | the single generators behind `patterns.scad`, if you want one directly: `geometric.scad` (`hex_honeycomb_2d`, `square_grid_2d`, `diamond_lattice_2d`, `triangular_lattice_2d` and their `*_holes()` point lists), `woven.scad` (`basket_weave_3d/_2d`, `tri_weave_3d/_2d`, `weave_strand()`), `organic.scad` (`voronoi_2d`, `voronoi_cell_pts()`), `decorative.scad` (`fish_scales_2d`, `truchet_arcs_2d`, `girih_star_cross_2d`), `relief.scad` (`flowing_waves_2d`, `concentric_ripples_2d`), `tiling.scad` (`pat_hash()`, `pat_clip_halfplane()`) |
-| `shell.scad` | `use` | thin walls that follow a closed outline (boxes, baskets, bins, lamp shades): outlines `shell_rect_runs()` (round / chamfer / square corners, named runs), `shell_ellipse_pts()`, `shell_squircle_pts()`, `shell_wavy_pts()`; measuring `shell_len()`, `shell_dists()`, `shell_bounds()`; rim height field `shell_rim()` (raise / waves / notches per side), `shell_rim_height()` and `shell_rim_dip()` (grip cut-out); `shell_dist_at()`; `shell_strip_pts()` (the unrolled wall with its top edge) and `shell_wrap()` which bends a flat panel round the outline. See [Shells](#shells) |
-| `container.scad` | `use` | the parts of an open box on a shell outline: `container_box_pts()` (outline with its seam out of the way), compartments (`container_layout()`, `container_grid()`, `container_dividers()`), `container_walls()` / `container_wall()` (patterned walls bent round the outline, with framed openings), `container_floor()` (with holes), `container_ledge()` (45° ledge for an inset lid), `container_ridge()` (rounded saddle on the floor with sloped ends and a domed top: nose support, bottle or cable rest), mounting built into the back wall for the attachment plates: `container_mount()` spec, `container_mount_problem()`, `container_plates()`, pattern-free `plain` areas; helpers `container_u()` / `container_v()` (place an opening on a wall from plan coordinates), `container_safe_mode()`. See [Containers](#containers) |
+| `shell.scad` | `use` | thin walls that follow a closed outline (boxes, baskets, bins, lamp shades): outlines `shell_rect_runs()` (round / chamfer / square corners, named runs), `shell_ellipse_pts()`, `shell_squircle_pts()`, `shell_wavy_pts()`; measuring `shell_len()`, `shell_dists()`, `shell_bounds()`; rim height field `shell_rim()` (raise / waves / notches per side), `shell_rim_height()` and `shell_rim_dip()` (grip cut-out); `shell_dist_at()`, `shell_dist_at_dir()`, `shell_pt_at()`, `shell_area()`, `shell_joints()`; `shell_inset_pts()`, `shell_ngon_pts()`; `shell_strip_pts()` (the unrolled wall with its top edge) and `shell_wrap()` which bends a flat panel round the outline; **tapered walls** (pots, vases, shades): `shell_wrap_taper()`, `shell_taper_frame()`, `shell_taper_at()`, `shell_taper_strip_pts()`; polar rims and lines `shell_rim_round()`, `shell_wave()` (wave / zigzag / scallop / petal). See [Shells](#shells) |
+| `container.scad` | `use` | the parts of an open box on a shell outline: `container_box_pts()` (outline with its seam out of the way), compartments (`container_layout()`, `container_grid()`, `container_dividers()`), `container_walls()` / `container_wall()` (patterned walls bent round the outline, with framed openings), `container_floor()` (with holes), `container_ledge()` (45° ledge for an inset lid), `container_ridge()` (rounded saddle on the floor with sloped ends and a domed top: nose support, bottle or cable rest), mounting built into the back wall for the attachment plates: `container_mount()` spec, `container_mount_problem()`, `container_plates()`, pattern-free `plain` areas; helpers `container_u()` / `container_v()` (place an opening on a wall from plan coordinates), `container_safe_mode()`; `container_wall_taper()` (a leaning wall: plain lower part, patterned band above a styled line, bead / groove, rolled lip, plain zones, openings). See [Containers](#containers) |
 | `strings.scad` | `use` | numbers and lists from text settings (works in OpenSCAD 2021 and the browser): `str_nums("33, 33")`, `str_groups("33,33 / 50,50")`, `str_num()`, `str_split()`, `str_trim()`, `str_sub()` |
 
 Each style module also defines its option list (`PLAQUE_SHAPES`, `EDGE_PROFILES`, `MARKER_STYLES`…),
@@ -196,7 +196,9 @@ translate([0, 0, 40]) pattern_panel("through_cut", roof, [70, 50], t=2, border=3
 - **Frame widths:** wherever a module takes `border`, `pad` or `inset` for the pattern area, a list
   `[sides, bottom, top]` (or `[x, y]`) gives different widths. The list form shifts the outline instead of
   offsetting it, so a wavy or sloped top edge keeps a band of constant height.
-- **Windows:** set `$pat_window = [[cx, cy], [w, h]]` around any module to build only that part of the surface.
+- **Windows:** set `$pat_window = [[cx, cy], [w, h]]` around any module to build only that part of the surface
+  (`[[cx, cy], [w, h], angle]` turns it about its centre; `$pat_clip = [[x, y], ...]` clips it further to a polygon:
+  the tapered walls use both, for the facets of an unrolled fan).
   The piece is exactly what the full pattern, panel or lining has there (frames are still worked out on the whole
   outline), so pieces built side by side join up. `shell.scad` uses this to go round corners; you can use it to
   split a large panel into printable tiles:
@@ -288,7 +290,22 @@ Joints: a facet reaches `SHELL_LAP` (0.1 mm) past each joint, and every other fa
 coincide where they overlap, which leaves slivers and edge-touching faces in the exported mesh. For the same
 reason keep other solids (a floor, a ledge) a hair inside the outline rather than exactly on it.
 
-Limits: walls are vertical (no taper); curved parts are faceted; relief leaves hairline gaps between facets at
+- **Tapered walls:** `shell_wrap_taper(pts, s, ht, t, h=, above=)` leans the wall: the outline `pts` (at z = 0)
+  is scaled by `s` at z = `ht` (`s` > 1 flares like a flower pot, < 1 narrows like an urn). Every facet is then a flat
+  trapezoid and the wall unrolls exactly into a fan, so the child is built in the **fan frame**: the strip frame
+  bent round the fan's apex (x along the wall, y up the slant, true to size; at the middle of the strip y = -h/2
+  at the floor). `shell_taper_strip_pts(pts, s, ht, hf=, lf=, h=)` is the wall's outline in it between two height
+  functions (rim and a lower line), `F = shell_taper_frame(pts, s, ht, 0, len(pts) - 1, h)` and
+  `shell_taper_at(F, u, z)` place a point (u = distance along the foot, `shell_dist_at_dir(pts, angle)` gives it
+  for a direction). `shell_taper_pts(pts, s, ht, z)` is the outline at height z, `shell_taper_lean()` the lean.
+  The unrolled wall's two ends meet at point 0 of the outline (a fan does not close): put a plain stripe there.
+  Use `container_wall_taper()` for patterned tapered walls: it builds them so that joints stay clean.
+- **Round rims and lines:** `shell_rim_round(p, base, [raise, direction], [amp, count, style, phase], dips)` by
+  direction from the centre: a slant, `count` waves of a `SHELL_WAVES` style (`shell_wave()`: wave, zigzag,
+  scallop, petal) and dips `[[direction, depth, width], ...]`; `shell_rim_round_range()` gives its lowest and
+  highest point. Used for rims and for the line where a decorated band starts.
+
+Limits: curved parts are faceted; relief leaves hairline gaps between facets at
 outward corners; woven patterns wrapped over many facets are slow in OpenSCAD 2021 (minutes), fine on flat walls.
 
 ## Containers
@@ -358,6 +375,16 @@ container_walls(pts, t, H, rim, p, "through_cut", bands=[5, 3])             // w
   wavelength, and Voronoi and Truchet are made to repeat after one round, so the two ends of the wall meet in the
   same pattern. Rotated patterns (`angle` not 0) and ripples cannot be closed this way: use solid corners for those.
 - **Pattern anchor:** `anchor=[x, y]` (a plan point on a wall) centres the pattern there when one panel runs all round.
+- **Tapered walls:** `container_wall_taper(pts, s, ht, t, h, hf, p, mode, border, depth, lining_t, lf=, zones=,
+  line=, lip=, frame=)` (`projects/planter`): the wall leans (see Shells); below the line function `lf` it stays
+  plain (water-tight), above it the pattern fills the band within `border = [sides, bottom, top]`; `zones = [[u,
+  width], ...]` are plain vertical stripes, `line = [style, width, height]` a bead or groove along `lf`, `lip =
+  [height, out]` a rolled rim with a 45° underside, 2D children are openings in the fan frame. It is one solid wall
+  with the pattern cut out afterwards, and reliefs are a layer with the spaces between their ribs cut out level by
+  level (fluted ribs and fish scales keep their profile). Neighbouring facets' cuts would cross in hair-thin wedges
+  where a hole runs over a joint: near each joint every other facet's cut is grown (`CONTAINER_TAPER_GROW`, 0.25
+  mm) so it contains its neighbour's, and joints sharper than about 20° get a plain post. Give curved outlines
+  enough points. open_lattice works like through_cut; weaves are cut flat.
 
 ## Attachment plates
 

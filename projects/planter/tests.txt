@@ -1,0 +1,30 @@
+# parameter variants checked by: python3 tools/build.py planter --test
+# every part must be one watertight piece; the insert stands on its ledge, the wick basket on the floor, the float
+# floats free in its guide
+
+# --- reservoir and filling ---
+reservoir = "below_side"
+reservoir = "side"; saucer = true
+reservoir = "below_side"; tank_dir = 135; style_preset = "terracotta"; hanger = "cords"
+reservoir = "side"; tank_d = 60; water_height = 20; overflow = false; topper = "drop"
+
+# --- outlines and taper ---
+shape = "polygon"; sides = 6; style_preset = "crown"
+shape = "rounded_square"; band_mode = "through_cut"; sensor = "capacitive"; drip_d = 7
+shape = "squircle"; aspect = 0.85; wick = "both"; band_pattern = "voronoi"
+r_top = 40; r_bottom = 50; style_preset = "terracotta"
+r_top = 45; r_bottom = 45; band_pattern = "square_grid"; band_mode = "recessed"
+style_preset = "blossom"; rim_dip = 25
+
+# --- band, line and rim styles ---
+style_preset = "scallop"; topper = "mushroom"; rod = "skewer"
+style_preset = "fluted"; drip_d = 12; sensor = "capacitive"; sensor_dir = 180
+style_preset = "honeycomb"; rim_tilt = 15; band_line_tilt = 10
+band_mode = "overlay"; band_pattern = "asanoha"; r_top = 40; r_bottom = 48
+band_line = "zigzag"; band_edge = "groove"; rim_line = "wave"; rim_amp = 5; lip_h = 10
+
+# --- limits: reduced or left out with a WARNING, no error ---
+band_from = 10; band_mode = "through_cut"
+pot_height = 70; water_height = 30; air_gap = 8; rim_dip = 60
+r_bottom = 30; r_top = 36; pot_height = 80; wick_d = 60; topper = "star"
+indicator = "none"; wick = "rope"; drain_holes = 0
