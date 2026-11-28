@@ -121,7 +121,8 @@ module container_wall_taper(pts, s, ht, t, h, hf, p, mode="solid", border=[0, 4,
 }
 // a facet's cut-out, th deep into the material, grown near its ends on every other facet so it contains the
 // neighbour's (see shell_wrap_taper); joints sharper than CONTAINER_TAPER_POST get a plain post instead
-CONTAINER_TAPER_GROW = 0.8;      // mm: the most a cut is grown at a joint
+CONTAINER_TAPER_GROW = 0.25;     // mm: the most a cut is grown at a joint (more would eat thin ribs that cross it)
+CONTAINER_TAPER_POST = 1.2;      // mm: joints that would need more growth than this get a plain post
 function container_taper_grow(th, turn) = th*tan(1.15*turn) + 0.1;
 module _container_taper_cut(th) {
     a = is_undef($shell_alt) ? 0 : $shell_alt;
@@ -147,7 +148,7 @@ module _container_wall_taper(pts, s, ht, t, h, hf, p, mode, border, depth, linin
     up = max(rh, lh, lip[1]);
     th = q == "through_cut" ? t : q == "recessed" ? depth : rh;           // how deep the pattern cuts into material
     // joints too sharp for the cuts to be grown into each other get a plain post (split at the seam, point 0)
-    posts = th <= 0 ? [] : [for (j=shell_joints(pts)) if (container_taper_grow(th, j[1]) > CONTAINER_TAPER_GROW)
+    posts = th <= 0 ? [] : [for (j=shell_joints(pts)) if (container_taper_grow(th, j[1]) > CONTAINER_TAPER_POST)
         let(w = 2*container_taper_grow(th, j[1]) + 2) each (j[0] < 0.001 ? [[w/4, w/2], [shell_len(pts) - w/4, w/2]] : [[j[0], w]])];
     zs = concat(zones, posts);
     // where the pattern may go: its area minus the plain zones and the openings' collars, inset by the border
@@ -163,8 +164,8 @@ module _container_wall_taper(pts, s, ht, t, h, hf, p, mode, border, depth, linin
         // solids: the wall, the relief layer over the pattern area, the bead, the lip (none of them has holes)
         shell_wrap_taper(pts, s, ht, t, h=h, above=up) {
             linear_extrude(t) shell_window_2d() difference() { polygon(strip); if (holes) children(); }
-            if (rh > 0) translate([0, 0, t - 0.01]) linear_extrude(rh + 0.01) shell_window_2d() field_2d() children();
-            if (lh > 0 && !is_undef(lf)) translate([0, 0, t - 0.01]) linear_extrude(lh + 0.01) shell_window_2d() line_2d(lw);
+            if (rh > 0) translate([0, 0, t - 0.5]) linear_extrude(rh + 0.5) shell_window_2d() field_2d() children();   // relief layer, deep in the wall
+            if (lh > 0 && !is_undef(lf)) translate([0, 0, t - 0.5]) linear_extrude(lh + 0.5) shell_window_2d() line_2d(lw);
             if (lip[0] > 0 && lip[1] > 0) let(k = max(1, ceil(lip[1]/0.4)))
                 for (j=[1:k]) translate([0, 0, t - 0.01]) linear_extrude(lip[1]*j/k + 0.01) shell_window_2d()
                     polygon(shell_taper_strip_pts(pts, s, ht, hf=hf, h=h, lf=function(x) hf(x) - lip[0] + lip[1]*(j - 1)/k));
@@ -178,26 +179,34 @@ module _container_wall_taper(pts, s, ht, t, h, hf, p, mode, border, depth, linin
                 pattern_cutout_2d(sp, sz, inset=0) field_2d() children();
             if (q == "recessed") translate([0, 0, t - depth]) linear_extrude(depth + up + 1) _container_taper_cut(depth)
                 pattern_cutout_2d(sp, sz, inset=0, cut="lines") field_2d() children();
+            // raised: the relief layer minus the spaces between the ribs; overlay: the same inside a 1.5 mm frame
             if (q == "raised") _container_relief_cut(sp, sz, t, depth) field_2d() children();
-            if (q == "overlay") translate([0, 0, t + 0.01]) linear_extrude(lining_t + 1) _container_taper_cut(lining_t)
-                pattern_cutout_2d(sp, sz, inset=0) offset(delta=-1.5) field_2d() children();
+            if (q == "overlay") _container_relief_cut(sp, sz, t, lining_t, true, 1.5) field_2d() children();
             if (line[0] == "groove" && !is_undef(lf)) translate([0, 0, t - line[2]]) linear_extrude(line[2] + up + 1) _container_taper_cut(line[2]) shell_window_2d() line_2d(lw);
             if (holes) translate([0, 0, -1]) linear_extrude(t + up + 2) _container_taper_cut(t + up) shell_window_2d() children();
         }
     }
 }
 // the spaces between a raised pattern's ribs, level by level (fluted and reeded ribs, fish-scale shingles keep
-// their profile): above the height of level k everything but the material of levels k..K is cut away.
-// Child: the area of the relief. Cuts start 0.01 above the wall's face and reach 0.5 past the area's edge (no
-// faces in the same plane). As in pattern_cutout_2d, the pattern is generated for the window but not clipped to
-// it, opened (no slivers, nothing that only touches at a corner: CGAL rejects that) and then clipped.
-module _container_relief_cut(p, sz, t, h) {
-    sp = _ps(p); K = pattern_levels(sp); w = _pat_win(sz);
+// their profile; flat = one level): above the height of level k everything but the material of levels k..K is cut
+// away. Child: the area of the relief; frame > 0 keeps a plain frame that wide inside it (a lining). The first
+// level's cut starts 0.2 mm inside the wall (no film is left on the wall's face, which a joint would pinch off),
+// the others 0.01 above their level; all reach 0.5 past the area's edge. As in pattern_cutout_2d, the pattern is
+// generated for the window but not clipped to it, opened, and then clipped.
+module _container_relief_cut(p, sz, t, h, flat=false, frame=0) {
+    sp = _ps(p); K = flat ? 1 : pattern_levels(sp); w = _pat_win(sz);
     for (k=[1:K]) let(zk = k == 1 ? 0 : h*_pat_level_top(sp, k - 1, K))
-        translate([0, 0, t + zk + 0.01]) linear_extrude(h - zk + 1) _container_taper_cut(h - zk) shell_window_2d() _pat_open(max(0.3, sp[10]))
+        translate([0, 0, t + (k == 1 ? -0.2 : zk + 0.01)]) linear_extrude(h - zk + 1.2) _container_taper_cut(h - zk) shell_window_2d() _pat_open(max(0.3, sp[10]))
             difference() {
                 offset(delta=0.5) children();
-                for (j=[k:K]) _pat_place(sp) _pat_level_2d(sp, _pat_cover(sp, w[1]), j, K, _pat_gcenter(sp, w[0]));
+                _pat_open(0.4) union() {                           // the ribs (without stubs too thin to print), and the frame
+                    intersection() {
+                        children();
+                        if (K == 1) _pat_place(sp) _pat_gen_2d(sp, _pat_cover(sp, w[1]), _pat_gcenter(sp, w[0]));
+                        else union() for (j=[k:K]) _pat_place(sp) _pat_level_2d(sp, _pat_cover(sp, w[1]), j, K, _pat_gcenter(sp, w[0]));
+                    }
+                    if (frame > 0) difference() { children(); offset(delta=-frame) children(); }
+                }
             }
 }
 

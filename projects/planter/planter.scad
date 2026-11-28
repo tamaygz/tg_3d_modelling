@@ -271,7 +271,8 @@ g_ro = g_id/2 + 1.6;                                             // guide tube: 
 sh_ri = g_ro + 0.3; sh_ro = sh_ri + 1.6;                         // the insert's shaft round it
 r_in_dir = function(a, z) r_dir(a, z) - tin;                     // pot inner face
 r_ins_in = function(a, z) r_in_dir(a, z) - insert_gap - insert_t/cos(lean);   // insert inner face
-g_r = min(r_in_dir(fill_dir, ft) - g_ro - 1, r_in_dir(fill_dir, z_f + fi + 3) - g_ro - 1, r_ins_in(fill_dir, z_f + fi) - sh_ro - 0.6);
+g_r = min(r_in_dir(fill_dir, ft) - g_ro - 1, r_in_dir(fill_dir, z_f + fi + 3) - g_ro - 1, r_ins_in(fill_dir, z_f + fi) - sh_ro - 0.6,
+          r_ins_in(fill_dir, z_ti) - sh_ro - 0.6);          // the shaft is upright: it must fit at the insert's floor and top
 g_xy = g_r*dir_v(fill_dir);                                      // guide axis
 g_top = z_f + fi + 4;                                            // the guide reaches into the insert's shaft
 
@@ -333,7 +334,8 @@ cb_h = z_f + fi - ft - 0.02;                                     // from the pot
 // ---------- insert ----------
 ins_pts0 = shell_inset_pts(shell_taper_pts(pts, sc, ht, z_f), tin + insert_gap);   // insert outline at its floor
 ins_h = z_ti - z_f;
-ins_sc = (Rm*k_at(z_ti) - tin - insert_gap)/(Rm*k_at(z_f) - tin - insert_gap);
+ins_r = [for (p=pts) norm(p)];
+ins_sc = min([for (r=[min(ins_r), max(ins_r)]) (r*k_at(z_ti) - tin - insert_gap)/(r*k_at(z_f) - tin - insert_gap)]);   // one scale for the insert: the tightest (it stays clear everywhere)
 ins_rim = function(p) ins_h;
 ins_in_area = function(z) shell_area(shell_inset_pts(shell_taper_pts(pts, sc, ht, z), tin + insert_gap + insert_t/cos(lean)));
 dr_r = (cb_r + cb_off + 4 + min([for (p=ins_pts0) norm(p)]) - insert_t - 3)/2;   // drain holes: on this ring
@@ -343,7 +345,6 @@ ropes = want_rope ? [for (j=[0:1:rope_count-1]) cb_c + ((want_cup ? cb_r + cb_co
 
 // ---------- extras ----------
 want_drip = drip_d > 0;
-tab_l = 8;                                                       // holder tabs: reach in from the insert wall
 hang = hanger == "cords";
 hang_dirs = [for (j=[0:hanger_count-1]) 90 + 360*j/hanger_count + 180/hanger_count];
 saucer_m = saucer_margin;
@@ -425,6 +426,12 @@ module tank_body() {
     difference() {
         union() {
             tank_shear() cylinder(r=tk_ro, h=tk_body_top, $fn=64);
+            linear_extrude(ft) hull() { translate(tk_c(0)) circle(r=tk_ro, $fn=64); translate(0.8*r_dir(tank_dir)*dir_v(tank_dir)) circle(r=tk_ro*0.7); }   // one floor with the pot
+            // web filling the narrow crotch between tank and pot wall (it would trap slivers): from the tank's axis to an
+            // arc of the wall, 0.6 t deep in it; it scales with the pot, the bore cuts what reaches into the tank
+            let(r0 = r_dir(tank_dir), ph = asin(min(0.95, 0.8*tk_ro/r0)), m = 8)
+                linear_extrude(tk_body_top, scale=k_at(tk_body_top)) polygon(concat([tk_d0*dir_v(tank_dir)],
+                    [for (j=[0:m]) let(a = tank_dir - ph + 2*ph*j/m, q = shell_pt_at(pts, u_dir(a))) q*(1 - 0.6*t/norm(q))]));
             if (reservoir == "side") {
                 tank_shear() translate([0, 0, tk_body_top - 0.01]) cylinder(r1=tk_ro, r2=tk_neck_ro - 1, h=(tk_ro - tk_neck_ro + 1)*tk_roof_k, $fn=64);
                 translate(concat(tk_c(tk_neck_z), [tk_neck_z - 0.5])) thread_rod(tk_neck, tk_neck_l + 0.5);
@@ -478,7 +485,7 @@ module pot() {
 }
 
 // ---------- solids: insert ----------
-module tab(a, w) {                                        // a holder reaching in from the insert's rim
+module tab(a, w, tab_l) {                                 // a holder reaching tab_l in from the insert's rim
     r_t = r_ins_in(a, z_ti); r_b = r_ins_in(a, z_ti - 4 - tab_l);
     z0 = z_ti - 4 - tab_l - 1;
     in_pts = function(z) shell_inset_pts(shell_taper_pts(pts, sc, ht, z), tin + insert_gap + insert_t/cos(lean)*0.4);   // to the middle of the insert wall
@@ -495,7 +502,7 @@ module tab(a, w) {                                        // a holder reaching i
 }
 module insert() {
     translate([0, 0, z_f]) {
-        container_wall_taper(ins_pts0, ins_sc, ins_h, insert_t, ins_h + 1, ins_rim, "square_grid", "solid", z0=0);
+        container_wall_taper(ins_pts0, ins_sc, ins_h, insert_t, ins_h + 1, ins_rim, "square_grid", "solid");
         difference() {
             linear_extrude(fi) offset(delta=-0.05) polygon(ins_pts0);
             if (want_cup) translate(concat(cb_c, [-0.01])) { cylinder(r=cb_r + 0.3, h=fi + 0.02, $fn=64); translate([0, 0, 0.6]) cylinder(r1=cb_r + 0.3, r2=cb_r + 0.3 + cb_coll + 0.02, h=cb_coll + 0.03, $fn=64); }
@@ -514,8 +521,8 @@ module insert() {
             linear_extrude(1.6) polygon([[r0, h0], [r_ins_in(fill_dir, h0) + 0.5, h0], [r_ins_in(fill_dir, z_ti) + 0.5, z_ti], [r0, z_ti]]);
         if (want_float) guide_ring(g_xy, sh_ri, z_ti - 2);
     }
-    if (want_sensor) tab(sensor_dir, sensor_w + 7) translate([-sensor_t/2 - 0.25, -sensor_w/2 - 0.3, 0]) cube([sensor_t + 0.5, sensor_w + 0.6, 40]);
-    if (want_drip) tab(drip_dir, drip_d + 7) cylinder(d=drip_d + 0.4, h=40, $fn=32);
+    if (want_sensor) tab(sensor_dir, sensor_w + 7, sensor_t + 7) translate([-sensor_t/2 - 0.25, -sensor_w/2 - 0.3, 0]) cube([sensor_t + 0.5, sensor_w + 0.6, 40]);
+    if (want_drip) tab(drip_dir, drip_d + 7, drip_d + 6) cylinder(d=drip_d + 0.4, h=40, $fn=32);
 }
 
 // ---------- solids: wick basket, float, rod, topper, cap, saucer ----------
@@ -562,7 +569,7 @@ module topper_solid() {
 }
 module face_part() {
     S = topper_size; stem = 10; f = face_at(topper, S);
-    buoy_frame(tp_z) rotate([90, 0, 0]) translate([0, 0, tp_th/2 - 0.01]) linear_extrude(0.6) translate(f[0] + [0, stem + S/2]) face_2d(f[1]);
+    buoy_frame(tp_z) rotate([90, 0, 0]) translate([0, 0, tp_th/2]) linear_extrude(0.6) translate(f[0] + [0, stem + S/2]) face_2d(f[1]);
 }
 cap_z = tk_neck_z - 0.5 + thread_pitch(tk_neck)*ceil(1.5/thread_pitch(tk_neck));   // the cap's thread in phase with the neck's
 module tank_cap() {

@@ -250,7 +250,7 @@ function shell_taper_edge_at(F, i, f, z) = F[0] == 0 ? [F[4][i] + (F[4][i+1] - F
     _sht_rot(F[2], (A + (B - A)*f)*shell_taper_k(F[6], F[7], z)) + F[3];
 // fan-frame point at distance uu along the foot of the wall (from point 0, as shell_dists) and height z
 function shell_taper_at(F, uu, z) = let(u = F[4], n = len(u) - 1,
-    w = uu - floor(uu/u[n])*u[n],                                  // round the loop
+    w = uu >= -1e-9 && uu <= u[n] + 1e-9 ? max(0, min(u[n], uu)) : uu - floor(uu/u[n])*u[n],   // round the loop (the end stays the end)
     i = [for (j=[0:n-1]) if (u[j] <= w + 1e-9 && w <= u[j+1] + 1e-9) j][0])
     shell_taper_edge_at(F, i, (w - u[i])/(u[i+1] - u[i]), z);
 // the point of the outline at distance u along it (from point 0)
@@ -288,11 +288,12 @@ function shell_taper_size(strip) = let(b = shell_bounds(strip))
 // beyond t. Each facet gets $pat_window (turned to the facet) and $pat_clip = its exact trapezoid in the fan
 // (plus the laps at the joints), so the facets meet in the plane that halves their angle.
 // z0 = where the strip's foot is: the inner face of a wall that leans in reaches below its outer foot, so start
-// such walls a little higher (shell_taper_foot()) and let the floor fill in.
+// such walls a little higher (shell_taper_foot()) and let the floor fill in. The foot is 0.02 mm above z = 0 in
+// any case: the wall's outer foot edge must not lie in other solids' bottom faces (a tank, a base beside it).
 // s = 1 builds a straight wall the same way (shell_wrap is the faster choice there for panels without cuts).
 // shrink = false: no facet is pulled in; lap = extra reach past each joint. Cutters read $shell_alt, $shell_turn,
 // $shell_ends (see container_wall_taper).
-function shell_taper_foot(pts, s, ht, t) = s < 1 ? t*sin(abs(shell_taper_lean(pts, s, ht))) + 0.02 : 0;
+function shell_taper_foot(pts, s, ht, t) = (s < 1 ? t*sin(abs(shell_taper_lean(pts, s, ht))) : 0) + 0.02;
 module shell_wrap_taper(pts, s, ht, t, e0=0, e1, h=50, above=0, shrink=true, lap=0) {
     n = len(pts); b = is_undef(e1) ? n - 1 : e1;
     F = shell_taper_frame(pts, s, ht, e0, b, h);
